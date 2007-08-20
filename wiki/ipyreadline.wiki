@@ -1,5 +1,10 @@
 #labels python,ipython,termios,select,fcntl,multitask
 {{{
+# This code framework gives an easy way to make ipython pseudo-multitask. 
+# When there is no keyboard press, ipython can handle other i/o event or call functions during timeout. 
+# As soon as readline takes control (raw_input), multitask stops. So if readline can make # keyboard input as an function call expose to the caller like the interface for 
+# rlcompleter, true multitask will be possible.
+
 import IPython
 import termios
 import fcntl, os
