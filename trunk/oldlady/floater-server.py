@@ -32,7 +32,7 @@ def table_handle(state,data):
       if mname == 'J':
          username = args[1]
          rmsg.append(state.encode_message('accepted_join',['IP','port']))
-         #rmsg += get_current_seated_msg(state)
+         rmsg += get_current_seated_msg(state)
       elif mname == 'S':
          username,seat,ip,port = args
          if state.client_seated(IDX[seat[0]], username):
