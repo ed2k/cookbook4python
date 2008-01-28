@@ -31,7 +31,7 @@ def pbn2f_card(c):
 def o2pbn_hand(hand):
    h = ['','','','']
    for c in hand:
-      h[c.suit] += 'AKQJT98765432'[c.rank-2]
+      h[c.suit] += '23456789TJQKA'[c.rank-2]
    return '.'.join(h)
 def o2f_bid(b):
    if b.is_pass(): return ' p'
@@ -191,7 +191,7 @@ class State:
       # special case for floater server
       line = file(defs.FL_DATA).read()
       s = line.split()
-      idx = {'E':13,'W':39,'N':0,'S':26}
+      #idx = {'E':13,'W':39,'N':0,'S':26}
       x = seat*13
       self.client_holding = [int(x) for x in s[x:x+13]]
       print self.hand_id, self.client_holding
