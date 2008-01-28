@@ -1,4 +1,5 @@
 from floater_client import *
+import os
 
 def rank(n): return (n%13) + 2
 def suit(n): return n/13
@@ -25,6 +26,18 @@ def hand2suits(hand):
       suits[idx].append(rank(c))
    return suits
 
+def DealGenerator(hands, bids, plays, ai):
+    myseat = 'WNES'[ai.seat]
+    dummyseat = 'WNES'[ai.deal.dummy]
+    h = o2pbn_hand(hands[ai.deal.dummy]).split('.')
+    h.reverse()
+    dummy = ' '.join(h)
+    h = o2pbn_hand(hands[ai.seat]).split('.')
+    h.reverse()
+    mine = ' '.join(h)
+    cmd = './deal -i format/pbn -'+dummyseat+' "'+ dummy + '" -'+myseat+' "'+mine+'" 1'
+    print cmd
+    print os.popen(cmd).read()
 
 class OneHand:   
    def __init__(self, hand):
@@ -78,16 +91,18 @@ class OneHand:
          left,op,right = r.split()
          left = self.get(left)
          right = self.get(right)
-         if self.op(left,right,op): return True
+         if not self.op(left,right,op): return False
+      print 'check',ruleseqs   
+      return True
    def get(self, symbol):
       if symbol == 'hcp': return self.hcp()
       if symbol in 'cdhs':
-         return  len(self.suits[KIDX[symble]])
-   def op(self, left, right, op):
-      if op == '<': return (left < right)
-      if op == '>': return (left > right)
-      if op == '>=': return (left >= right)
-      if op == '<=': return (left <= right)
+         return  len(self.suits[KIDX[symbol]])
+   def op(self, left, right, opcode):
+      if opcode == '<': return (left < right)
+      if opcode == '>': return (left > right)
+      if opcode == '>=': return (left >= right)
+      if opcode == '<=': return (left <= right)
          
       
 def evaluate_deal(ai):
@@ -153,7 +168,11 @@ class ConsoleState(State):
       if (ai.seat == deal.declarer) and (deal.player != deal.dummy) and (deal.player != deal.declarer):
          return None         
       print 'myseat','WNES'[ai.seat],'player','WNES'[deal.player], 'dummy','WNES'[deal.dummy],'declarer','WNES'[deal.declarer]      
-      evaluate_deal(ai)
+      #evaluate_deal(ai)
+      # TODO, generate a deal based on bidding, and play history
+      # use double dummy solver to find the best play.
+      guess_deal = DealGenerator(self.deal.hands, self.bid_status, self.play_status, ai)
+      # card = solver(guess_deal)      
       card = None
       if (deal.player == deal.dummy) and (deal.declarer == ai.seat):
          card = ai.play_dummy()
