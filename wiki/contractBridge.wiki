@@ -1,0 +1,16 @@
+#contract bridge card game python implementation with AI
+
+= Introduction =
+
+a bridge game integrated floater, oldlady etc to play in network with robot.
+
+
+= Details =
+
+Several integrations to implement:
+  * AI, prolog in bidding system, 
+  * deal 3.0 to generate estimated card
+  * dds10 solver to suggest a best play
+  * talke to floater
+  * an oldlay command line implementation (without glade, gtk gui)
+  * a web client prototype use message based communication
