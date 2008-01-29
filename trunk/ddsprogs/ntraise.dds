@@ -1,0 +1,12 @@
+# Some 1NT-2NT study hands
+
+north_notrump = shape(north, any 4333) && hcp(north)>=15 && hcp(north)<=17
+south_raises = shape(south, any 4333) && hcp(south)>=8 && hcp(south)<=10
+
+condition north_notrump and south_raises
+
+#produce 10000
+produce 1
+
+action
+    printes ( hcp(north), " ", hcp(south), "|" ), printoneline
