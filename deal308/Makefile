@@ -27,7 +27,7 @@ TCL_LIB=$(TCL_DIR)/lib
 # For Solaris2, you need some more libraries
 #
 #LDFLAGS=  -L$(TCL_LIB) -ltcl80 -lm -ldl -lsocket -lnsl
-LDFLAGS=  -L$(TCL_LIB) -ltcl -lm
+LDFLAGS=  -L$(TCL_LIB) -ltcl8.4 -lm
 
 
 

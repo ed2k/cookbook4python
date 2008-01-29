@@ -164,3 +164,4 @@ def by_rank (x, y):
     """
 
     return cmp (x.rank, y.rank)
+

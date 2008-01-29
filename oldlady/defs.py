@@ -21,5 +21,5 @@ VERSION = "0.1.0"
 PACKAGE = "oldlady"
 DATA_DIR = "/local/scratch/oldlady-0.1.0"
 PKG_DATA_DIR = "/local/scratch/oldlady-0.1.0"
-SWI_PROLOG = "/x3/pl-5.6.49/src/pl"
-FL_DATA = "/x3/floater-imp/curdeck.tmp"
+FL_DATA = "/local/scratch/floater-1.4.15/common/curdeck.tmp"
+SWI_PROLOG = '/local/scratch/usr/local/bin/pl'
