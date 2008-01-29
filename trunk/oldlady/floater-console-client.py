@@ -36,7 +36,7 @@ def DealGenerator(hands, bids, plays, ai):
     h.reverse()
     mine = ' '.join(h)
     cmd = './deal -i format/pbn -'+dummyseat+' "'+ dummy + '" -'+myseat+' "'+mine+'" 1'
-    print cmd
+    print cmd.splitlines()[0].split('"')[1][2:].split()
     print os.popen(cmd).read()
 
 class OneHand:   
@@ -171,7 +171,8 @@ class ConsoleState(State):
       #evaluate_deal(ai)
       # TODO, generate a deal based on bidding, and play history
       # use double dummy solver to find the best play.
-      guess_deal = DealGenerator(self.deal.hands, self.bid_status, self.play_status, ai)
+      if deal.hands[deal.dummy] is not None:
+         guess_deal = DealGenerator(self.deal.hands, self.bid_status, self.play_status, ai)
       # card = solver(guess_deal)      
       card = None
       if (deal.player == deal.dummy) and (deal.declarer == ai.seat):
