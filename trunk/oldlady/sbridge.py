@@ -75,10 +75,10 @@ def rank_to_string (rank):
     Produces a string representation of a rank.
     """
 
-    if rank <= 10:
+    if rank < 10:
         return str (rank)
     else:
-        return ["J", "Q", "K", "A"][rank - JACK]
+        return "TJQKA"[rank - 10]
 
 
 def team (player):
