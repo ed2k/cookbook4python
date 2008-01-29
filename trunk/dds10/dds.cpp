@@ -3708,12 +3708,22 @@ void ReceiveTTstore(struct pos *posPoint, struct nodeCardsType * cardsP,
 }
 #endif
 
+// to compile, g++ dds.cpp
 int main(int argc, char* argv[]){
+   if (argc < 19) {
+      printf("dds trump first 4x4_num_sperated_by_space [suit rank]x3\n");
+      return 0;
+   }
    struct deal d;
    d.trump = atoi(argv[1]);
    d.first = atoi(argv[2]);
    memset(&(d.currentTrickSuit), 0, 3*sizeof(int));
    memset(&(d.currentTrickRank), 0, 3*sizeof(int));
+   for(int i=0; i < (argc-3-16); i+=2) {
+      int idx = (3+16)+i;
+      d.currentTrickSuit[i] = atoi(argv[idx]);
+      d.currentTrickRank[i] = atoi(argv[idx+1]);
+   }
    // i is player loop, j is suit loop, spade is 0, shdc = 0123
    // each card take one bit from 1<<14 is A
    for(int i=0; i<4; i++)

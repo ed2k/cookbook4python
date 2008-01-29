@@ -36,8 +36,10 @@ def DealGenerator(hands, bids, plays, ai):
     h.reverse()
     mine = ' '.join(h)
     cmd = './deal -i format/pbn -'+dummyseat+' "'+ dummy + '" -'+myseat+' "'+mine+'" 1'
-    print cmd.splitlines()[0].split('"')[1][2:].split()
-    print os.popen(cmd).read()
+    print cmd
+    newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
+    print newdeal
+    
 
 class OneHand:   
    def __init__(self, hand):
