@@ -11,8 +11,8 @@ def dod(ds):
     dd = dds.deal(deal)
     print dd
     #0123 -> shdc which one is trump, whose turn first 0123-> NESW
-    for trump in xrange(5):
-        for first in xrange(4):
+    for trump in xrange(0):
+        for first in xrange(0):
             s = dd.solve(trump,first)
             print trump,first,s
     test = '1 2 16 16 16 16 8 8 8 8 2 2 2 2 4 4 4 4'
@@ -26,7 +26,7 @@ def dod(ds):
             test.append(n)
     arg = ' '.join([str(x) for x in test])
     print arg
-    print os.popen('./dds 0 0 '+arg).read();
+    print os.popen('./dds 0 0 '+arg+' 4 4').read();
     return 13-s[-1][0]
 
 
