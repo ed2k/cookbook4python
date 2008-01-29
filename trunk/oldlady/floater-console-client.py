@@ -26,6 +26,24 @@ def hand2suits(hand):
       suits[idx].append(rank(c))
    return suits
 
+def solver(trump, deal, currentTricks=None):
+   '''deal is N-W,S-C 4x4 list '''
+   print deal
+   # the play to solve is always at 0 (North), so last player is always 3(West)
+   first = 3
+   if sum([len(x) for x in deal[0]]) == sum([len(x) for x in deal[3]]): first = 0
+   test = [trump, first]
+   for i in xrange(4):
+      for j in xrange(4):
+         n = 0
+         for k in xrange(len(deal[i][j])):
+            n = n | (1 << map[deal[i][j][k]])
+         test.append(n)
+   arg = ' '.join([str(x) for x in test])
+   print arg
+   r = os.popen('../ddsprogs/dds '+arg).read().splitlines()[1].split()
+   print 'suit',r[0],'rank',r[1],'win tricks',r[3]    
+    
 def DealGenerator(hands, bids, plays, ai):
     myseat = 'WNES'[ai.seat]
     dummyseat = 'WNES'[ai.deal.dummy]
@@ -35,10 +53,21 @@ def DealGenerator(hands, bids, plays, ai):
     h = o2pbn_hand(hands[ai.seat]).split('.')
     h.reverse()
     mine = ' '.join(h)
-    cmd = './deal -i format/pbn -'+dummyseat+' "'+ dummy + '" -'+myseat+' "'+mine+'" 1'
+    eargs = []
+    for i in xrange(4):
+       if i == ai.seat: continue
+       if i == ai.deal.dummy: continue
+       eargs.append(sbridge.PLAYER_NAMES[i].lower()+' gets')
+       for c in ai.deal.played_hands[i]:
+          eargs.append(str(c).upper())
+       eargs.append(';')
+    print eargs
+    cmd = './deal -i format/pbn -'+dummyseat+' "'+ dummy + '" -'+myseat+' "'+mine+'" -e "'+' '.join(eargs)+'" 1'
     print cmd
     newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
     print newdeal
+    print str(ai.deal.trick)
+    
     
 
 class OneHand:   
@@ -100,6 +129,7 @@ class OneHand:
       if symbol == 'hcp': return self.hcp()
       if symbol in 'cdhs':
          return  len(self.suits[KIDX[symbol]])
+      return int(symbol)
    def op(self, left, right, opcode):
       if opcode == '<': return (left < right)
       if opcode == '>': return (left > right)

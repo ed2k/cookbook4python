@@ -428,5 +428,5 @@ def one_client(st=State()):
       time.sleep(random.random())
    
 if __name__ == "__main__":
-   one_client(0)
+   one_client()
 

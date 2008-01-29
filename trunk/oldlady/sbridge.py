@@ -189,14 +189,19 @@ class Trick:
             self.winner = self.player
         self.player = (self.player + 1) % 4
         return self.cards[self.player] is None
+    def __str__(self):
+        r = []
+        for c in self.cards:
+            if c is None: r.append('-')
+            else: r.append(str(c))
+        return ' '.join(r)
 
 
 class Deal:
     """
     A single deal of contract bridge.
     """
-
-    def __init__ (self, dealer):
+    def shuffle(self):
         deck = []
         for suit in SUITS:
             for rank in RANKS:
@@ -207,7 +212,10 @@ class Deal:
         for hand in self.hands:
             hand.sort ()
             hand.reverse()
-
+            
+    def __init__ (self, dealer):
+        self.played_hands = [[],[],[],[]]
+        self.hands = [None]*4
         self.dealer = dealer
         self.player = dealer
         self.contract = None
@@ -334,10 +342,11 @@ class Deal:
         Play a card in the current trick.
         """
         if self.hands[self.player] != None:
-            print str(card),
             self.hands[self.player].remove (card)
             
         self.trick.play_card (card)
+        self.played_hands[self.player].append(card)
+        
         self.player = (self.player + 1) % 4
         self.opening_lead = True
         #-yisu a hack to save which is played for query
@@ -378,6 +387,7 @@ class Rubber:
         """
 
         self.deal = Deal (self.dealer)
+        self.deal.shuffle()
         self.dealer = (self.dealer + 1) % 4
         self.hands = [hand[:] for hand in self.deal.hands]
 
