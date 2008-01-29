@@ -206,6 +206,7 @@ class Deal:
         self.hands = [deck[0:13], deck[13:26], deck[26:39], deck[39:52]]
         for hand in self.hands:
             hand.sort ()
+            hand.reverse()
 
         self.dealer = dealer
         self.player = dealer
