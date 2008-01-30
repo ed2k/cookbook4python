@@ -53,13 +53,13 @@ DOUBLE = -2
 REDOUBLE = -3
 
 PLAYERS = range (4)
-WEST, NORTH, EAST, SOUTH = PLAYERS
-PLAYER_NAMES = [_("West"), _("North"), _("East"), _("South")]
+NORTH, EAST, SOUTH, WEST = PLAYERS
+PLAYER_NAMES = [_("North"), _("East"), _("South"),_("West")]
 
 TEAMS = range (2)
 WEST_EAST, NORTH_SOUTH = TEAMS
 TEAM_NAMES = [_("West-East"), _("North-South")]
-
+STR2RANK = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2}
 
 def denomination_to_string (denom):
     """
@@ -96,7 +96,10 @@ def partner (player):
 
     return (player + 2) % 4
 
-
+def seat_prev(seat): return (seat-1)%4
+def seat_next(seat): return (seat+1)%4
+def seat_move(a,b): return (a+b)%4
+def seat_str(seat): return 'NESW'[seat]
 class Card:
     """
     A single playing card.
@@ -293,15 +296,13 @@ class Deal:
         if self.player == WEST:
             self.iter = self.model.append ()
             # new round in a graphic sense
-            print
+
         self.model.set (self.iter, self.player, bid)
-        print 'WNES'[self.player],bid,
         self.player = (self.player + 1) % 4
 
         if self.passes < 3 or (self.passes == 3 and self.contract is None):
             return True
         else:
-            print
             #-yisu here we found auction is over,
             self.prepare_trick_taking ()
             #TODO get to see the dummy hand for each player, but not now, when?
@@ -326,7 +327,7 @@ class Deal:
             self.dummy = partner (self.declarer)
             self.player = (self.declarer + 1) % 4
             self.trick = Trick (self.player, self.contract.denom)
-            print 'dealer','WNES'[self.dealer],'player','WNES'[self.player], 'dummy','WNES'[self.dummy],'declarer','WNES'[self.declarer]
+            print 'dealer','NESW'[self.dealer],'player','NESW'[self.player], 'dummy','NESW'[self.dummy],'declarer','NESW'[self.declarer]
         else:
             self.contract = Bid (PASS)
 
@@ -340,7 +341,7 @@ class Deal:
     def play_card (self, card):
         """
         Play a card in the current trick.
-        """
+        """        
         if self.hands[self.player] != None:
             self.hands[self.player].remove (card)
             
@@ -553,4 +554,14 @@ class Rubber:
 class HandEvaluation:
     def __init__(self, hand):
         self.hand = hand
-        
+
+
+def print_hand(hand):
+   suits = [[],[],[],[]]
+   for c in hand:
+      suits[c.suit].append('0123456789TJQKA'[c.rank])
+   r = []
+   for i in PLAYERS:
+       r.append(''.join(suits[i]))
+   r.reverse()
+   print r

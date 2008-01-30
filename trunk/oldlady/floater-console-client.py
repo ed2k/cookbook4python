@@ -1,4 +1,5 @@
 from floater_client import *
+from sbridge import *
 import os
 
 def rank(n): return (n%13) + 2
@@ -26,48 +27,62 @@ def hand2suits(hand):
       suits[idx].append(rank(c))
    return suits
 
-def solver(trump, deal, currentTricks=None):
-   '''deal is N-W,S-C 4x4 list '''
+def solver(trump, currentTricks, deal):
+   '''deal is N-W,S-C 4x4 list, shdc -> 0123 '''
+   if trump != 4: trump = 3-trump
+   print trump,
+   for c in currentTricks: print str(c),
    print deal
    # the play to solve is always at 0 (North), so last player is always 3(West)
-   first = 3
-   if sum([len(x) for x in deal[0]]) == sum([len(x) for x in deal[3]]): first = 0
+   first = (4 - len(currentTricks)) % 4
+   if first == 2: first = 1
    test = [trump, first]
    for i in xrange(4):
       for j in xrange(4):
          n = 0
          for k in xrange(len(deal[i][j])):
-            n = n | (1 << map[deal[i][j][k]])
+            n = n | (1 << STR2RANK[deal[i][j][k]])
          test.append(n)
+   for c in currentTricks:
+      test.append(3-c.suit)
+      test.append(c.rank)
    arg = ' '.join([str(x) for x in test])
    print arg
    r = os.popen('../ddsprogs/dds '+arg).read().splitlines()[1].split()
-   print 'suit',r[0],'rank',r[1],'win tricks',r[3]    
+   print 'suit','shdc'[int(r[0])],'rank',r[1],'win tricks',r[3]    
+
+def o2dstack_hand(hand):
+   '''deal stack  has format AK QJ - T98765432, from Spade to Club'''
+   h = o2pbn_hand(hand).split('.')
+   h.reverse()
+   for i in xrange(4):
+      if h[i] == '': h[i] = '-'
+   return ' '.join(h)
     
 def DealGenerator(hands, bids, plays, ai):
-    myseat = 'WNES'[ai.seat]
-    dummyseat = 'WNES'[ai.deal.dummy]
-    h = o2pbn_hand(hands[ai.deal.dummy]).split('.')
-    h.reverse()
-    dummy = ' '.join(h)
-    h = o2pbn_hand(hands[ai.seat]).split('.')
-    h.reverse()
-    mine = ' '.join(h)
+    ''' assume it is my turn '''
+    assert ai.seat != ai.deal.dummy
+    myseat = ai.deal.player
+    seat2 = ai.deal.dummy
+    if seat2 == myseat: seat2 = partner(myseat)
+    hand2 = o2dstack_hand(hands[seat2])
+    mine = o2dstack_hand(hands[myseat])
+
     eargs = []
     hidden = []
     for i in xrange(4):
-       if i == ai.seat: continue
-       if i == ai.deal.dummy: continue
+       if i == myseat: continue
+       if i == seat2: continue
        hidden.append(i)
-       eargs.append(sbridge.PLAYER_NAMES[i].lower()+' gets')
+       if ai.deal.played_hands[i] != []:
+          eargs.append(sbridge.PLAYER_NAMES[i].lower()+' gets')
        for c in ai.deal.played_hands[i]:
-          eargs.append(str(c).upper())
+          eargs.append(str(c).upper())       
        eargs.append(';')
-    print eargs
-    cmd = './deal -i format/pbn -'+dummyseat+' "'+ dummy + '" -'+myseat+' "'+mine+'" -e "'+' '.join(eargs)+'" 1'
+    cmd = './deal -i format/pbn -'+seat_str(seat2)+' "'+ hand2 + '" -'+seat_str(myseat)+' "'+mine+'" -e "'+' '.join(eargs)+'" 1'
     print cmd
     newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
-    print newdeal
+
     print str(ai.deal.trick)
     #move ai to North
     ddeal = [[],[],[],[]]
@@ -78,17 +93,28 @@ def DealGenerator(hands, bids, plays, ai):
        ddeal[i] = [[],[],[],[]]
        for j in xrange(4):
           ddeal[i][j] = list(set(d[j]))
-    print ddeal
     # remove played cards
     for i in xrange(4):
        seat = f2o(i)
        for c in ai.deal.played_hands[seat]:
-          print seat,str(c)
           s = 3-c.suit
           ddeal[i][s].remove(str(c)[0])
-    print ddeal
     
-          
+    lenMine = len(ai.deal.played_hands[myseat])
+    currentTrick = []
+    seat = seat_prev(myseat)
+    while (len(ai.deal.played_hands[seat]) > lenMine):
+       currentTrick.insert(0,ai.deal.played_hands[seat][-1])
+       seat = seat_prev(seat)
+
+    sdeal = [[],[],[],[]]
+    #move my seat to North for solver
+    for i in xrange(4):
+       d = ddeal[seat_move(myseat,i)]
+       for j in xrange(4):
+          sdeal[i].append(''.join(d[j]))
+
+    solver(ai.deal.contract.denom, currentTrick, sdeal)
           
     
 
@@ -182,10 +208,10 @@ def evaluate_deal(ai):
 class ConsoleState(State):
    def handle_auction(self):
       ''' try use oldlady engine '''
-      dealer = f2o((self.hand_id-1) % 4)
+      dealer = (self.hand_id-1) % 4
       ai = sAi.ComputerPlayer(dealer)
-      ai.seat = f2o(self.own_seat())
-      print 'dealer','WNES'[dealer],'my seat','WNES'[ai.seat]
+      ai.seat = self.own_seat()
+      print 'dealer','NESW'[dealer],'my seat','NESW'[ai.seat]
 
       deal = sbridge.Deal(dealer)
       for p in sbridge.PLAYERS:
@@ -221,7 +247,7 @@ class ConsoleState(State):
       if (ai.seat != deal.declarer) and (deal.player != ai.seat): return None
       if (ai.seat == deal.declarer) and (deal.player != deal.dummy) and (deal.player != deal.declarer):
          return None         
-      print 'myseat','WNES'[ai.seat],'player','WNES'[deal.player], 'dummy','WNES'[deal.dummy],'declarer','WNES'[deal.declarer]      
+      print 'myseat','NESW'[ai.seat],'player','NESW'[deal.player], 'dummy','NESW'[deal.dummy],'declarer','NESW'[deal.declarer]      
       #evaluate_deal(ai)
       # TODO, generate a deal based on bidding, and play history
       # use double dummy solver to find the best play.

@@ -16,11 +16,8 @@ f_op2argc = {'J':5,'S':4,'C':1,'s':4,'T':4,'e':3,'a':2,'p':2,'Y':3,'*':8}
 import sbridge, sAi
 
 
-def f2o(idx):
-   '''same card denominations (kinds), different seat start point
-   floater NESW, oldlady WNES'''
-   return (idx+1) % 4
-def o2f(idx) : return (idx-1) %4
+def f2o(idx):   return idx
+def o2f(idx) : return idx
 def f2o_card(c): return sbridge.Card(c /13, (c % 13)+2)
 def o2f_card(c): return c.suit*13 + c.rank-2
 def f2o_hand(hand): return [f2o_card(c) for c in hand]
@@ -181,23 +178,22 @@ class State:
       self.hand_id = int(handid)
       self.bid_status = BidStatus(bids)
       self.play_status = convert_str2play(plays)
-      self.deal = sbridge.Deal(f2o((self.hand_id-1) % 4))
+      self.deal = sbridge.Deal((self.hand_id-1) % 4)
       for x in xrange(4): self.deal.hands[x] = None
       if suit[1] == ' ':
          for s in suit.split('|'):
-            self.deal.hands[f2o(int(s[0]))] = f2o_hand(pbn2f_hand(s[2:]))
+            self.deal.hands[int(s[0])] = f2o_hand(pbn2f_hand(s[2:]))
          self.client_holding = pbn2f_hand(suit.split('|')[0][2:])
          return
       # special case for floater server
       line = file(defs.FL_DATA).read()
       s = line.split()
-      #idx = {'E':13,'W':39,'N':0,'S':26}
       x = seat*13
       self.client_holding = [int(x) for x in s[x:x+13]]
       print self.hand_id, self.client_holding
       for i in xrange(4):
          idx = i * 13
-         self.deal.hands[f2o(i)] = f2o_hand([int(x) for x in s[idx:idx+13]])
+         self.deal.hands[i] = f2o_hand([int(x) for x in s[idx:idx+13]])
    def first_lead(self):
       auc = self.bid_status
       handid = self.hand_id
@@ -219,7 +215,7 @@ class State:
       ai = sAi.ComputerPlayer(dealer)
 
       ai.seat = f2o(self.own_seat())
-      print 'dealer','WNES'[dealer],'my seat','WNES'[ai.seat]
+      print 'dealer','NESW'[dealer],'my seat','NESW'[ai.seat]
 
       deal = sbridge.Deal(dealer)
       for p in sbridge.PLAYERS:
@@ -249,7 +245,7 @@ class State:
       if (ai.seat != deal.declarer) and (deal.player != ai.seat): return None
       if (ai.seat == deal.declarer) and (deal.player != deal.dummy) and (deal.player != deal.declarer):
          return None         
-      print 'myseat','WNES'[ai.seat],'player','WNES'[deal.player], 'dummy','WNES'[deal.dummy],'declarer','WNES'[deal.declarer]      
+      print 'myseat','NESW'[ai.seat],'player','NESW'[deal.player], 'dummy','NESW'[deal.dummy],'declarer','NESW'[deal.declarer]      
       card = None
       if (deal.player == deal.dummy) and (deal.declarer == ai.seat):
          card = ai.play_dummy()
