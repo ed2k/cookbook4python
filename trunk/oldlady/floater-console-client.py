@@ -54,9 +54,11 @@ def DealGenerator(hands, bids, plays, ai):
     h.reverse()
     mine = ' '.join(h)
     eargs = []
+    hidden = []
     for i in xrange(4):
        if i == ai.seat: continue
        if i == ai.deal.dummy: continue
+       hidden.append(i)
        eargs.append(sbridge.PLAYER_NAMES[i].lower()+' gets')
        for c in ai.deal.played_hands[i]:
           eargs.append(str(c).upper())
@@ -67,7 +69,27 @@ def DealGenerator(hands, bids, plays, ai):
     newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
     print newdeal
     print str(ai.deal.trick)
+    #move ai to North
+    ddeal = [[],[],[],[]]
+    currentTrick = []
+    # put estimated deal in 4x4 format
+    for i in xrange(4):
+       d = newdeal[i].split('.')
+       ddeal[i] = [[],[],[],[]]
+       for j in xrange(4):
+          ddeal[i][j] = list(set(d[j]))
+    print ddeal
+    # remove played cards
+    for i in xrange(4):
+       seat = f2o(i)
+       for c in ai.deal.played_hands[seat]:
+          print seat,str(c)
+          s = 3-c.suit
+          ddeal[i][s].remove(str(c)[0])
+    print ddeal
     
+          
+          
     
 
 class OneHand:   
