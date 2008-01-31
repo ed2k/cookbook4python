@@ -1,0 +1,338 @@
+\newcommand{\me}[1]{\mbox{\em{#1}}}
+\newcommand{\mb}[1]{\mbox{\bf{#1}}}
+\newcommand{\cmd}[2]{\mb{#1} #2}
+
+\documentstyle[11pt]{article}
+\addtolength{\textheight}{1.5in}
+\addtolength{\topmargin}{-1in}
+\addtolength{\textwidth}{1in}
+\addtolength{\oddsidemargin}{-.5in}
+\setlength{\parindent}{0mm}
+\addtolength{\parskip}{1mm}
+
+%\addtolength{\leftmargin}{-20mm}
+%\addtolength{\rightmargin}{-20mm}
+%\addtolength{\topmargin}{-20mm}
+
+\input psfig
+
+\documentstyle{twocolumn}
+\begin{document}
+\centerline{\psfig{figure=floaterlogo.ps}}
+\begin{center}
+\vspace{-6pt}
+{\large{\bf{Reference for Floater Commands}}}\\
+Version 1.2b2, \today\\
+{\tiny Website: {\verb|http://www.floater.org/|}}
+\end{center}
+\vspace{-12pt}
+\mbox{}\\ \cmd{accept}{
+Accept declarer's claim.  Must be used by each defender for a claim to
+be accepted.
+}\\ \cmd{alert}{
+``Alert some ... text ..." is equivalent equivalent to ``explain Alert!
+some ... text ..." and is traditionally used to self-alert bids or
+carding that is slightly unusual.  ``Redalert" should be used for highly
+unusual bids or carding.
+}\\ \cmd{autodeal}{
+After a certain amount of time elapses at the end of a hand, Floater
+automatically deals a new hand if four people are seated.  To control
+the timing, ``autodeal `N'" sets the number of seconds to wait between
+hands.  With no arguments, ``autodeal" toggles on and off whether new
+hands are ever dealt automatically.  (By the way, you must be host of
+the table for your autodeal setting to have any effect.)
+}\\ \cmd{beep}{
+You may beep someone at your table by doing ``beep `name'" (e.g., ``beep
+Joe Smith"), or you may beep everyone at your table by just doing
+``beep."  The bell will ring on the recipient's machine and everyone at
+the table will see a message indicating who has beeped whom.
+}\\ \cmd{beepAtMyTurn}{
+There is an option that causes Floater to beep when it becomes your
+turn to bid or play.  To toggle the described behavior, invoke this
+command.  To turn it off, invoke this command with the argument ``no."
+To turn it on, invoke this command with the argument ``yes."  See also
+the options menu on the GUI.
+}\\ \cmd{bid}{
+Make a call.  For example, to bid 3 Notrump, do ``bid 3n".  Each strain
+is represented by a single letter: c for clubs, d for diamonds, h for
+hearts, s for spades, and n for notrump.  ``Bid p," ``bid pass," ``bid
+x," ``bid xx," ``bid double," and ``bid redouble" have the obvious
+meanings.  Unless you have customized the bindings (see ``bind"), the
+word ``bid" may be omitted (``3n" is the same as ``bid 3n" and so on).
+}\\ \cmd{bidButtons}{
+If you are using the GUI, by default (unless your screen is small)
+Floater displays, during the auction, a set of buttons for bidding.
+To toggle the described behavior, invoke this command.  To turn it
+off, invoke this command with the argument ``no."  To turn it on,
+invoke this command with the argument ``yes."  See also the options
+menu on the GUI.
+}\\ \cmd{bind}{
+Bind is used to create shorthand ways of specifying any command or
+sequence of commands.  For example, ``bind typ say Thanks, pard!" would
+allow you to subsequently use ``typ" as if it were a normal command.
+Another example: Blue Club players might do ``bind 1c bid 1c; explain
+Blue club: 17+ points, any distribution."
+}\\ \cmd{bottom}{
+If you are using the textual user interface, bottom is used to go to
+the bottom of the scrolling talk window.  You may also use the scroll
+command or the up and down array keys to select the portion of the
+scrolling talk window you view.
+}\\ \cmd{bug}{
+Do ``bug `arbitrarily long one-line description'" and an email message
+containing your description and a dump of some internal variables will
+be sent to floater-bugs@priam.cs.berkeley.edu.
+}\\ \cmd{bugs}{
+Display the `BUGS' file.
+}\\ \cmd{c}{
+Play your lowest club.
+}\\ \cmd{cards}{
+Remind me what my cards were at the beginning of the hand.  May also
+be used by kibitzers, with analogous meaning.
+}\\ \cmd{cc}{
+Invokes the textual user interface's convention card editor.  By
+default you will be editing your side's convention card, or NS's if
+you are not seated.  (``Editing" of a conventioning card other than
+your own is really limited to viewing; changes are not allowed.)  The
+three forms of the command are ``cc," ``cc NS," and ``cc EW."  If you are
+using the GUI, ``cc" is equivalent to ``ccdump" because there is no
+built-in editor for the GUI.
+}\\ \cmd{ccdump}{
+Show the specified convention card (e.g. ``ccdump NS").  If none is specified,
+show my convention card if I am seated or NS's otherwise.  Furthermore,
+you may also specify a range of line numbers to display (e.g. ``1-5" or
+``23-" or ``-9" or just ``17").  Put the range first, if any, first;
+so, ``ccdump -3" or ``ccdump 12-16 NS."
+}\\ \cmd{ccload}{
+Load a convention card from the named text file (e.g. ``ccload sam.cc")
+and make it the convention card for my side.  You must be seated to
+invoke the ccload command.
+}\\ \cmd{ccsave}{
+Save your current convention card to the named text file.
+}\\ \cmd{changelog}{
+Display the log of changes to Floater.
+}\\ \cmd{children}{
+Show who gets messages from me in the communication tree.  Primarily
+intended for debugging.
+}\\ \cmd{claim}{
+As declarer, suggest to the defense that you are certain of some
+number of tricks, and further play is not necessary.  The defenders
+will be shown all four hands and may then use ``accept" or ``reject" and/or
+continue playing.  Simply doing ``claim" claims the rest of the tricks;
+``claim 3" would mean a claim to make 3 of the remaining tricks;
+``claim -2" would be a claim to make all but 2 of the
+remaining tricks; ``claim 0" means concede the rest; and ``claim +3"
+would be a claim for the contract plus 3 overtricks.
+}\\ \cmd{close}{
+Stop hosting (or close) your table.  You must be hosting a table for
+this to be allowed.
+}\\ \cmd{competitive}{
+Turns on competitive mode.  This is the default.  Results will be
+reported by email for IMPs and MPs.  (Competitive mode is not relevant
+to hearts or rubber bridge.)
+}\\ \cmd{confusing}{
+Display the `CONFUSING' file.
+}\\ \cmd{copyright}{
+Display copyright and warranty information.
+}\\ \cmd{d}{
+Play your lowest diamond.
+}\\ \cmd{deal}{
+Go on to the next hand.  May only be used by the host of the table.
+}\\ \cmd{deiconifyIfBeeped}{
+Normally when you are beeped by another player (see ``beep"), your
+Floater window is deiconified if it had been iconified.  This applies
+only to the GUI.  To toggle the described behavior, invoke this
+command.  To turn it off, invoke this command with the argument ``no."
+To turn it on, invoke this command with the argument ``yes."  See also
+the options menu on the GUI.
+}\\ \cmd{disconnect}{
+Close all network connections.  You will become a ``lurker."  If you
+are hosting a table at the time you issue the command, it is
+equivalent to ``close."
+}\\ \cmd{down}{
+A variant of the ``claim" command.  For example, ``Down 2" is a claim
+for 2 fewer tricks than you have contracted for.
+}\\ \cmd{e (or east)}{
+If the East seat is available, take it.
+}\\ \cmd{east (or e)}{
+If the East seat is available, take it.
+}\\ \cmd{emailchange}{
+This command may be used to inform the Floater login server of a change in
+your email address.  (Such changes do not apply to the Floater mailing list.)
+You must be logged in to use the command, and you should specify your
+full email address as an argument to the command (e.g., ``emailchange
+bob@aol.com").
+}\\ \cmd{execute}{
+Read a file and interpret the lines of the file as if they were typed
+in on the command line at that moment.  E.g., ``execute ~/floater/foo."
+}\\ \cmd{explain}{
+Say something that everyone at the table except partner can hear.
+This is typically used to explain conventional calls to the opponents
+and kibitzers, among other things.
+}\\ \cmd{find}{
+Find information about people.  For example, ``find Joe Bob, elmo" will
+attempt to find information about the players Joe Bob and elmo.  Any
+number of names, separated by commas, is allowed.  Recent information
+about a player's location, if available, is among the things displayed.
+}\\ \cmd{follow}{
+Play the card of the named rank.  E.g. ``follow k."  Unless you have
+customized the bindings (see ``bind"), the word ``follow" may be omitted
+(``7" is the same as ``follow 7" and so on).
+}\\ \cmd{font}{
+If you are using the GUI, you may change the font size for the matrix
+and auction by doing ``font large," ``font medium," or ``font small." 
+(To change the font for the talk window, use the ``talkfont" or
+``talkfontsize" command.) 
+}\\ \cmd{h}{
+Play your lowest heart.
+}\\ \cmd{hideAuction}{
+If you are using the GUI, you may use this command to control when
+during the first trick the auction is removed from view.  The default,
+which can also be achieved by do `hideAuction -1' is to removed the
+auction after trick one.  The command `hideAuction N' (for positive N)
+will cause the auction to be hidden at the end of trick one or N
+seconds after the end of the auction, whichever comes first.
+}\\ \cmd{hideCommandLine}{
+If you are using the GUI, you may have either a talk line by itself,
+or a talk line and a command line.  Use this command with no arguments
+to toggle between the two, or use it with an argument of ``yes" or ``no"
+with the obvious meaning.  Note that commands may be executed on the talk
+line by starting the line with a slash (e.g., ``/pass").
+}\\ \cmd{hideMatrix}{
+If you are using the GUI and have a small screen, Floater will, by
+default, hide the matrix during the auction to give more room to other
+things on the screen.  (Your cards appear at the top of the Floater
+window.)  To toggle the described behavior, invoke this command.  To
+turn it off, invoke this command with the argument ``no."  To turn it
+on, invoke this command with the argument ``yes."  See also the options
+menu on the GUI.
+}\\ \cmd{host}{
+Host a table.
+}\\ \cmd{ip}{
+Display the IP address and port number that others may use to connect
+to you.
+}\\ \cmd{join}{
+Join a table.  You must specify the name of the host of the table you
+wish to join, e.g., ``join moe".  (Alternatively, you may specify an IP
+address and port separated by a colon, e.g., ``join 128.110.38.14:8765."
+Or, to join a table hosted on your local machine, you may omit the IP
+address and simply put the port number after a colon.)
+}\\ \cmd{kibbitz}{
+If you are sitting North, South, East, or West, this is the way to get up.
+}\\ \cmd{last}{
+Show the previous trick.
+}\\ \cmd{lho}{
+Say something to your left-hand opponent.  E.g. ``lho Is that for penalty?"
+}\\ \cmd{login}{
+Connect to the login server and transmit your account name and
+password.  In return, the login server will check your password and
+authenticate you to let you play under that account name.  In
+addition, a list of tables currently in play will be sent to you,
+allowing the ``tables" command to give up-to-date information.
+}\\ \cmd{make}{
+A variant of the ``claim" command.  With no arguments it is a claim to
+make the contract exactly; with a positive integer argument it is a
+claim to make a grand total of that number of tricks plus six.
+}\\ \cmd{n (or north)}{
+If the North seat is available, take it.
+}\\ \cmd{newuser}{
+Log in as a new user (see also ``login").
+}\\ \cmd{noncompetitive}{
+Turns off competitive mode.  You will play the same hands as you would
+otherwise, but results will not be reported by email.  (Not relevant
+for hearts or rubber bridge.)
+}\\ \cmd{north (or n)}{
+If the North seat is available, take it.
+}\\ \cmd{note}{
+Set the text that is listed alongside my table's name when people use
+the ``tables" command.  For example, ``note Need 1!"  You must be host
+of the table.
+}\\ \cmd{opp}{
+Say something just to your opponents.  Frequently one would use
+``explain" instead so that the kibitzers could also hear.
+}\\ \cmd{parent}{
+Show my parent in the communication tree.  Primarily intended for debugging.
+}\\ \cmd{password}{
+Change the password for an account.
+}\\ \cmd{previous}{
+Show the previous hand.
+}\\ \cmd{play}{
+Play a card.  Cards are specified suit first, rank second.  For
+example, ``play c3" would play the 3 of clubs.  Unless you have
+customized the bindings (see ``bind"), the word ``play" may be omitted
+(``c2" is the same as ``play c2" and so on).  In Hearts, this command is
+also used to add or remove a card from the set of cards you wish to
+pass to your opponent before the play of the hand.
+}\\ \cmd{quit}{
+Terminate Floater.
+}\\ \cmd{randomplay}{
+Toggle a switch that, when set, causes automatic random plays or bids
+whenever it is your turn.  Intended for debugging.
+}\\ \cmd{readme}{
+Display the `README' file.
+}\\ \cmd{redalert}{
+``Redalert some ... text ..." is equivalent equivalent to ``explain Red Alert!
+some ... text ..." and is traditionally used to self-alert bids or
+carding that is highly unusual.  ``Alert" should be used for only slightly
+unusual bids or carding.
+}\\ \cmd{reject}{
+Reject declarer's claim.  A rejection from either defender nixes the
+claim regardless of what the other defender may have done.  Others at
+the table are shown only that the claim was rejected, not by whom.
+}\\ \cmd{retract}{
+Declarer may use this command to retract a claim.
+}\\ \cmd{review}{
+Review the auction.
+}\\ \cmd{rho}{
+Say something to your right-hand opponent.  E.g. ``rho What is 2D?"
+}\\ \cmd{s}{
+If the south seat is available, try to sit down.  Otherwise, if you
+are seated and it is your turn to play a card, play your lowest spade. 
+}\\ \cmd{say}{
+Say something to everyone present.  E.g. ``say Hello There!"
+}\\ \cmd{score}{
+Select the form of scoring for subsequent deals.  The valid uses of
+the command are ``score IMP" and ``score MP."  See also ``competitive"
+and ``noncompetitive."
+}\\ \cmd{scroll}{
+If you are using the textual user interface, scroll is used to change
+which portion of the scrolling text window you view.  For example,
+``scroll -10" takes you back 10 lines; ``scroll 20" takes you forward 20
+lines.  You may also use the bottom command or the up and down array
+keys to select the portion of the scrolling talk window you view.
+}\\ \cmd{separateTalk}{
+This command applies only to the GUI.  By default, the messages (e.g.,
+from people talking) that Floater displays appear in a scrollable box
+towards the bottom of the main Floater window.  If invoked with no
+arguments, this command toggles whether that is true or whether
+Floater has a separate window just for those messages.  It also may be
+invoked with an argument of ``yes" or ``no," with the obvious meaning.
+See also the options menu in the GUI.
+}\\ \cmd{south (or s)}{
+If the South seat is available, take it.
+}\\ \cmd{spec}{
+Become a double-dummy spectator.
+}\\ \cmd{tables}{
+List all tables.
+}\\ \cmd{talkfont}{
+If you are using the GUI, you may change the font family for the talk
+window by doing, for example, ``talkfont times."  On some systems, not
+all fonts are available in all sizes.
+}\\ \cmd{talkfontsize}{
+If you are using the GUI, you may change the font size for the talk
+window by doing ``talkfontsize N" for any number N.  The number N is
+interpreted as a size in points.  One point is roughly 1/72 inch.
+}\\ \cmd{w (or west)}{
+If the West seat is available, take it.
+}\\ \cmd{warranty}{
+Display copyright and warranty information.
+}\\ \cmd{west (or w)}{
+If the West seat is available, take it.
+}\\ \cmd{who}{
+List who is at the table I am at.
+}\\ \cmd{whois}{
+An IRC user suggested that ``whois" should be interchangeable with
+``find" in Floater.  See find.
+}\\ \cmd{.}{
+Play your smallest card of the suit led.
+}
+\end{document}

@@ -1,0 +1,86 @@
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2
+#
+# The contents of this file are subject to the Mozilla Public License Version 
+# 1.1 (the "License"); you may not use this file except in compliance with 
+# the License. You may obtain a copy of the License at 
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is the Floater Bridge Network.
+#
+# The Initial Developer of the Original Code is
+# Geoff Pike  <pike@EECS.Berkeley.EDU>.
+# Portions created by the Initial Developer are Copyright (C) 1996--2003
+# the Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#    Lex Spoon <lex@cc.gatech.edu>
+#
+# Alternatively, the contents of this file may be used under the terms
+# of either the GNU General Public License Version 2 or later (the
+# "GPL"), in which case the provisions of the GPL are applicable instead
+# of those above. If you wish to allow use of your version of this file
+# only under the terms of the GPL, and not to allow others to use your
+# version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the
+# notice and other provisions required by the GPL. If you do not delete
+# the provisions above, a recipient may use your version of this file
+# under the terms of either the MPL or the GPL.
+# ***** END LICENSE BLOCK *****
+
+# This file is a Jamfile for the Floater client.  You need to install
+# jam before you can use it:
+#
+#           http://www.perforce.com/jam/jam.html
+#
+# If this file has the name "Jamfile.in" then it is a template for a
+# Jamfile; to generate the actual Jamfile, run "./configure" in the
+# root directory of the Floater distribution.  If "configure" is not
+# present in that directory, then you first need to run "autoconf" to
+# generate it from "configure.ac".
+
+
+SubDir TOP res2html ;
+
+# optional files to include
+if $(windows) = yes {
+    platform_source_files = winico.o maximize.c winMain.c ;
+} else {
+    platform_source_files = ;
+}
+
+
+###  the actual build rules ###
+
+res2html_sources =  res2html.c 
+                    tickler.c main.c commandhash.c alloc.c floatcmd.c
+                    comm.c rand.c deal.c stringlist.c br.c UI.c
+                    UIback.c UIback-curses.c UIback-tk.c bits.c
+                    util.c result.c score.c calendar.c help.c autohelp.c
+                    bug.c text.c floatcl.c $(platform_source_files) ;
+
+if $(windows) = yes {
+    LINKFLAGS on <res2html>res2html += -mwindows ;
+}
+LINKLIBS on <res2html>res2html += $(LIBS) ;
+
+SAVED_CCFLAGS = $(CCFLAGS) ;
+CCFLAGS += -DRES2HTML ;
+Main <res2html>res2html : $(res2html_sources) ;
+CCFLAGS = $(SAVED_CCFLAGS) ;
+
+
+Tcl_In_C <res2html>floatcl.c : $(tcldir)/floatert.tcl $(tcldir)/res2html.tcl $(tcldir)/rs.tcl ;
+
+Autohelp <res2html>autohelp.c : <res2html>ref ;
+
+
+if $(windows) = yes {
+  WindRes <res2html>winico.o : <res2html>winico.rc ;
+  DEPENDS <res2html>winico.o $(artdir)/icons/floater.ico ;
+}

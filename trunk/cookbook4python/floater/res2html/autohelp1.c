@@ -1,0 +1,1 @@
+../common/autohelp1.c

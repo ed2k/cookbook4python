@@ -1,0 +1,541 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the KWOTELicenseKWOTE); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an KWOTEAS ISKWOTE basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *   Lex Spoon <lex@cc.gatech.edu>
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the KWOTEGPLKWOTE), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/* menu.tcp - the menu bar for the Tcl/Tk GUI
+ *
+ * $Id: menu.tcp,v 1.10 2004/09/25 13:44:53 lexspoon Exp $
+ */QTABQ 
+
+#ifndef CASCADING_FONT_MENU
+#define CASCADING_FONT_MENU 1
+#endif
+
+global m
+
+// Add a menu item that invokes a given Floater command (as if typed by user).
+proc simple {label {command <none>}} {
+    global m
+
+    if {KWOTE<none>KWOTE == $command} {set command $label}
+    $m add command -label $label -command KWOTEcommand \KWOTE$command\KWOTEKWOTE
+//    puts KWOTE$m add command -label $label -command \KWOTEcommand \KWOTE$command\KWOTE\KWOTEKWOTE
+}
+
+// Add a radiobutton menu item that invokes a given Floater command
+// (as if typed by user).
+proc addrb {var label {command <none>} {value <none>}} {
+    global m
+
+    if {KWOTE<none>KWOTE == $command} {set command $label}
+    if {KWOTE<none>KWOTE == $value} {set value $label}
+    $m add radiobutton -label $label -command KWOTEcommand \KWOTE$command\KWOTEKWOTE \
+QTABQ     -variable $var -value KWOTE$valueKWOTE
+}
+
+// Create a cascaded menu and optionally add some simple commands.
+proc cascade {label {subcommands {}}} {
+    global m
+
+    $m add cascade -label $label -menu [set m2 KWOTE$m.cas$labelKWOTE]
+    menu $m2 -tearoff no
+    set oldm $m
+    set m $m2
+    foreach sub $subcommands {
+QTABQ eval KWOTEsimple $subKWOTE
+    }
+    set m $oldm
+    return $m2
+}
+
+// Create a cascaded menu and optionally add some radiobuttons.
+proc rcascade {label var {subcommands {}}} {
+    global m
+
+    $m add cascade -label $label -menu [set m2 KWOTE$m.cas[join $label _]KWOTE]
+    menu $m2 -tearoff no
+    set oldm $m
+    set m $m2
+    foreach sub $subcommands {
+QTABQ eval KWOTEaddrb $var $subKWOTE
+    }
+    set m $oldm
+    return $m2
+}
+
+
+set m [menu .menu.file -tearoff no]
+.menu add cascade -menu $m -label File -underline 0
+
+
+#if 0
+if $macintosh {
+    .menu add cascade -menu .menu.apple
+    menu .menu.apple -tearoff no
+    .menu.apple add command -label KWOTEAbout...KWOTE -command {command about}
+} else {
+    .menu.file add command -label KWOTEAbout...KWOTE -command {command about}
+//QTABQ -underline 0 -accelerator KWOTE<F1>KWOTE
+    .menu.file add separator
+}
+#endif
+
+simple KWOTELogin...KWOTE login
+simple KWOTEChange Password...KWOTE password
+simple KWOTELoad CC...KWOTE ccload 
+simple KWOTESave CC...KWOTE ccsave
+#if 0
+simple KWOTEExecute File...KWOTE execute
+#endif
+set needseated_fmenu_entries {2 3}
+$m add separator
+simple Quit
+
+// join menu ////////////////////////////////////////////////////////////////
+
+set m [menu .menu.join -tearoff no]
+.menu add cascade -menu $m -label Join -underline 0
+
+proc no_tables_to_join {b} {
+    if $b {
+QTABQ global join_menu_length join_menu
+QTABQ .menu.join delete 0 end
+QTABQ .menu.join add command -label KWOTE(none)KWOTE -state disabled
+QTABQ .menu.join add separator
+QTABQ .menu.join add command -label KWOTECheck for tablesKWOTE \
+QTABQ QTABQ -command KWOTEcommand tablesKWOTE
+QTABQ set join_menu_length 0
+QTABQ foreach i [array names join_menu] { unset join_menu($i) }
+    } else {
+QTABQ catch {.menu.join delete KWOTE(none)KWOTE}
+    }
+}
+
+no_tables_to_join 1
+
+proc join_menu_add_table {name fullname} {
+    global join_menu_length join_menu
+
+    if [info exists join_menu($name)] {
+QTABQ if {$fullname != $join_menu($name)} {
+QTABQ     .menu.join entryconfigure $join_menu($name) -label $fullname
+QTABQ     set join_menu($name) $fullname
+QTABQ }
+QTABQ return
+    }
+    if {[incr join_menu_length] == 1} {no_tables_to_join 0}
+    set join_menu($name) $fullname
+    .menu.join insert 0 command -label $fullname -command KWOTEcommand \KWOTEjoin $name\KWOTEKWOTE
+}
+
+proc join_menu_remove_table {name} {
+    global join_menu_length join_menu
+
+    if ![info exists join_menu($name)] return
+    .menu.join delete $join_menu($name)
+    if {[incr join_menu_length -1] == 0} {
+QTABQ no_tables_to_join 1
+    } else {
+QTABQ unset join_menu($name)
+    }
+}    
+
+// table menu ////////////////////////////////////////////////////////////////
+
+set m [menu .menu.table -tearoff no]
+.menu add cascade -menu $m -label Table -underline 0
+
+simple Host
+$m add separator
+cascade Sit {North South East West}
+simple Stand
+$m add separator
+cascade Kibitz
+$m.casKibitz configure -postcommand {update_kibitz_menu}
+simple Spec
+$m add separator
+cascade Unseat
+$m.casUnseat configure -postcommand {update_unseat_menu}
+cascade Communications {Disconnect {KWOTEShow ParentKWOTE parent} \
+QTABQ {KWOTEShow ChildrenKWOTE children} {KWOTEShow Net LocationKWOTE ip}}
+simple KWOTEShow whokwerts hereKWOTE who
+simple KWOTEBeep everyoneKWOTE beep
+set needtable_tmenu_entries {2 3 5 6 8 9 10 11 12}
+
+
+// return the name of the player seated at a specified compass
+// direction, or an empty string if there is no player there
+proc playername_atcompass {compassdir} {
+    global playername position
+    foreach p {lho rho pard self} {
+        if [info exists position($p)] {
+            if [info exists playername($p)] {
+                if [string equal $position($p) $compassdir] {
+                    set name $playername($p)
+                    if {[string first KWOTE(KWOTE $name] == -1} {
+                        return $name
+                    }
+                }
+            }
+        }
+    }
+    return KWOTEKWOTE
+}
+
+// return whether the seat at a specified compass direction is occupied
+proc compassdir_occupied {compassdir} {
+    if [string equal [playername_atcompass $compassdir] KWOTEKWOTE] {
+        return 0
+    } else {
+        return 1
+    }
+}
+
+// return a string with a playername and a compass direction, if possible;
+// if not, return a full string for the compass direction.  The
+// compassdir should be N, S, E, or W
+proc compass_description {compassdir} {
+    set name [playername_atcompass $compassdir]
+    if [ string equal $name KWOTEKWOTE ] {
+        if [ string equal $compassdir KWOTENKWOTE ] { return KWOTENorthKWOTE }
+        if [ string equal $compassdir KWOTESKWOTE ] { return KWOTESouthKWOTE }
+        if [ string equal $compassdir KWOTEEKWOTE ] { return KWOTEEastKWOTE }
+        if [ string equal $compassdir KWOTEWKWOTE ] { return KWOTEWestKWOTE }
+        floaterror KWOTE$compassdir is an invalid compass directionKWOTE
+    } else {
+        return KWOTE$name ($compassdir)KWOTE
+    }
+}
+
+proc update_kibitz_menu {} { 
+    global m
+
+    set m .menu.table.casKibitz
+
+    $m delete 0 end
+
+    simple None  {kibitz 0}
+    foreach dir {N S E W} {
+        simple [compass_description $dir]  KWOTEkibitz $dirKWOTE
+    }
+}
+
+
+proc update_unseat_menu {} {
+    global m
+
+    set m .menu.table.casUnseat
+
+    $m delete 0 end
+
+    foreach dir {N S E W} {
+        if [compassdir_occupied $dir] {
+            simple [compass_description $dir]  KWOTEunseat $dirKWOTE
+        }
+    }
+}
+
+// bridge menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.bridge -tearoff no]
+.menu add cascade -menu $m -label Bridge -underline 0
+
+global claimmenu
+set claimmenu [cascade Claim]
+foreach i {13 12 11 10 9 8 7 6 5 4 3 2 1 0} {
+    $claimmenu add command -label KWOTE$i tricksKWOTE -command KWOTEGUIclaim $iKWOTE
+}
+simple KWOTEAccept claimKWOTE accept
+simple KWOTEReject claimKWOTE reject
+simple KWOTERetract claimKWOTE retract
+simple Review
+simple KWOTEShow initial cardsKWOTE cards
+simple KWOTEShow last trickKWOTE last
+simple KWOTEShow EW CCKWOTE {ccdump EW}
+simple KWOTEShow NS CCKWOTE {ccdump NS}
+$m add separator
+set scoringmenu [cascade Scoring]
+$scoringmenu add radiobutton -label IMP -command KWOTEcommand \KWOTEscore IMP\KWOTEKWOTE \
+QTABQ -variable radioscoring
+$scoringmenu add radiobutton -label MP -command KWOTEcommand \KWOTEscore MP\KWOTEKWOTE \
+QTABQ -variable radioscoring
+$scoringmenu add radiobutton -label Rubber \
+QTABQ -command KWOTEcommand \KWOTEscore Rubber\KWOTEKWOTE \
+QTABQ -variable radioscoring -value RUBBER
+$scoringmenu add radiobutton -label Hearts \
+QTABQ -command KWOTEcommand \KWOTEscore Hearts\KWOTEKWOTE \
+QTABQ -variable radioscoring -value HEARTS
+$scoringmenu add separator
+$scoringmenu add radiobutton -label Competitive \
+QTABQ -command KWOTEcommand competitiveKWOTE -variable radiocompetitive
+$scoringmenu add radiobutton -label Noncompetitive \
+QTABQ -command KWOTEcommand noncompetitiveKWOTE -variable radiocompetitive
+.menu.bridge entryconfigure 10 -state disabled // disable scoring menu
+proc menus_tablehost {b {scoring {}} {competitive {}}} {
+    global radiocompetitive radioscoring scoringmenu
+
+    set radioscoring $scoring
+    set radiocompetitive $competitive
+    if $b {set setting normal} {set setting disabled}
+    .menu.bridge entryconfigure 10 -state $setting
+    .menu.bridge entryconfigure 11 -state $setting
+}    
+simple KWOTEDeal next handKWOTE deal
+.menu.bridge entryconfigure 11 -state disabled // disable deal
+simple KWOTEShow previous dealKWOTE previous
+set needbridge_bmenu_entries {0 1 2 3 4 5 6}
+set needtable_bmenu_entries {7 8} // for deal and scoring see menus_tablehost
+.menu.bridge entryconfigure 12 -state disabled // initially, no previous deal
+proc menus_enable_previous {} { .menu.bridge entryconfigure 12 -state normal }
+
+// options menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.options -tearoff no]
+.menu add cascade -menu $m -label Options -underline 0
+
+$m add checkbutton -label KWOTECompact GUIKWOTE -command {gui_compact $gui_compact_} -variable gui_compact_
+/* if $gui_compact_ { $m invoke last } */
+$m add checkbutton -label KWOTESeparate talk windowKWOTE -command {command KWOTEseparateTalk $separateTalk_KWOTE} -variable separateTalk_
+$m add checkbutton -label KWOTEBeep at my turnKWOTE -command {command KWOTEbeepAtMyTurn $beepAtMyTurn_KWOTE} -variable beepAtMyTurn_
+$m add checkbutton -label KWOTEDeiconify if Ikwertm beepedKWOTE -command {command KWOTEdeiconifyIfBeeped $deiconifyIfBeeped_KWOTE} -variable deiconifyIfBeeped_
+rcascade KWOTEEntry lines shownKWOTE entryLinesShown_ \
+                        {{KWOTEtalkKWOTE KWOTEshowEntryLines talkKWOTE talk}
+   QTABQ QTABQ          {KWOTEcommandKWOTE KWOTEshowEntryLines commandKWOTE command}
+QTABQ QTABQ QTABQ  {KWOTEbothKWOTE KWOTEshowEntryLines bothKWOTE both}}
+rcascade KWOTEHide auctionKWOTE auction_hide_time \
+QTABQ QTABQ QTABQ {{KWOTEafter first trickKWOTE KWOTEhideAuction -1KWOTE -1}
+QTABQ QTABQ QTABQ  {KWOTEend of auction + 5 secondsKWOTE KWOTEhideAuction 5KWOTE 5}
+QTABQ QTABQ QTABQ  {KWOTEend of auction + 10 secondsKWOTE KWOTEhideAuction 10KWOTE 10}}
+
+$m add separator
+$m add command -label KWOTEBridge FontKWOTE -state disabled
+tryset radiofont Medium
+$m add radiobutton -label KWOTELargeKWOTE -command KWOTEcommand \KWOTEfont large\KWOTEKWOTE -variable radiofont
+$m add radiobutton -label KWOTEMediumKWOTE -command KWOTEcommand \KWOTEfont medium\KWOTEKWOTE -variable radiofont
+$m add radiobutton -label KWOTESmallKWOTE -command KWOTEcommand \KWOTEfont small\KWOTEKWOTE -variable radiofont
+
+// font menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.font -tearoff no]
+.menu add cascade -menu $m -label Font -underline 2
+foreach f [lsort [fontfamilies]] {
+#if CASCADING_FONT_MENU
+    set firstchar [string index $f 0]
+    if {![info exists prev] || $firstchar != $prev} {
+QTABQ set submenu [cascade [set prev $firstchar]]
+    }
+    $submenu add radiobutton -label $f -command KWOTEupdatetalkfontfam \{$f\}KWOTE \
+QTABQ     -variable fontfam
+#else
+    $m add radiobutton -label $f -command KWOTEupdatetalkfontfam \{$f\}KWOTE \
+QTABQ     -variable fontfam
+#endif
+            
+}
+set fontfam [lindex $talkfont 0]
+
+// fontsize menu //////////////////////////////////////////////////////////
+
+set m [menu .menu.fontsize -tearoff no]
+.menu add cascade -menu $m -label Fontsize -underline 4
+foreach s {8 9 10 11 12 14 18 24 28 32 36} {
+    $m add radiobutton -label $s -command KWOTEupdatetalkfontsize $sKWOTE \
+QTABQ     -variable fontsiz
+}
+set fontsiz [lindex $talkfont 1]
+
+// help menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.help -tearoff no]
+if $macintosh { set h Docs } else { set h Help }
+.menu add cascade -menu $m -label $h -underline 0
+
+simple KWOTEAboutKWOTE about
+$m add separator
+
+proc prevchar {c} {
+    scan $c %c i
+    format %c [incr i -1]
+}
+
+proc menus_helpcommands {commands} {
+    global m help_texts
+
+    set m .menu.help
+    set endchars \[fq\]
+    set begin a
+    foreach s $commands {
+QTABQ if {![string match KWOTE*(*KWOTE $s] && ![string match KWOTE*)*KWOTE $s]} {
+QTABQ     if {[regexp $endchars [set first [string range $s 0 0]]] &&
+QTABQ     ![info exists doneit($first)]} {
+QTABQ QTABQ set doneit($first) 1
+QTABQ QTABQ cascade KWOTE$begin-[prevchar $first]KWOTE $w
+QTABQ QTABQ set begin $first
+QTABQ QTABQ set w {}
+QTABQ     }
+QTABQ     lappend w KWOTE$s \KWOTEhelp $s\KWOTEKWOTE
+QTABQ }
+    }
+    if {$w != {}} {cascade $begin-z $w}
+
+    $m add separator
+    foreach text $help_texts {
+QTABQ simple $text
+    }
+}
+
+// The below assumes KWOTEAccept claimKWOTE and KWOTEReject claimKWOTE are entries 1 and 2 and
+// KWOTERetract claimKWOTE is 3.
+
+proc menus_noclaim {} {
+    foreach i {1 2 3} {
+QTABQ .menu.bridge entryconfigure $i -state disabled
+    }
+}
+
+proc menus_defclaim {} {
+    foreach i {1 2} {
+QTABQ .menu.bridge entryconfigure $i -state normal
+    }
+}
+
+proc menus_declclaim {} {
+    .menu.bridge entryconfigure 3 -state normal
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+// n is which entry to modify (# of tricks); setting is 1 or 0
+proc claimable {n setting} {
+    global claimmenu
+
+    set n [expr 13 - $n]
+    if $setting {set setting normal} {set setting disabled}
+    $claimmenu entryconfigure $n -state $setting
+}
+
+// a claim for n tricks total
+proc GUIclaim {n} {
+    global contract_tricks
+
+//    puts KWOTEGUIclaim $nKWOTE
+    if ![info exists contract_tricks] return
+    if {$n >= $contract_tricks} {
+QTABQ command KWOTEmake [expr $n - 6]KWOTE
+    } else {
+QTABQ command KWOTEdown [expr $contract_tricks - $n]KWOTE
+    }
+}
+
+proc update_claimmenu {decltricks deftricks} {
+//  talkmsg KWOTEupdate_claimmenu $decltricks $deftricksKWOTE
+    set max [expr 13 - $deftricks]
+    for {set i 0} {$i <= 13} {incr i} {
+QTABQ if {$i < $decltricks || $i > $max} {
+QTABQ     claimable $i 0
+QTABQ } else {
+QTABQ     claimable $i 1
+QTABQ }
+    }
+}    
+
+// if I am declarer, enable claim menu option; otherwise disable
+proc menus_declaring {b} {
+    if $b {set setting normal} {set setting disabled}
+    .menu.bridge entryconfigure 0 -state $setting
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+set bridge_menus_state 1 // normally 0 or 1
+
+proc activate_bridge_menus {b} {
+    global bridge_menus_state needbridge_bmenu_entries
+
+    if {$b == $bridge_menus_state} return
+    
+    if [set bridge_menus_state $b] {set setting normal} {set setting disabled}
+    foreach n $needbridge_bmenu_entries {
+QTABQ .menu.bridge entryconfigure $n -state $setting
+    }
+//    for {set i 0} {$i <= 13} {incr i} {claimable $i $bridge_menus_state}
+}
+
+proc menus_newhand {} {
+    activate_bridge_menus 1
+    menus_noclaim
+    menus_declaring 0
+}
+
+proc menus_nobridge {} {activate_bridge_menus 0; menus_noclaim}
+
+menus_nobridge
+
+
+set seated_menus_state 1
+
+proc activate_seated_menus {b} {
+    global seated_menus_state needseated_fmenu_entries
+
+    if {$b == $seated_menus_state} return
+    
+    if [set seated_menus_state $b] {set setting normal} {set setting disabled}
+    foreach n $needseated_fmenu_entries {
+QTABQ // .menu.file.m entryconfigure $n -state $setting
+QTABQ .menu.file entryconfigure $n -state $setting
+    }
+    if !$b {menus_noclaim; menus_declaring 0}
+}
+
+activate_seated_menus 0
+
+
+set table_menus_state 1
+
+proc activate_table_menus {b} {
+    global table_menus_state needtable_bmenu_entries needtable_tmenu_entries
+
+    if {$b == $table_menus_state} return
+    if !$b {activate_seated_menus 0; menus_tablehost 0}
+    
+    if [set table_menus_state $b] {set setting normal} {set setting disabled}
+    foreach n $needtable_bmenu_entries {
+QTABQ .menu.bridge entryconfigure $n -state $setting
+    }
+    foreach n $needtable_tmenu_entries {
+QTABQ .menu.table entryconfigure $n -state $setting
+    }
+}
+
+activate_table_menus 0

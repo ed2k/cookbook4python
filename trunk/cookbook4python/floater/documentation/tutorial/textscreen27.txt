@@ -1,0 +1,25 @@
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP3                   D                                                 
+EW vul.                       C                                                 
+S dealt                       -----------------                                 
+               David (E)     |       ?         | Franco (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             |                 | H              .    ?          
+               D             |                 | D              .               
+               C             |                 | C              .               
+                              -----------------                 .               
+                     Buzz (N) S J872                            .               
+                              H QT                              .               
+                              D QJ987                           .               
+                              C 74                              .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+Franco: "sorry pard, my fault for not reaching 7                                
+` Result successfully reported by email                                         
+Result: -+> 15Sep96IMP2 <+-                                                     
+Result: 6H by E, -1010 (0.0 IMPs); 1H 1S 2D 3C 3H 4N 5C 6H; CQ led              
+Result:   Buzz(N) Jonathan(S) David(E) Franco(W)                                
+` New hand is 15Sep96IMP3; South dealt                                          
+` Displaying hand 15Sep96IMP3                                                   

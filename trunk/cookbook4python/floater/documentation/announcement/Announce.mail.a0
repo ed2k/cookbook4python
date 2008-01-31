@@ -1,0 +1,146 @@
+Floater version a0 is now available!  Use anonymous ftp to
+helen.cs.berkeley.edu and look in the pub/pike directory.
+
+Enclosed is the README file which includes detailed installation
+instructions.  Check the Floater web page for more information.
+
+This is just a preliminary release; some features (such as team games)
+aren't there yet, and quite a few things could be more polished.  The
+basics are there though.
+
+I hope to see you at the table!
+
+cheers,
+
+Geoff Pike
+pike@cs.berkeley.edu
+
+-----------------------------------------------------------------------------
+
+			       Floater
+		     (Version a0; April 22, 1996)
+
+			    by Geoff Pike
+			 pike@cs.berkeley.edu
+
+
+This is a preliminary release.  Not all features are present; there are bugs.
+Please read this file as well as the files called BUGS and CONFUSING.
+
+Please check the Floater web page at http://http.cs.berkeley.edu/~pike/floater
+for the most up to date information.  Be prepared to install new
+(prelimiary) versions once every few weeks until version 1.0 is ready.
+
+
+Installation instructions:
+--------------------------
+
+Please read carefully.  If you have never edited a Makefile before, you
+will find this difficult.
+
+If you have problems, please consult the web page to see if there are
+notes from others who may have tried compiling Floater on your
+architecture/OS.  Send bugs to floater-bugs@priam.cs.berkeley.edu, and
+also please send descriptions of what you had to modify to get Floater
+to work on your system.  When sending email about problems that you
+have not yet been able to solve, please clearly indicate what you have
+tried so far.
+
+Almost all of the difficult-to-port features of Floater are
+implemented by using Tcl-DP, Tcl, and Tk, which have already been
+ported to many different machines.  Floater should run on a variety of
+machines with no problem.  It is known to compile on Suns (SunOS 4.1),
+HPs (HP/UX), and Silicon Graphics (IRIX).  Don't be intimidated by the
+amount of software you may need to install---the autoconf scripts
+really work and next to nothing needs to be fixed by hand.
+
+Floater has two versions---textual and graphical.  Both require Tcl
+7.3 and Tcl-DP 3.2, which are freely available---see below.  In
+addition, the graphical version requires Tk 3.6 and the text version
+requires System V style curses or ncurses (GNU's free replacement for
+curses).  Note that the stated version numbers are required.  When a
+stable version of Tcl-DP that works with a more recent release of
+Tcl/Tk becomes available, Floater will switch to that.  Until then, we
+are stuck with Tcl-DP 3.2 which requires Tcl 7.3 / Tk 3.6.  One effect
+of this is that the textual and graphical versions of Floater must be
+separate executables.  This problem will be fixed by the next release
+of Tcl-DP.
+
+BSD users without ncurses should have it installed anyway, as the
+maintainer of BSD curses has publically announced that he is no longer
+supporting it and he encourages people to switch to ncurses.  If you
+are unsure whether you need ncurses to use Floater, try it first
+without ncurses.  You may get ncurses by anonymous ftp from prep.ai.mit.edu
+in the /pub/gnu directory.
+
+
+Detailed instructions follow.
+
+0. Floater more or less requires UNIX and 32-bit integers.  Brave
+souls who try to install it without those things may succeed but with
+some difficulty.
+
+1. If your site doesn't have it, install Tcl 7.3, available by
+anonymous ftp from ftp.smli.com in the directory /pub/tcl.  If you
+want to be able to use the graphical user interface, you will also
+need to install Tk 3.6, available from the same place.
+
+2. If you want to be able to use the textual user interface, you may
+or may not need ncurses.  System V users and many BSD users should
+either not need it or already have it.  See above.
+
+3. Get Tcl-DP 3.2 by anonymous ftp from mm-ftp.cs.berkeley.edu in the
+/pub/Tcl-DP directory.  Uncompress the tar file (either
+tcl-dp3.2.tar.Z or tcl-dp3.2.tar.gz).  Then do:
+	tar xvf tcl-dp3.2.tar
+
+This will create a directory call tcl-dp3.2 that contains source code
+for dpwish, dpsh and other good stuff.  Floater is a modified version
+of dpwish; Floatert (the text version of Floater) is a modified
+version of dpsh.  Before doing anything in the tcl-dp3.2 directory, we
+are going to overwrite parts of it.  (This installation procedure does
+not install a working version of Tcl-DP 3.2 on your system.  You may
+do that separately, if you wish.)
+
+4. Get the compressed Floater tar file by anonymous ftp from
+helen.cs.berkeley.edu in the /pub/pike directory, or from the Floater
+web page.  Uncompress the tar file.  Put it in the tcl-dp3.2 directory
+that was created in step 3.  Then, in that directory, do:
+	chmod +w *
+	chmod +w dplite/*
+	tar xvf floater*.tar
+
+Now, if you wish to install the GUI/Tk/X windows version of Floater:
+
+5. Run the configure script by doing:
+	./configure
+
+This creates a Makefile.
+
+6. Do "make".  It probably won't work.  If not, edit the file
+Makefile.in to try to set up the paths for various libraries, etc., as
+necessary.  More instructions are in that file.  Each time you edit
+Makefile.in, do "make Makefile" to regenerate the Makefile, and then
+do (just) "make" again.  (Actually, on some systems you can just do
+"make" and it will automatically recreate the Makefile and then try to
+recompile.)
+
+7. (Optional) Do "make install" to put the program and its
+associated data (.tcl files in this case) into standard locations
+(e.g. /usr/local).  If you don't do "make install," then users may
+need to set the environment variables DP_LIBRARY and FLOATER_LIBRARY
+to (whatever)/tcl-dp3.2/library and (whatever)/tcl-dp3.2/tclcode,
+respectively, unless you have cleverly set these things up already (in
+the Makefile or Makefile.in).
+
+To install the text version of Floater follow steps 5 through 7, but
+in the directory .../tcl-dp3.2/dplite rather than .../tcl-dp3.2.
+In general, you should try to compile both versions of the program.
+The executables will be called floater and floatert.
+
+
+The -g flag to the C compiler was left on so that in the event of a
+crash, particularly helpful people might decide to get a stack trace
+from the core dump and email it to floater-bugs@priam.cs.berkeley.edu.
+You may wish to change the compilation flags (e.g. get rid of -g and
+put in -O) and/or strip the executable.

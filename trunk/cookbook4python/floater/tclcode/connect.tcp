@@ -1,0 +1,261 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the "GPL"), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+gset conn_number 0
+
+gset default_handshake "Floater 'shake"
+gset you_may_host "you may host"
+gset silent_handshake "Floater silent 'shake"
+gset test_connection_succeeded 0
+
+// listen on a socket---return port number
+proc FloaterListen {{port 0}} {
+    global localIPaddr0
+    PortNumber [socket -server FloaterAcceptConnection $port]
+}
+
+proc FloaterAcceptConnection {sock addr port} {
+    debugmsg "AcceptConnection $sock $addr $port"
+    return [FloaterNewSocket $sock]
+}
+
+proc FloaterReadable {conn sock} {
+    global expecting_handshake floater_silent default_handshake you_may_host
+
+    debugmsg "FloaterReadable $conn $sock"
+    set s [gets $sock]
+    debugmsg "Got $s from $conn"
+    if [info exists expecting_handshake($conn)] {
+	debugmsg "expecting handshake"
+	if {$s == $default_handshake} {
+	    // we're happy
+	    unset expecting_handshake($conn)
+	    return
+	} elseif {$s == $you_may_host} {
+	    // also happy
+	    unset expecting_handshake($conn)
+	    gset test_connection_succeeded 1
+	    return
+	} else {
+	    if $floater_silent {
+		global silent_handshake
+		if {$s == $silent_handshake} {
+		    global floater_silent_conns
+		    set floater_silent_conns($conn) 1
+		    unset expecting_handshake($conn)
+		    return
+		}
+	    }
+	    debugmsg "Expecting handshake but got $s"
+	}
+	// no handshake---close it
+	FloaterClose $conn
+	return
+    }
+
+    if {$s == "" && [eof $sock]} \
+	    {FloaterClose $conn} \
+	    {debugmsg "received $s"; floaterreceive $s $conn}
+}
+
+// currently unused
+proc FloaterWritable {conn sock} {
+    debugmsg "FloaterWritable $conn $sock"
+}
+
+// Connect to the socket at the given place; return a connection
+proc FloaterConnect {addr port {handshake default}} {
+    debugmsg "FloaterConnect $addr $port"
+    FloaterNewSocket [socket $addr $port] $handshake
+}
+
+// Used by FloaterConnect and FloaterAcceptConnection to set up a new socket 
+// for bidirectional non-blocking use.
+proc FloaterNewSocket {sock {handshake default}} {
+    global sock_to_conn conn_to_sock conn_number expecting_handshake
+
+    if {$handshake == "default"} {
+	global default_handshake
+	set handshake $default_handshake
+    }
+    debugmsg "NewSocket $sock $handshake"
+    fconfigure $sock -blocking 0 -buffering line
+    set conn [incr conn_number]
+    set sock_to_conn($sock) $conn
+    set conn_to_sock($conn) $sock
+    set expecting_handshake($conn) 1
+//  fileevent $sock writable "FloaterWritable $conn $sock"
+    fileevent $sock readable "FloaterReadable $conn $sock"
+    if {$handshake != ""} {
+	puts $sock $handshake
+	debugmsg "sent handshake ($handshake) to $conn"
+    }
+    return $conn
+}
+
+proc PortNumber {sock} {
+    lindex [fconfigure $sock -sockname] 2
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+// in ms, how long to wait after a failed send before closing the connection
+tryset failedsendwait 3000
+// note that no retry is done---the wait is just to allow "the air to clear"
+
+// send a message; on failure, close the connection
+proc FloaterSend {to msg} {
+    global conn_to_sock
+
+    catch {set s $conn_to_sock($to)}
+
+#ifdef DEBUG
+#ifndef TEXT
+    puts stdout "Send $to ($s) $msg"
+#endif
+#endif
+    debugmsg "Send $to ($s) $msg"
+
+    if [catch {puts $s $msg}] {
+	global failedsendwait
+
+	after $failedsendwait \
+	    debugmsg \"Closing $s due to failed send\"; \
+	    catch \{close $s\}
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+proc FloaterCloseName {name} {
+    global name_to_conn
+
+    set s "<none>"
+    catch {set s $name_to_conn($name)}
+    debugmsg "FloaterCloseName $name ($s)"
+    if {$s != "<none>"} {
+	catch {
+	    FloaterClose $s
+	    unset "name_to_conn($name)"
+	}
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// guess at an IP address for the local host; a better
+// one will be grabbed whenever the client logs in.
+/////////////////////////////////////////////////////////////////////////////
+
+#if 0  // it is not a good approach to search through ifconfig output;
+       // it only works on certain OS's, and it easily gives bogus
+       // addresses.  A better way is now used: as soon as there is
+       // a connection to the login server, the address on the connection
+       // to the login server is noted.  Really, the address on *any*
+       // successful connection should be noted....  XXX
+// f is a filename (or "|program args ...").  r is a regular expression with
+// one parenthesized component.  For each line, if the regexp matches,
+// lappend the parenthesized component of the match to the result.
+proc filter_regexp {f r} {
+    set f [open $f r]
+    set result ""
+    while {[gets $f s] >= 0} {
+	if [regexp $r $s all a] { lappend result $a; set q yes } { set q no }
+	// puts "Checking $s against regexp $r: $q"
+    }
+    catch { close $f }
+    // puts "filter result: $result"
+    return $result
+}
+
+// Run ifconfig and try to parse out an IP address.  Should work on
+// Linux and some other UNIX variants.  Try running "ifconfig ppp0"
+// first and if that fails then just do ifconfig.  Assumes an IP
+// address is four numerals separated by periods and ignores 127.0.0.1.
+proc IP_from_ifconfig {} {
+    set r {inet addr:([0-9]+[.][0-9]+[.][0-9]+[.][0-9]+)}
+    set s ""
+    catch {set s [filter_regexp "|ifconfig ppp0" $r]}
+    if {$s == ""} {
+	catch {set s [filter_regexp "|ifconfig" $r]}
+    }
+
+    set result ""
+    foreach p $s {
+	if {$p != "127.0.0.1"} {
+	    if {$result == ""} {set result $p} {set result $p!$result}
+	}
+    }
+    return $result
+}
+
+#endif
+
+// Check for really bogus IP addresses
+proc bogusIP {s} {
+    if {$s == "localhost"} { return 1 }
+    if {$s == "localhost.localdomain"} { return 1 }
+    if {$s == "127.0.0.1"} { return 1 }
+    if {$s == "0.0.0.0"} { return 1 }
+    if {$s == "255.255.255.255"} { return 1 }
+    return 0
+}
+
+proc filter_and_join {s filter joiner} {
+    set result ""
+    foreach k $s {
+	if ![$filter $k] { lappend result $k }
+    }
+    join $result $joiner
+}
+
+proc nothing {sock ipaddr port} {}
+
+
+set localIPaddr 127.0.0.1
+
+catch {
+    set server [socket -server nothing 0]
+    set socket [socket [info hostname] [PortNumber $server]]
+    set localIPaddr0 [lindex [fconfigure $socket -peername] 0]
+    set localIPaddr1 [lindex [fconfigure $socket -peername] 1]
+    catch {close $socket}
+    catch {close $server}
+    set localIPaddr \
+	    [filter_and_join "$localIPaddr0 $localIPaddr1" bogusIP !]
+
+    if {$localIPaddr == ""} {
+        set localIPaddr 127.0.0.1
+    }
+
+}
+

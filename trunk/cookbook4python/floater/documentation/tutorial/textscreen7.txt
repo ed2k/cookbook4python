@@ -1,0 +1,25 @@
+Floater 1.0beta       (North) S                                                 
+Connected                     H                                                 
+                              D                                                 
+                              C                                                 
+                              -----------------                                 
+               Franco (W)    |                 | David (E)                      
+               S             |                 | S                              
+               H             |                 | H                              
+               D             |                 | D                              
+               C             |       7n        | C                              
+                              -----------------                                 
+                 Jonathan (S) S                                                 
+                              H                                                 
+                              D                                                 
+                              C                                                 
+command                                                                         
+   talk                                                                         
+-----------------------------------------------------------------13-19/20-------
+` Attempting to connect to 128.32.34.47:4062                                    
+` Communication established                                                     
+` Franco has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South                                                     
+` David is sitting East                                                         

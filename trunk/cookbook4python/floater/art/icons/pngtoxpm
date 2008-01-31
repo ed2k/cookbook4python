@@ -1,0 +1,13 @@
+#!/bin/sh
+#
+# pngtoxpm - convert a PNG to an XPM while preserving alpha
+
+cat > tmp$$.png
+
+pngtopnm < tmp$$.png > tmp$$.pnm
+pngtopnm -alpha < tmp$$.png > tmp-mask$$.pgm
+ppmtoxpm -alphamask=tmp-mask$$.pgm < tmp$$.pnm 
+
+
+rm tmp$$.pnm tmp-mask$$.pgm tmp$$.png
+

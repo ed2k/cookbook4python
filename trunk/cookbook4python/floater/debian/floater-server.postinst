@@ -1,0 +1,11 @@
+#!/bin/sh
+
+adduser --system --group floater --shell /bin/sh
+chown floater.floater /home/floater
+
+chown -R floater.floater /var/lib/floater
+
+
+
+
+#DEBHELPER#

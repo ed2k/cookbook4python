@@ -1,0 +1,60 @@
+#! /bin/sh
+#
+# floater-server
+#		Start and stop the Floater server.
+#
+# Version:	$Id: floater-server.init,v 1.4 2004/03/12 05:32:38 lexspoon Exp $
+#
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+FLOATER_HOME=/home/floater
+BIN_DIR=/usr/lib/floater
+NAME=floater-server
+DESC="Floater server"
+DAEMONS="floaterr floaterl floaterpm"
+
+test -x $BIN_DIR/floaterl || exit 0
+
+set -e
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC:"
+	for daemon in $DAEMONS
+	do
+		echo -n " $daemon"
+		start-stop-daemon --start \
+		    --exec $BIN_DIR/$daemon\
+		    --user floater  --group floater --chdir $FLOATER_HOME \
+		    --background \
+		    --startas /bin/su -- floater -s /bin/sh -c "exec $BIN_DIR/$daemon 2>&1 | logger -t $daemon -p daemon.info"
+	done
+	echo ""
+
+	;;
+
+  stop)
+	echo -n "Stopping $DESC:"
+	for daemon in $DAEMONS
+	do	
+		echo -n " $daemon "
+		start-stop-daemon --stop --exec $BIN_DIR/$daemon -q || true
+		make -C /var/lib/floater/serverfiles all || true
+	done
+	echo ""
+	;;
+
+  restart|reload|force-reload)
+	/etc/init.d/$NAME stop
+	sleep 1
+	/etc/init.d/$NAME start
+	;;
+
+  *)
+	file=/etc/init.d/$NAME
+	echo "Usage: $file {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

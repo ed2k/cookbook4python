@@ -1,0 +1,101 @@
+<!doctype refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN" [
+
+  <!-- Fill in your name for FIRSTNAME and SURNAME. -->
+  <!ENTITY dhfirstname "<firstname>Lex</firstname>">
+  <!ENTITY dhsurname   "<surname>Spoon</surname>">
+  <!-- Please adjust the date whenever revising the manpage. -->
+  <!ENTITY dhdate      "<date>June 26, 2001</date>">
+  <!ENTITY dhsection   "<manvolnum>6</manvolnum>">
+  <!ENTITY dhemail     "<email>lex@debian.org</email>">
+  <!ENTITY dhucpackage "<refentrytitle>FLOATER</refentrytitle>">
+  <!ENTITY dhpackage   "floater">
+
+  <!ENTITY debian      "<productname>Debian Linux</productname>">
+]>
+
+<refentry>
+  <refentryinfo>
+    <address>
+      &dhemail;
+    </address>
+    <author>
+      &dhfirstname;
+      &dhsurname;
+    </author>
+    <copyright>
+      <year>2003</year>
+      <holder>&dhusername;</holder>
+    </copyright>
+    &dhdate;
+  </refentryinfo>
+  <refmeta>
+    &dhucpackage;
+
+    &dhsection;
+  </refmeta>
+  <refnamediv>
+    <refname>&dhpackage;</refname>
+
+    <refpurpose>free Internet bridge client</refpurpose>
+  </refnamediv>
+  <refsynopsisdiv>
+     <cmdsynopsis>
+        <command>floater</command>
+     </cmdsynopsis>
+     <cmdsynopsis>
+        <command>floatert</command>
+     </cmdsynopsis>
+  </refsynopsisdiv>
+  <refsect1>
+    <title>DESCRIPTION</title>
+
+    <para><command>&dhpackage;</command> is a free program for playing
+      duplicate bridge on the Internet.  Most of its documentation is
+      built into the program itself.</para>
+
+     <para>There are two interfaces for <command>&dhpackage;</command>:
+      an XWindows interface based on Tk, and a text interface based
+      on ncurses.  When invoked as <command>floater</command>, it will
+      first try the XWindows interface and then fall back on the text
+      interface if that fails.  When invoked as <command>floatert</command>,
+      it will only try the text interface.</para>
+   </refsect1>
+
+
+
+  <refsect1>
+    <title>SEE ALSO</title>
+
+    <para>http://www.floater.org</para>
+
+  </refsect1>
+  <refsect1>
+    <title>AUTHOR</title>
+
+    <para>Floater is written by Geoff Pike (geoff@floater.org).
+          See /usr/share/doc/floater/copyright for copyright
+          information.</para>
+
+    <para>This manual page was written by &dhusername; (&dhemail;) for
+      the &debian; system (but may be used by others).  Permission is
+      granted to copy, distribute and/or modify this document in
+      any way.</para>
+  </refsect1>
+</refentry>
+
+<!-- Keep this comment at the end of the file
+Local variables:
+mode: sgml
+sgml-omittag:t
+sgml-shorttag:t
+sgml-minimize-attributes:nil
+sgml-always-quote-attributes:t
+sgml-indent-step:2
+sgml-indent-data:t
+sgml-parent-document:nil
+sgml-default-dtd-file:nil
+sgml-exposed-tags:nil
+sgml-local-catalogs:nil
+sgml-local-ecat-files:nil
+End:
+-->

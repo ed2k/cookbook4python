@@ -1,0 +1,50 @@
+han (S) S Q98                                             
+Connected            
+         H 4                                               
+15Sep96IMP2         
+          D 942               Tricks won: 0; lost: 0        
+NS vul.            
+           C J8762             Claiming 13 tricks total      
+E dealt           
+            -----------------                                 
+               Da
+vid (E)     |       cq        | Franco (W)     ................
+               S
+             |                 | S KT74         .LHO Par RHO you
+               
+H AJ98732     |             ?   | H KQT          .1H  P   1S  P  
+              
+ D KQT75       |                 | D AJ3          .2D  P   3C  P  
+             
+  C 9           |                 | C AK5          .3H  P   4N  P  
+            
+                  -----------------                 .5C  P   6H  P  
+           
+          Buzz (N) S AJ6532                          .P   P          
+          
+                    H 65                              .               
+         
+                     D 86                              .               
+        
+                      C T43                             .               
+command
+                                                                         
+   tal
+k                                                                         
+-----
+---------------------------------------------------------------------------
+Davi
+d! Alert!  artificial game force                                            
+Buz
+z= what is 5C?                                                               
+Da
+vid= 5C shows 1 or 4 keycards                                                 
+F
+ranco- 5c shows one or four keycards                                           
+
+Franco: good luck, partner                                                      
+
+David: thanks pard                                                             
+ 
+` Continue playing or use `accept' or `reject' at any time.                   
+  

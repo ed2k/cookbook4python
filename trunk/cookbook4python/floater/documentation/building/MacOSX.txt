@@ -1,0 +1,111 @@
+COMPILING FLOATER
+
+To compile Floater on Mac OS/X, you need Jam and the Tcl/Tk libraries.
+Once these are available:
+
+  0. Open a terminal and cd to the root of the CVS repository.
+
+  1. Edit mac/Jamsettings.macosx and set FRAMEWORK_DIR.
+
+  2. Edit mac/app-contents/Contents/Info.plist and update the
+     version string.
+
+  3. Execute ./build/build-macosx
+
+
+You will end up with a file named floater-nnnn-macosx.zip, where nnnn
+is the current version number of Floater.
+
+
+COMPILING TCL/TK
+
+You can compile your own Tcl and Tk frameworks from the standard
+source distributions on tcl.sourceforge.net.
+
+   1. Untar tcl and tk in directories beside each other.
+
+   2. (cd tcl/macosx; make)
+
+   3. (cd tk/macosx; make)
+
+   4. cp -r build/tcl/Tcl.framework  "wherever you want"
+
+   5. cp -r build/tcl/Tk.framework  "wherever you want"
+ 
+
+If you get an error about /usr/bin/pbxbuild not existing, then hack
+the two makefiles to use "/usr/bin/xcodebuild" instead of
+"/usr/bin/pbxbuild".
+
+
+
+RATIONALE
+
+There are other ways to build on OS/X that would have made sense.
+
+An autoconf-based build setup is not used on Mac OS/X for a few reasons.
+
+First, it would greatly complicate the configure.in script, because
+Mac OS/X wants to use frameworks.  Frameworks require their own set of
+flags and directory layouts, and thus require specially handling
+throughout the autoconf file.  If autoconf ever does support frameworks
+natively, then using autoconf will become more tempting.
+
+Second, there is no auto-configuration to do.  It's OS/X, which is
+a fixed target.
+
+Third, only one developer is actively working on Floater on OS/X right
+now.  If that ever changes, then making things scriptier and generally
+nicer to work with could well be reconsidered.
+
+
+XCode would be another option.  However, XCode is difficult to use
+remotely, which means that preparing every distribution would require
+a visit to an OS/X machine to compile the stuff.
+
+
+The option settled on is to maintain a separate Jamsettings file and
+build script.  This approach is pretty simple in practice.
+
+
+OTHER NOTES
+
+http://developer.apple.com is extremely helpful for
+learning about OS/X.
+
+
+
+***** BEGIN LICENSE BLOCK *****
+Version: MPL 1.1/GPL 2
+
+The contents of this file are subject to the Mozilla Public License Version 
+1.1 (the "License"); you may not use this file except in compliance with 
+the License. You may obtain a copy of the License at 
+http://www.mozilla.org/MPL/
+
+Software distributed under the License is distributed on an "AS IS" basis,
+WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+for the specific language governing rights and limitations under the
+License.
+
+The Original Code is the Floater Bridge Network.
+
+The Initial Developer of the Original Code is
+Geoff Pike  <pike@EECS.Berkeley.EDU>.
+Portions created by the Initial Developer are Copyright (C) 1996--2003
+the Initial Developer. All Rights Reserved.
+
+Contributor(s):
+    Lex Spoon  <lex@cc.gatech.edu>
+
+Alternatively, the contents of this file may be used under the terms
+of either the GNU General Public License Version 2 or later (the
+"GPL"), in which case the provisions of the GPL are applicable instead
+of those above. If you wish to allow use of your version of this file
+only under the terms of the GPL, and not to allow others to use your
+version of this file under the terms of the MPL, indicate your
+decision by deleting the provisions above and replace them with the
+notice and other provisions required by the GPL. If you do not delete
+the provisions above, a recipient may use your version of this file
+under the terms of either the MPL or the GPL.
+***** END LICENSE BLOCK *****

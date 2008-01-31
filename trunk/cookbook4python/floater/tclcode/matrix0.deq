@@ -1,0 +1,517 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the KWOTELicenseKWOTE); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an KWOTEAS ISKWOTE basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the KWOTEGPLKWOTE), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/* matrix0.tcp - code to handle the matrix for both the curses
+ *    and Tk interfaces.  See matrix.tcp for Tk-specific code. */
+
+proc redrawmatrixcards {} {}
+
+proc togglepassedcard {suit card} {
+    global togglepassedaction
+
+    if [info exists togglepassedaction([string toupper $suit$card])] \
+QTABQ     {catch $togglepassedaction([string toupper $suit$card])}
+}
+
+proc removecardfromhand {suit card} {
+    global removecard
+
+    if [info exists removecard([string toupper $suit$card])] \
+QTABQ     {catch $removecard([string toupper $suit$card])}
+}
+
+#ifndef TEXT
+proc tpcard {w} {
+    // talkmsg KWOTEtpcard: $wKWOTE
+    if ![string match *ello* [$w config -fg]] {
+QTABQ $w config -fg yellow
+QTABQ // talkmsg KWOTEtpcard: $w set to yellowKWOTE
+    } else {
+QTABQ $w config -fg black
+QTABQ // talkmsg KWOTEtpcard: $w set to blackKWOTE
+    }
+}
+#endif
+
+#ifdef TEXT
+// remove a card from a playerkwerts hand
+proc rmcard {x y suit card} {
+    set f KWOTE$x $yKWOTE
+    anchor $f
+    set suit [string toupper $suit]
+    if {$suit == KWOTESKWOTE} {rmcard2 $f $suit $card} {down_and_anchor}
+    if {$suit == KWOTEHKWOTE} {rmcard2 $f $suit $card} {down_and_anchor}
+    if {$suit == KWOTEDKWOTE} {rmcard2 $f $suit $card} {down_and_anchor}
+    if {$suit == KWOTECKWOTE} {rmcard2 $f $suit $card}
+}
+
+proc rmcard2 {f suit card} {
+    global cursuit
+
+    right 2 // move over suit symbol and space
+    set w [set KWOTEcursuit($f$suit)KWOTE [zap $card $cursuit($f$suit)]]
+    str KWOTE$w KWOTE
+}
+
+// find the first occurence of char in text and remove it
+proc zap {char text} {
+    set i [string first $char $text]
+    if {$i < 0} { // shouldnkwertt happen
+QTABQ return $text
+    } elseif {$i == 0} {
+QTABQ return [string range $text 1 end]
+    } else {
+QTABQ incr i -1
+QTABQ set j [expr $i + 2]
+QTABQ // this still works (empirically) if j is beyond the end of the string
+QTABQ return KWOTE[string range $text 0 $i][string range $text $j end]KWOTE
+    }
+}
+#endif    
+  
+
+// proc suit creates one row of buttons to show one suit on the screen
+proc suit {f cards suit} {
+#ifdef TEXT
+    global cursuit removecard
+
+    set suit [string toupper $suit]
+    set cards [string toupper $cards]
+    str KWOTE$suit $cardsKWOTE
+    down_and_anchor
+    set KWOTEcursuit($f$suit)KWOTE $cards
+    for {set i [expr [string length $cards] - 1]} {$i >= 0} {incr i -1} {
+QTABQ set card [string index $cards $i]
+QTABQ set removecard([string toupper $suit$card]) KWOTErmcard $f $suit $cardKWOTE
+    }
+#else
+    global buttoncardoptions buttonsuitoptions removecard togglepassedaction
+
+    set buttons {}
+    for {set i [expr [string length $cards] - 1]} {$i >= 0} {incr i -1} {
+QTABQ set card [string index $cards $i]
+QTABQ set comm KWOTE-command \KWOTEcommand $suit$card\KWOTEKWOTE
+QTABQ set newbutton [eval KWOTEbutton $f.$suit.$suit$card \
+QTABQ QTABQ $buttoncardoptions -text $card $commKWOTE]
+QTABQ refont $newbutton cardfont
+QTABQ set buttons [linsert $buttons 0 $newbutton]
+QTABQ set removecard([string toupper $suit$card]) KWOTEdestroy $newbuttonKWOTE
+QTABQ set togglepassedaction([string toupper $suit$card]) KWOTEtpcard $newbuttonKWOTE
+    }
+
+//    if {$buttons == {}} {
+//QTABQ set buttons [eval KWOTElabel $f.$suit.void $buttoncardoptions -text -KWOTE]
+//    }
+
+    refont [eval KWOTElabel $f.$suit.suit $buttonsuitoptions -text [$suit]KWOTE] suitfont
+    eval KWOTEpack $f.$suit.suit $buttons -side leftKWOTE
+#endif
+}
+
+// proc hand creates the frames and buttons to show a hand on the screen
+// f is a frame; s, d, h, and c are suit holdings
+proc hand {f s h d c} {
+#ifndef TEXT
+    global framesuitoptions
+
+    // either create the 5 frames or, if they exist, empty them out
+    if [winfo exists $f.name] {
+QTABQ foreach i {name s h d c} {
+QTABQ     foreach child [winfo children $f.$i] {
+QTABQ QTABQ catch {destroy $child}
+QTABQ     }
+QTABQ }
+    } else {
+QTABQ catch {destroy $f.name $f.s $f.h $f.d $f.c}
+QTABQ frame $f.name
+QTABQ frame $f.s
+QTABQ frame $f.h
+QTABQ frame $f.d
+QTABQ frame $f.c
+QTABQ pack $f.name -side top -anchor w
+QTABQ eval KWOTEpack $f.s $f.h $f.d $f.c -side top -anchor w $framesuitoptionsKWOTE
+    }
+#else
+    global handwidth
+    anchor $f
+    clearrect $handwidth 4
+#endif
+    suit $f $s s
+    suit $f $h h
+    suit $f $d d
+    suit $f $c c 
+}
+
+#if 0
+// proc hand creates the frames and buttons to show a hand on the screen
+// f is a frame; s, d, h, and c are suit holdings
+proc hand {f s h d c} {
+#ifndef TEXT
+    global framesuitoptions
+
+    catch {destroy $f.name $f.s $f.h $f.d $f.c}
+    frame $f.name
+    frame $f.s
+    frame $f.h
+    frame $f.d
+    frame $f.c
+    pack $f.name -side top -anchor w
+    eval KWOTEpack $f.s $f.h $f.d $f.c -side top -anchor w $framesuitoptionsKWOTE
+#else
+    global handwidth
+    anchor $f
+    clearrect $handwidth 4
+#endif
+    suit $f $s s
+    suit $f $h h
+    suit $f $d d
+    suit $f $c c 
+}
+#endif /* 0 */
+
+// Show a full deal
+// (this wrecks & rebuilds frames and whatnot, destroying any display of the
+// playerskwert names)
+proc fulldeal {s h d c LHOs LHOh LHOd LHOc \
+QTABQ QTABQ    Ps Ph Pd Pc RHOs RHOh RHOd RHOc} {
+    global mframe
+
+    hand $mframe(self) $s $h $d $c
+    hand $mframe(pard) $Ps $Ph $Pd $Pc
+    hand $mframe(lho) $LHOs $LHOh $LHOd $LHOc
+    hand $mframe(rho) $RHOs $RHOh $RHOd $RHOc
+}
+
+gset tricktimeOK 1
+
+// causes tricktimeOK to be 0 for the next tricktime milliseconds
+// tricktimeOK should be 1 when this is called
+proc startshowtricktimer {} {
+    global tricktime tricktimeOK
+
+    set tricktimeOK 0
+    after $tricktime set tricktimeOK 1
+}
+
+// this is for erasing the last trick 5 seconds after the double dummy
+// display at the end of a hand
+proc delayedclearmatrix {} {
+    global needtoerase
+
+    set needtoerase 1
+    after 5000 clearmatrixtimer
+}
+
+proc clearmatrixtimer {} {
+    global needtoerase
+
+    if $needtoerase {erasebidplay all}
+}
+
+// Erase a bid or play from the matrix
+// who should be lho, rho, pard, self, or all
+proc erasebidplay {who} {
+    global tricktimeOK
+
+    if {!$tricktimeOK} {
+QTABQ after 100 erasebidplay $who
+    }
+    if {$who == KWOTEallKWOTE} {
+QTABQ global needtoerase
+
+QTABQ set needtoerase 0
+QTABQ erasebidplay lho
+QTABQ erasebidplay rho
+QTABQ erasebidplay pard
+QTABQ erasebidplay self
+    } else {
+#ifdef TEXT
+QTABQ global matrixtext
+QTABQ 
+QTABQ anchor $matrixtext($who)
+QTABQ clearrect 2 1
+#else
+QTABQ set path [matrix_widget].middle.box.$who
+QTABQ catch {pack forget $path.suit $path.card}
+#endif
+    }
+}
+
+// display (in the matrix) a card played
+// suit is one of s, d, h, c
+// card is one of 2 ... A
+proc showplay {player suit card} {
+#ifdef TEXT
+    global matrixtext
+
+    anchor $matrixtext($player)
+    if {$suit == KWOTE?KWOTE} {
+QTABQ str KWOTE? KWOTE
+    } else {
+QTABQ str $suit$card
+    }
+#else
+    global cardfont suitfont
+
+    set path [matrix_widget].middle.box.$player
+    catch {pack forget $path.suit $path.card} c
+    if {$c != KWOTEKWOTE} {
+QTABQ // something went wrong -- we must create suit and card buttons
+QTABQ refont [label $path.suit -font $suitfont -borderwidth 0] suitfont
+QTABQ refont [label $path.card -font $cardfont -borderwidth 0] cardfont
+    }
+    pack $path.suit $path.card -side left
+
+    if {$suit != KWOTE?KWOTE} {
+QTABQ eval KWOTE$path.suit configure -text [$suit] -font \{$suitfont\}KWOTE
+QTABQ refont $path.suit suitfont
+    } else {
+QTABQ $path.suit configure -text KWOTEKWOTE
+    }
+    $path.card configure -text [string toupper $card]
+#endif
+}
+
+// display (in the matrix) a card played
+// level is in 1 ... 7
+// strain is n, s, h, d, c, x, xx, or p
+// (if strain is x, xx, or p, then level is ignored)
+proc showbid {player level strain} {
+//  debugmsg KWOTEshowbid $player $level $strainKWOTE
+#ifdef TEXT
+    global matrixtext
+
+    anchor $matrixtext($player)
+    if {$strain == KWOTE-KWOTE} {
+QTABQ str KWOTE  KWOTE
+    } elseif {$strain == KWOTE?KWOTE} {
+QTABQ str KWOTE? KWOTE
+    } elseif {$level > 0} {
+QTABQ str KWOTE$level$strain KWOTE
+    } else {QTABQ 
+QTABQ str KWOTE$strain KWOTE
+    }
+#else
+    drawbid [matrix_widget].middle.box.$player $level $strain
+#endif
+}
+
+#ifdef TEXT
+proc drawbid {x y level strain} {
+    global auctionx auctiony auctionbot
+
+//  debugmsg KWOTEdrawbid $x $y $level $strainKWOTE
+
+    if {[expr $auctiony + $y + 2] <= $auctionbot} {
+QTABQ anchor KWOTE[expr $auctionx + 1 + 4 * $x] [expr $auctiony + $y + 2]KWOTE
+
+QTABQ // convert level & strain to a two character string
+QTABQ if {$strain == KWOTExKWOTE} {
+QTABQ     set s KWOTEX KWOTE
+QTABQ } elseif {$strain == KWOTExxKWOTE} {
+QTABQ     set s KWOTEXXKWOTE
+QTABQ } elseif {$strain == KWOTEpKWOTE} {
+QTABQ     set s KWOTEP KWOTE
+QTABQ } elseif {$strain == KWOTE-KWOTE} {
+QTABQ     set s KWOTE  KWOTE
+QTABQ } elseif {$strain == KWOTE?KWOTE} {
+QTABQ     set s KWOTE? KWOTE
+QTABQ } else {
+QTABQ     set s $level$strain
+QTABQ }
+QTABQ 
+QTABQ clearrect 2 1
+QTABQ if {$s != KWOTE  KWOTE} {str [string toupper $s]}
+    }
+}
+#else
+proc suitcolor {suit} {
+    if {$suit == KWOTEhKWOTE} {
+        return red
+    } elseif {$suit == KWOTEdKWOTE} {
+        return red
+    } else {
+        return black
+    }
+}
+
+proc drawbid {path level strain} {
+    global NTtext NTfont cardfont suitfont \
+QTABQ passtext passfont doubletext doublefont redoubletext redoublefont \
+QTABQ drawnbids
+
+//puts KWOTEdrawbid $path $level $strainKWOTE
+
+    // record that this bid was drawn
+    if {! [info exists drawnbids] } {
+QTABQ set drawnbids(numbids) 0
+    }
+    set drawnbids($drawnbids(numbids),path) $path
+    set drawnbids($drawnbids(numbids),level) $level
+    set drawnbids($drawnbids(numbids),strain) $strain
+    incr drawnbids(numbids)
+QTABQ 
+
+    catch {pack forget $path.strain $path.level} c
+    if {$c != KWOTEKWOTE} {
+QTABQ // these suit and level buttons have not been created yet
+QTABQ refont [label $path.level -font $suitfont -borderwidth 0] suitfont
+QTABQ canvas $path.strain -width 20 -height 14 -borderwidth 0 -relief flat -highlightthickness 0
+    }
+    pack $path.level $path.strain -side left
+
+    $path.strain delete all
+    pack forget $path.strain
+
+    if {$strain == KWOTExKWOTE} {
+QTABQ $path.level configure -text $doubletext -font $doublefont -fg red -width [string length $passtext]
+QTABQ refont $path.level doublefont
+    } elseif {$strain == KWOTExxKWOTE} {
+QTABQ $path.level configure -text $redoubletext -font $redoublefont -fg blue -width [string length $passtext]
+QTABQ refont $path.level redoublefont
+    } elseif {$strain == KWOTEpKWOTE} {
+QTABQ $path.level configure -text $passtext -font $passfont -fg black -width [string length $passtext]
+QTABQ refont $path.level passfont
+    } elseif {$strain == KWOTE-KWOTE} {
+QTABQ $path.level configure -text KWOTEKWOTE
+    } elseif {$strain == KWOTE?KWOTE} {
+QTABQ $path.level configure -text KWOTE?KWOTE -fg black -width 1
+    } else {
+QTABQ $path.level configure -text $level -font $suitfont -fg [suitcolor $strain] -width [string length $level]
+QTABQ refont $path.level suitfont
+QTABQ $path.strain create image 0 0 -image KWOTE$strain-12KWOTE  -anchor nw
+QTABQ pack $path.strain -side left
+    }
+}
+
+proc gui_newauction {} {
+    global drawnbids max_auction_line
+
+    foreach child [winfo children [auction_widget]] {
+        if ![regexp name $child] {catch {destroy $child}}
+    }
+
+    set drawnbids(numbids) 0
+    set max_auction_line -1
+}
+
+
+// copy over the bids that have been displayed from the current
+// toplevel to a newly created one
+proc copybids {new_toplevel} {
+    global toplevel drawnbids max_auction_line
+
+    if {! [info exists drawnbids]} {
+QTABQ // no bids have been drawn
+QTABQ return
+    }
+
+    // temporarily set toplevel to the new toplevel
+    set saved_toplevel $toplevel
+    set toplevel $new_toplevel
+
+    // save the number of auction lines
+    if [info exists max_auction_line] {
+QTABQ set old_max_auction_line $max_auction_line
+    } else {
+QTABQ set old_max_auction_line -1 
+    }
+
+    // save a copy of drawnbids 
+    set bids(numbids) $drawnbids(numbids)
+    for {set i 0} {$i < $drawnbids(numbids)} {incr i} {
+QTABQ set bids($i,path) $drawnbids($i,path)
+QTABQ set bids($i,level) $drawnbids($i,level)
+QTABQ set bids($i,strain) $drawnbids($i,strain)
+    }
+
+    // erase the old auction.  (also destroys drawnbids and max_auction_line)
+    gui_newauction
+
+
+    // allocate all the necessary auction cells
+    // (and possibly some extras, but who cares?)
+    for {set row 0} {$row <= $old_max_auction_line} {incr row} {
+QTABQ foreach column {0 1 2 3} {
+QTABQ     auction_cell  $column $row
+QTABQ }
+    }
+
+    
+    // redraw all the bids
+    for {set i 0} {$i < $bids(numbids)} {incr i} {
+QTABQ set lastchar [expr [string length $saved_toplevel] - 1]
+QTABQ set newpath [string replace $bids($i,path) 0 $lastchar  $new_toplevel]
+
+QTABQ drawbid $newpath $bids($i,level) $bids($i,strain)
+    }
+
+
+    // all done
+    set toplevel $saved_toplevel
+}
+#endif
+
+// Display a playerkwerts name above his cards
+// player should be lho, rho, pard, or self
+proc setname {player compassdir name} {
+#ifdef TEXT
+    global namepos namewidth
+
+    anchor $namepos($player)
+    if {[string first KWOTE(KWOTE $name] == -1} {set name KWOTE$name ($compassdir)KWOTE}
+    if {[string length $name] > $namewidth} {
+QTABQ set name [string range $name 0 [expr $namewidth - 1]]
+    }
+    if {$player == KWOTEselfKWOTE || $player == KWOTEpardKWOTE} {
+QTABQ rightjustify $name $namewidth
+    } else {
+QTABQ clearrect $namewidth 1
+    }
+    str $name
+#else
+    global namefont mframe playername position
+    set playername($player) $name
+    set position($player) $compassdir
+    set f $mframe($player).name.label
+    if {[string first KWOTE(KWOTE $name] == -1} {set name KWOTE$name  ($compassdir)KWOTE}
+    catch {$f configure -text $name} c
+    if {$c != KWOTEKWOTE} {
+QTABQ // configure didnkwertt work -- try creating widget
+QTABQ refont [label $f -font $namefont -text $name] namefont
+QTABQ pack $f -pady 0
+    }
+#endif
+}
+

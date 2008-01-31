@@ -1,0 +1,50 @@
+(North) S                                                 
+Connected            
+         H                                                 
+                    
+          D                                                 
+                   
+           C                                                 
+                  
+            -----------------                                 
+               Fr
+anco (W)    |                 | David (E)                      
+               S
+             |                 | S                              
+               
+H             |                 | H                              
+              
+ D             |                 | D                              
+             
+  C             |       7n        | C                              
+            
+                  -----------------                                 
+           
+      Jonathan (S) S                                                 
+          
+                    H                                                 
+         
+                     D                                                 
+        
+                      C                                                 
+command
+                                                                         
+   tal
+k                                                                         
+-----
+------------------------------------------------------------13-19/20-------
+` At
+tempting to connect to 128.32.34.47:4062                                    
+` C
+ommunication established                                                     
+` 
+Franco has joined (2).                                                        
+`
+ David has joined (3).                                                         
+
+` Jonathan has joined (4).                                                      
+
+` Jonathan is sitting South                                                    
+ 
+` David is sitting East                                                       
+  

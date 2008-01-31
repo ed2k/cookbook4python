@@ -1,0 +1,139 @@
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2
+#
+# The contents of this file are subject to the Mozilla Public License Version 
+# 1.1 (the "License"); you may not use this file except in compliance with 
+# the License. You may obtain a copy of the License at 
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is the Floater Bridge Network.
+#
+# The Initial Developer of the Original Code is
+# Geoff Pike  <pike@EECS.Berkeley.EDU>.
+# Portions created by the Initial Developer are Copyright (C) 1996--2003
+# the Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#    Lex Spoon <lex@cc.gatech.edu>
+#
+# Alternatively, the contents of this file may be used under the terms
+# of either the GNU General Public License Version 2 or later (the
+# "GPL"), in which case the provisions of the GPL are applicable instead
+# of those above. If you wish to allow use of your version of this file
+# only under the terms of the GPL, and not to allow others to use your
+# version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the
+# notice and other provisions required by the GPL. If you do not delete
+# the provisions above, a recipient may use your version of this file
+# under the terms of either the MPL or the GPL.
+# ***** END LICENSE BLOCK *****
+
+
+### This file holds all Jam settings that are passed in via autoconf
+
+
+# version of Floater being compiled
+VERSION = @VERSION@ ;
+
+# directory with the source tree
+TOP = @abs_top_srcdir@ ;
+
+# Default top-level directories in which to install architecture-
+# specific files (exec_prefix) and machine-independent files such as
+# scripts (prefix).  The values specified here may be overridden at
+# configure-time with the --exec-prefix and --prefix options to the
+# "configure" script.
+
+prefix =	@prefix@ ;
+exec_prefix =	@exec_prefix@ ;
+bindir =        @bindir@ ;
+libdir =        @libdir@ ;
+
+
+
+# Path for the platform independent scripts:
+# XXX this should be share, not lib.  And it should come
+# from autoconf, anyway.  Where is this used, anyway?
+FLOATER_LIBRARY		= $(prefix)/lib/floater$(VERSION) ;
+
+
+# XXX this should be cleared up as well....  where is it used, and is it still
+# supperted in that use even?
+FLOATER_SRC_DIR = @FLOATER_SRC_DIR@ ;
+
+# other source directories
+artdir = @abs_top_srcdir@/art ;
+tcldir = @abs_top_srcdir@/tclcode ;
+
+
+# include paths and libraries passed in from autoconf
+TCL_INCLUDES = @TCL_INCLUDES@ ;
+TCL_LIB = @TCL_LIB@ ;
+TK_INCLUDES = @TK_INCLUDES@ ;
+TK_LIB = @TK_LIB@ ;
+
+CURSES_INCLUDES = @CURSES_INCLUDES@ ;
+CURSES_LIB = @CURSES_LIB@ ;
+
+X11_INCLUDES = @X_INCLUDES@ ;
+X11_LIB = @X_LIB@ ;
+
+EXTRA_LIBS =  @EXTRA_LIBS@ ;
+
+
+# summary of the above include paths and libraries
+INCLUDES = $(CURSES_INCLUDES) $(TCL_INCLUDES) $(TK_INCLUDES)
+	$(X11_INCLUDES) -I$(TOP)/common -I$(artdir)  ;
+
+LIBS = $(TK_LIB) $(TCL_LIB) $(X11_LIB) $(CURSES_LIB)
+	$(EXTRA_LIBS) -lm  ;
+
+
+
+# compile-time options:
+#   TCL_IN_C: If true, instead of reading the Tcl files that are part of
+#	Floater at run time, they are formatted into C and compiled.
+#       (XXX turning this off probably does not work nowadays)
+#   USER_TCL: If true, users can execute Tcl commands (by doing "tcl ...").
+#   BEEPONJOIN: If true, beep every time a new user joins.
+#       XXX BEEPONJOIN should be a preference, not a compile-time
+#       setting
+#   MS_WINDOWS: If true, assume the binary will run on some
+#       flavor of MS Windows.  XXX this is not exactly an option; it should be in DEFS
+OPTION_SWITCHES = @OPTION_SWITCHES@ ; 
+
+
+# compilers and compiler options
+CC = @CC@ ;
+LINK = @CC@ ;
+CPP = gcc -x c -E ;    # XXX should come from autoconf
+CPPFLAGS = $(OPTION_SWITCHES)
+           -DVERSION=$(VERSION)
+           -DFLOATER_LIBRARY=\"$(FLOATER_LIBRARY)\"
+           -DSRC_DIR=\"$(FLOATER_SRC_DIR)\"
+           @DEFS@ ;
+# XXX instead of DEFS here, it would be good to put them in a
+#     config.h file
+
+
+CCFLAGS = $(INCLUDES) $(CPPFLAGS) @CFLAGS@ ;
+
+LINKFLAGS = @LDFLAGS@ ;
+
+
+WINDRES = @WINDRES@ ;
+
+
+# whether we are compiling for windows
+windows = @windows@ ;
+
+# whether we are compiling the servers
+ENABLE_SERVER = @ENABLE_SERVER@ ;
+
+# whether we are compiling the curses backend
+enable_backend_curses = @enable_backend_curses@ ;

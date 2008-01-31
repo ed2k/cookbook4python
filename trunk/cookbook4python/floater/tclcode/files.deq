@@ -1,0 +1,273 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the KWOTELicenseKWOTE); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an KWOTEAS ISKWOTE basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *   Lex Spoon <lex@cc.gatech.edu>
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the KWOTEGPLKWOTE), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+// Record (not on disk---just for now) that wekwertve seen this hand.
+// Also, if they exist, update Nseen, Sseen, Wseen, and Eseen.
+proc lseenhand {root number scoring} {
+    global seenhands maxseenhand \
+QTABQ     Nseen$scoring Sseen$scoring Eseen$scoring Wseen$scoring
+
+//    if ![info exists seenhands($root,$number)] \
+//QTABQ     {puts stderr KWOTEseen $root $numberKWOTE}
+
+    set seen seen
+    foreach d {N S E W} {
+QTABQ if [info exists $d$seen$scoring] {
+QTABQ     eval KWOTEset old $$d$seen$scoringKWOTE
+QTABQ     set $d$seen$scoring $old$number-
+//QTABQ     puts KWOTEset $d$seen$scoring to $old$number-KWOTE
+QTABQ }
+    }
+    set seenhands($root,$number) 1
+    if [info exists maxseenhand($root)] \
+QTABQ     {if {$maxseenhand($root) > $number} return}
+    set maxseenhand($root) $number
+}
+
+// What hands have we seen?
+proc seen {root {silent 0}} {
+    global seenhands maxseenhand youveseen
+
+    if ![info exists maxseenhand($root)] {
+QTABQ if {$youveseen && !$silent} \
+QTABQ QTABQ {talkmsg KWOTEYou havenkwertt seen any hands from $rootKWOTE}
+QTABQ return KWOTEKWOTE
+    }
+    set m $maxseenhand($root)
+    set s KWOTEKWOTE
+    set t KWOTEKWOTE
+    for {set i 1} {$i <= $m} {incr i} {
+QTABQ if [info exists seenhands($root,$i)] {
+QTABQ     append s KWOTE$i-KWOTE
+QTABQ     append t KWOTE$i KWOTE
+QTABQ }
+    }
+    if {$youveseen && !$silent} {talkmsg KWOTEFrom set $root, youkwertve seen: $tKWOTE}
+    if {$silent} {return $t} {return $s}
+}
+
+#ifdef NO_FLOATER_FILES
+proc setprioruse {name} {}
+proc seenfile {root} {}
+proc seenhand {root number scoring} { lseenhand $root $number $scoring }
+proc loadseen {} {}
+#else
+
+#ifdef MS_WINDOWS
+set slash KWOTE\\KWOTE
+#else
+set slash KWOTE/KWOTE
+#endif
+
+proc floater_mkdir {s} {
+    file mkdir $s
+}
+
+proc floater_delete {s} {
+    file delete $s
+}
+
+proc append_to_file {fileName line} {
+    set file [open $fileName a]
+    puts $file $line
+    close $file
+}
+
+if [info exists env(FLOATER_DIR)] {
+    tryset floaterdir $env(FLOATER_DIR)
+}
+
+tryset floaterdir [set env(HOME)]${slash}.floater
+
+tryset startupfile $floaterdir${slash}startup.tcl
+tryset seenfileroot $floaterdir${slash}seenhands
+
+if {[file exists $floaterdir] == 0} {catch {floater_mkdir $floaterdir}}
+if {[file exists $seenfileroot] == 0} {catch {floater_mkdir $seenfileroot}}
+
+// returns a list of all .tcl files in dir or its subdirectories
+// (recurse is now ignored -Lex)
+proc tclfiles {dir {recurse 1}} {
+    global slash
+
+    set file_bases [glob -nocomplain -path KWOTE$dir$slashKWOTE *.tcl]
+
+    set files KWOTEKWOTE
+    foreach base $file_bases {
+        lappend files [file join $dir $base]
+    }
+
+    return $files
+}
+
+proc source_all_tclfiles {dir {recurse 1}} {
+    global startupfile
+
+    foreach file [tclfiles $dir $recurse] {
+QTABQ if {$file != $startupfile} { 
+QTABQ     if [catch {source $file} err] {
+QTABQ QTABQ puts stderr $err
+QTABQ     }
+QTABQ }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+proc setprioruse {name} {
+    global usedname startupfile
+
+    if [info exists usedname($name)] return
+    set KWOTEusedname($name)KWOTE 1
+    catch {
+        append_to_file $startupfile \KWOTEset usedname($name)\KWOTE 1KWOTE
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////
+// stuff to keep track of what hands wekwertve seen
+////////////////////////////////////////////////////////////////////////////
+
+set seenname _everyone_
+
+proc seenfile {root} {
+    global seenfileroot seenname slash
+    return $seenfileroot$slash$seenname$slash$root.tcl
+}
+
+// Record once and forever that wekwertve seen this hand.
+proc seenhand {root number scoring} {
+    global seenhands
+
+
+    if [info exists seenhands($root,$number)] return
+    lseenhand $root $number $scoring
+
+    if [catch {append_to_file [seenfile $root] KWOTElseenhand $root $number $scoringKWOTE}] {
+QTABQ floatererror KWOTEFloater error: unable to make permanent note of what hands youkwertve seen!KWOTE
+QTABQ set e1 KWOTEFloater error: unable to write to file KWOTE
+QTABQ set e2 [seenfile $root]
+QTABQ floatererror KWOTE$e1$e2KWOTE
+    }
+}
+
+proc loadseen {} {
+    global seenhands maxseenhand seenname seenfileroot \
+QTABQ     globaldate previousglobaldate slash
+
+    debugmsg KWOTEloadseen with seenname=$seennameKWOTE
+
+    // remove seenfiles other than from this week and last week
+    if {[info exists globaldate] && [info exists previousglobaldate]} {
+QTABQ cleanseen $seenfileroot${slash}$seenname $globaldate $previousglobaldate
+QTABQ if {$seenname != KWOTE_everyone_KWOTE} {
+QTABQ     cleanseen $seenfileroot${slash}_everyone_ $globaldate $previousglobaldate
+QTABQ }
+    }
+
+    catch {unset seenhands; unset maxseenhand}
+    if {[file exists $seenfileroot${slash}_everyone_] == 0} \
+QTABQ {catch {floater_mkdir $seenfileroot${slash}_everyone_}}
+    if {[file exists $seenfileroot${slash}$seenname] == 0} \
+QTABQ {catch {floater_mkdir $seenfileroot${slash}$seenname}}
+    source_all_tclfiles $seenfileroot${slash}_everyone_
+
+    // for backward compatibility with a1
+    source_all_tclfiles $seenfileroot 0
+
+    if {$seenname != KWOTE_everyone_KWOTE} \
+QTABQ {source_all_tclfiles $seenfileroot${slash}$seenname}
+}
+
+proc cleanseen {dir except1 except2} {
+    global slash
+    foreach file [tclfiles $dir 0] {
+QTABQ if {![string match KWOTE*$except1*KWOTE $file]
+QTABQ     && ![string match KWOTE*$except2*KWOTE $file]} {
+QTABQ QTABQ floater_delete $file
+QTABQ }
+    }
+}
+
+#endif /* NO_FLOATER_FILES */
+
+/////////////////////////////////////////////////////////////////////////////
+// Check if a path is in our part of the file system
+/////////////////////////////////////////////////////////////////////////////
+
+// The path must lie in floaterdir or a subdirectory
+proc validfile {filename} {
+    global floaterdir slash
+
+    regexp $floaterdir${slash}.* [file dirname $filename]${slash}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Fetch a file via http
+/////////////////////////////////////////////////////////////////////////////
+
+package require http
+
+proc nop args {}
+
+proc http_done {token} {
+    global token_to_file token_to_cmd
+    upvar #0 $token state
+    catch { close $token_to_file($token) }
+    catch { unset $token_to_file($token) }
+    if {$state(status) == KWOTEokKWOTE} {
+QTABQ catch { eval $token_to_cmd($token) }
+    }
+    catch { unset $token_to_cmd($token) }
+}
+
+// Fetch a file in the background.  If tmpfile is provided, download
+// to there and rename the file to its final destination when the
+// transfer is complete.
+proc http_fetch_to_file {url finalname {tmpfile KWOTEKWOTE}} {
+    global token_to_file token_to_cmd
+
+    if {$tmpfile == KWOTEKWOTE} {
+QTABQ set filename $finalname
+    } else {
+QTABQ set filename $tmpfile
+    }
+    set f [open $filename w]
+    set token [::http::geturl $url -channel $f -command http_done]
+    set token_to_filename($token) $f
+    if {$tmpfile != KWOTEKWOTE} {
+QTABQ set token_to_cmd($token) KWOTEfile rename \{$tmpfile\} \{$finalname\}KWOTE
+    }
+}

@@ -1,0 +1,737 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the KWOTELicenseKWOTE); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an KWOTEAS ISKWOTE basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *    Lex Spoon <lex@cc.gatech.edu>
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the KWOTEGPLKWOTE), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/* gui.tcp - manage the Tcl/Tk GUI.
+ *
+ * $Id: gui.tcp,v 1.8 2004/05/31 15:45:56 lexspoon Exp $
+ */
+
+/* The widget layout is as follows:
+ *   .bigmain                 - main frame in the window
+ *   .bigmain.info            - the pane showing status and info
+ *   .bigmain.info.stat
+ *   .bigmain.info.infoline
+ *   .bigmain.play            - the pane with the all cards--
+ *                              handled by matrix.tcp
+ *   .bigmain.auction         - the pane showing the auction
+ *   .bigmain.bb              - the pane holding bidding buttons
+ *   .bigmain.talk            - the pane showing the talk
+ *   .bigmain.talk.text       - the actual talk widget, if talk
+ *                              is not separated
+ *   .bigmain.iconholder      - the pane showing a Floater icon
+ *   .bigmain.rightcolumn     - an invisible pane used solely for layout
+ *
+ *   .smallmain               - an alternative main frame,
+ *                              with all of the same subpanes
+ *                              minus a few
+ *
+ *   .floaterTalk             - separate talk window, if it exists
+ *
+ * Global variables:  (not exhaustive; fill this in over time)
+ *    max_auction_line  - the max line requested in auction_cell since
+ *                        the most recent newauction
+ *    drawnbids         - a list of bids that have been drawn since the
+ *                        most recent newauction               
+ *       (numbids)      - number of bids drawn
+ *       ($i,path)      - path to the $ith drawn bid
+ *       ($i,level)     - the level of the $ith drawn bid
+ *       ($i,strain)    - the strain of the $ith drawn bid
+ */
+
+
+// $toplevel points to the current top-level frame.  It is
+// either KWOTE.bigmainKWOTE or KWOTE.smallmainKWOTE.  Each top-level frame
+// has an entire compliment of widgets, but only one of them
+// is packed at any time.
+global toplevel
+
+
+if $mswindows {
+    global background
+    set background gray
+} else {
+    global background
+    set background KWOTElightgrayKWOTE
+}
+
+
+
+// routines to find the location of various widgets, depending
+// on what toplevel is set to
+proc status_widget {} {
+    global toplevel
+    return KWOTE$toplevel.info.statKWOTE
+}
+
+proc info_widget {} {
+    global toplevel
+    return KWOTE$toplevel.info.infolineKWOTE
+}
+
+proc matrix_widget {} {
+    global toplevel
+    return $toplevel.play
+}
+
+
+/* look up a cell in the auction area, creating it if necessary */
+proc auction_cell {col line} {
+    global toplevel max_auction_line
+    set name KWOTE$toplevel.auction.r.$col$lineKWOTE
+    if [winfo exists $name] { 
+    } else {
+        frame $name
+        grid $name -column $col -row [expr $line + 1]
+    }
+
+    if {! [info exists max_auction_line]} { set max_auction_line  -1 }
+    if {$line > $max_auction_line} {
+QTABQ set max_auction_line $line
+    }
+
+    return $name
+}
+
+proc auction_widget {} {
+    global toplevel
+    return KWOTE$toplevel.auction.rKWOTE
+}
+
+proc talktext {} {
+    global toplevel talk_is_sep
+
+    if $talk_is_sep {
+QTABQ return .floaterTalk.text
+    } else {
+QTABQ return $toplevel.talk.text
+    }
+}
+
+
+
+
+// If the command line exists, focus it.  Other focus the text line.
+proc focus_cmdline {} {
+    global entryLinesShown_ toplevel
+
+    if {$entryLinesShown_ == KWOTEtalkKWOTE} {
+QTABQ focus $toplevel.cmd.talk
+    } else {
+QTABQ focus $toplevel.cmd.cmdline
+    }
+}
+
+
+// called when an auction button is pressed (e.g. the 7N button)
+proc auctionbbcommand {what} {
+    global alert redalert
+
+    command $what
+    if $alert {command alert}
+    if $redalert {command redalert}
+    set alert 0
+    set redalert 0
+}
+
+
+
+proc typedcommand {cmd} {
+    if {$cmd == KWOTEKWOTE} {command {inullcommand c}} {command $cmd}
+}
+
+proc typedtalk {talk} {
+    if {$talk == KWOTEKWOTE} {command {inullcommand t}} {talk $talk}
+}
+
+proc bindsetup {w tabto returnscript} {
+    global toplevel
+//  puts KWOTEbindsetup $w $tabto \{$returnscript\}KWOTE
+    bind $w <Any-Enter> KWOTEfocus %WKWOTE
+    if [string match KWOTE*.cmd.cmdlineKWOTE $tabto] {
+QTABQ bind $w <KeyPress-Tab> KWOTEfocus_cmdline; breakKWOTE
+QTABQ bind $w <Control-KeyPress-i> KWOTEfocus_cmdline; breakKWOTE
+    } else {
+QTABQ bind $w <KeyPress-Tab> KWOTEfocus $tabto; breakKWOTE
+QTABQ bind $w <Control-KeyPress-i> KWOTEfocus $tabto; breakKWOTE
+    }
+    bind $w <KeyPress-Return> $returnscript
+    return $w
+m}
+
+
+/* create a main pane in the GUI with the standard options */
+proc major_pane {path} {
+    frame $path -relief raised -borderwidth 3
+}
+
+/* create the talk frame */
+proc talkframe {t} {
+    global talkfont background
+
+    scrollbar $t.scroll -command KWOTE$t.text yviewKWOTE -takefocus false
+    text $t.text -wrap word -yscrollcommand KWOTE$t.scroll setKWOTE -width 60 -height 15 -font $talkfont -relief flat -takefocus false -background $background
+    refont $t.text talkfont
+    pack $t.scroll -side right -fill y 
+    pack $t.text -side left -expand yes -fill both
+
+    bind $t.text <Configure> KWOTE$t.text yview -pickplace endKWOTE
+    bind $t.text <FocusIn> focus_cmdline
+}
+
+
+proc debugwindow {d} {
+    major_pane $d
+    gset debugtext [text $d.text -relief raised -yscrollcommand KWOTE$d.scroll setKWOTE -width 300 -height 10]
+    scrollbar $d.scroll -command KWOTE$d.text yviewKWOTE
+    pack $d.scroll -side right -fill y
+    pack $d.text -side left
+}
+
+
+// creates the command frame but doesnkwertt pack anything; one must
+// call showEntryLines afterwards
+// XXX make the caveat be true -- donkwertt pack
+proc cmdframe {cmd} {
+    global cmdlinelabelfont cmdlinefont background
+
+    major_pane $cmd
+    frame $cmd.f
+    refont [label $cmd.f.labelt -font $cmdlinelabelfont -text KWOTETalk:KWOTE] cmdlinelabelfont
+    refont [label $cmd.f.labelc -font $cmdlinelabelfont -text KWOTECommand:KWOTE] cmdlinelabelfont
+    pack $cmd.f.labelc $cmd.f.labelt -anchor e
+    refont [entry $cmd.cmdline -font $cmdlinefont -relief sunken -bd 2 -textvariable cmd -background $background] cmdlinefont
+    refont [entry $cmd.talk -font $cmdlinefont -relief sunken -bd 2 -textvariable talk -background $background] cmdlinefont
+    pack $cmd.f -side left
+    pack $cmd.cmdline $cmd.talk -fill x -side top
+}
+
+
+
+// XXX w is a terrible variable name....
+proc auctionbb {narrow bb w {what same} {rank infer}} {
+    global auctionbbfont bb_buttons_onrow
+
+    if {$what == KWOTEsameKWOTE} {set what $w}
+
+    if {$rank == KWOTEinferKWOTE} {
+        set rank [string index $w 0]
+    }
+    if $narrow {
+       set row $rank
+    } else {
+       set row [expr ($rank + 1) / 2]
+    }
+    if [expr $row < 0] { 
+        set row alerts
+    }
+
+    refont [button $bb.$row.$w -text $what \
+QTABQ     -command KWOTEauctionbbcommand $whatKWOTE \
+QTABQ     -font $auctionbbfont] auctionbbfont
+
+    pack $bb.$row.$w -side left
+}
+
+
+
+
+// create a frame for displaying the auction
+proc auctionframe {auction {narrow 0}} {
+    global auctionbbfont auctionlabelfont auctionlabel namefont auctionnamewidth
+
+    major_pane $auction
+
+    refont [label $auction.l -font $auctionlabelfont -text $auctionlabel] auctionlabelfont
+    frame $auction.r
+
+    if $narrow {
+        set headervar position
+QTABQ set namewidth 6
+    } else {
+        set headervar playername
+QTABQ set namewidth $auctionnamewidth
+    }
+
+    refont [label $auction.r.name0 -font $namefont \
+           -textvariable [format KWOTE%s(lho)KWOTE $headervar] \
+           -width $namewidth -padx [px]] namefont
+
+    refont [label $auction.r.name1 -font $namefont \
+           -textvariable [format KWOTE%s(pard)KWOTE $headervar] \
+           -width $namewidth -padx [px]] namefont
+
+    refont [label $auction.r.name2 -font $namefont \
+           -textvariable [format KWOTE%s(rho)KWOTE $headervar] \
+           -width $namewidth -padx [px]] namefont
+
+    refont [label $auction.r.name3 -font $namefont \
+           -textvariable [format KWOTE%s(self)KWOTE $headervar] \
+           -width $namewidth -padx [px]] namefont
+
+    if $narrow {
+QTABQ pack $auction.l $auction.r -side top -anchor n
+    } else {
+QTABQ pack $auction.l $auction.r -side left -anchor n
+    }
+    
+    
+    grid $auction.r.name0 -column 0 -row 0
+    grid $auction.r.name1 -column 1 -row 0
+    grid $auction.r.name2 -column 2 -row 0
+    grid $auction.r.name3 -column 3 -row 0
+}
+
+
+// create a bidding box
+proc bbframe {bb narrow} {
+    global auctionbbfont auctionlabelfont auctionlabel namefont auctionnamewidth
+
+    major_pane $bb
+
+    if $narrow {
+QTABQ // put the header on top
+        set headerside top
+    } else {
+        set headerside left 
+    }
+    refont [label $bb.header -font $auctionlabelfont -text KWOTEYour Bid:KWOTE] auctionlabelfont
+    pack $bb.header -side $headerside -anchor n
+
+
+    // create one frame for each row of the bidding box
+    frame $bb.alerts
+    frame $bb.0
+    frame $bb.1
+    frame $bb.2
+    frame $bb.3
+    frame $bb.4
+    if $narrow {
+QTABQ frame $bb.5
+QTABQ frame $bb.6
+QTABQ frame $bb.7
+    }
+    
+
+    // decide which row to put alerts on  -- their own row,
+    // or on the same row as pass, double, and redouble
+    if $narrow {
+QTABQ set alert alerts
+    } else {
+QTABQ set alert 0
+    }
+
+    // create the alert and redalert checkboxes.
+    // (the ugly padxkwerts are for OS/X, without which  KWOTERed AlertKWOTE
+    //  gets split onto two lines!)
+    refont [checkbutton $bb.$alert.alert -text KWOTEAlertKWOTE -variable alert \
+QTABQ QTABQ -command {set redalert 0} -font $auctionbbfont \
+QTABQ QTABQ -relief flat -wraplength 1000 -padx 10 ] auctionbbfont
+    pack $bb.$alert.alert -side left
+    refont [checkbutton $bb.$alert.redalert -text KWOTERed AlertKWOTE \
+QTABQ QTABQ -variable redalert -command {set alert 0} \
+QTABQ QTABQ -font $auctionbbfont -relief flat -wraplength 1000 -padx 10] auctionbbfont
+    pack $bb.$alert.redalert -side right
+    
+
+
+    // create the bulk of the bidding buttons
+    auctionbb $narrow $bb pass Pass 0
+    auctionbb $narrow $bb x   Double  0
+    auctionbb $narrow $bb xx  Redouble  0
+
+    auctionbb $narrow $bb 1C  
+    auctionbb $narrow $bb 1D  
+    auctionbb $narrow $bb 1H  
+    auctionbb $narrow $bb 1S  
+    auctionbb $narrow $bb 1N  
+    auctionbb $narrow $bb 2C  
+    auctionbb $narrow $bb 2D  
+    auctionbb $narrow $bb 2H  
+    auctionbb $narrow $bb 2S  
+    auctionbb $narrow $bb 2N  
+    auctionbb $narrow $bb 3C  
+    auctionbb $narrow $bb 3D  
+    auctionbb $narrow $bb 3H  
+    auctionbb $narrow $bb 3S  
+    auctionbb $narrow $bb 3N  
+    auctionbb $narrow $bb 4C  
+    auctionbb $narrow $bb 4D  
+    auctionbb $narrow $bb 4H  
+    auctionbb $narrow $bb 4S  
+    auctionbb $narrow $bb 4N  
+    auctionbb $narrow $bb 5C  
+    auctionbb $narrow $bb 5D  
+    auctionbb $narrow $bb 5H  
+    auctionbb $narrow $bb 5S  
+    auctionbb $narrow $bb 5N  
+    auctionbb $narrow $bb 6C  
+    auctionbb $narrow $bb 6D  
+    auctionbb $narrow $bb 6H  
+    auctionbb $narrow $bb 6S  
+    auctionbb $narrow $bb 6N  
+    auctionbb $narrow $bb 7C  
+    auctionbb $narrow $bb 7D  
+    auctionbb $narrow $bb 7H  
+    auctionbb $narrow $bb 7S  
+    auctionbb $narrow $bb 7N  
+
+    if $narrow {
+QTABQ pack $bb.alerts $bb.0 $bb.1 $bb.2 $bb.3 $bb.4 $bb.5 $bb.6 $bb.7 -side top
+    } else {
+QTABQ pack $bb.0 $bb.1 $bb.2 $bb.3 $bb.4 -side top
+    }
+}
+
+
+
+// create all of the GUI except for the menu bar
+// toplevel should be KWOTE.bigmainKWOTE or KWOTE.smallmainKWOTE, and the
+// procedure will do things slightly differently depending 
+// on which is specified
+proc gui_setup {toplevel} {
+    global floater_version talk_is_sep
+
+    frame $toplevel
+
+    // create the components
+    major_pane $toplevel.info
+    label $toplevel.info.version -text $floater_version
+    label $toplevel.info.stat -text KWOTE KWOTE
+    label $toplevel.info.infoline -text KWOTE KWOTE
+    matrixsetup $toplevel.play
+    major_pane $toplevel.talk
+    talkframe $toplevel.talk
+    major_pane $toplevel.talkfiller
+    debugwindow $toplevel.debug
+    cmdframe $toplevel.cmd
+    auctionframe $toplevel.auction [string equal $toplevel .bigmain]
+    bbframe $toplevel.bb [string equal $toplevel .bigmain]
+
+
+    // lay out the components
+    set padx 2
+    set pady 2
+
+    pack $toplevel.info.version -side top -fill x 
+    pack $toplevel.info.stat -side top -fill x 
+    pack $toplevel.info.infoline -side top -fill x
+
+    if [string equal $toplevel KWOTE.bigmainKWOTE] {
+        // put a lot of stuff in a separate column on the right
+QTABQ frame $toplevel.rightcolumn
+QTABQ lower $toplevel.rightcolumn
+QTABQ pack $toplevel.rightcolumn -side right -fill y
+
+QTABQ $toplevel.info.stat configure -text KWOTE \n\n\n KWOTE
+
+
+QTABQ pack $toplevel.info -in $toplevel.rightcolumn -side top -fill x -padx $padx -pady $pady
+
+QTABQ pack $toplevel.bb  -in $toplevel.rightcolumn -side top  -fill x -anchor n -padx $padx -pady $pady
+
+
+QTABQ pack $toplevel.auction  -in $toplevel.rightcolumn  -side top -fill x -padx $padx -pady $pady
+
+QTABQ major_pane $toplevel.rightcolumn.iconholder
+QTABQ pack $toplevel.rightcolumn.iconholder -side top -fill both -expand yes -padx $padx -pady $pady
+QTABQ canvas $toplevel.rightcolumn.iconholder.i -width 48 -height 48 -borderwidth 0 -relief flat -highlightthickness 0
+QTABQ $toplevel.rightcolumn.iconholder.i create image 0 0 -image floater-48 -anchor nw
+QTABQ pack $toplevel.rightcolumn.iconholder.i -side top -expand yes
+    } else {
+QTABQ pack $toplevel.info -side top -fill x -padx $padx -pady $pady
+    }
+    major_pane $toplevel.playholder
+    lower $toplevel.playholder
+    pack $toplevel.play -in $toplevel.playholder -side top -padx 3 -pady 3
+    pack $toplevel.playholder -side top -padx $padx -pady $pady -fill x
+
+#if DEBUG
+    pack $toplevel.debug -side bottom -fill x -padx $padx -pady $pady
+#endif
+    pack $toplevel.cmd -side bottom -fill x -padx $padx -pady $pady
+    // talk area will get packed properly when talkSeparate is called
+
+
+    // set up key bindings
+    bindsetup $toplevel.cmd.cmdline $toplevel.cmd.talk \
+QTABQ {global cmd toplevel; if {$cmd == KWOTEKWOTE} {typedcommand $cmd} else {typedcommand $cmd; $toplevel.cmd.cmdline delete 0 end}}
+    
+    bindsetup $toplevel.cmd.talk $toplevel.cmd.cmdline \
+QTABQ {global talk toplevel; if {$talk == KWOTEKWOTE} {typedtalk $talk} else {typedtalk $talk; $toplevel.cmd.talk delete 0 end}}
+}
+
+
+// the argument to showauction is a boolean---whether to show the auction
+// the TUI version of showauction is in floater.tcp
+proc showauction {bool} {
+    global showingauction toplevel
+
+    set showingauction $bool
+
+    if [string equal $toplevel .bigmain] {
+        // auction is always visible in bigmain mode
+        return
+    }
+
+    if $bool {
+QTABQ pack $toplevel.auction -side top -after $toplevel.playholder
+    } else {
+QTABQ pack forget $toplevel.auction
+    }
+}
+
+
+
+proc showButtonBar {b} {
+    global toplevel showingbb
+
+    set showingbb $b
+
+    if [string equal $toplevel .bigmain] {
+        // button bar is always visible in bigmain mode
+        return
+    }
+
+    if $b {
+        pack $toplevel.bb -after $toplevel.auction
+    } else {
+QTABQ pack forget $toplevel.bb
+    }
+}
+
+
+// split an info or status line into multiple lines
+// if in non-compact display mode
+proc split_line {line min_nls} {
+    global toplevel
+
+    if [string equal $line KWOTEKWOTE] { set line KWOTE KWOTE }
+
+    if [string equal $toplevel KWOTE.bigmainKWOTE] {
+        set line [string map KWOTE| {\n}KWOTE $line]
+QTABQ set num_nls [llength [split $line KWOTE\nKWOTE]]
+QTABQ for {set x 0} {$x < [expr $min_nls - $num_nls]} {incr x} {
+QTABQ     set line KWOTE$line\n KWOTE
+QTABQ }
+    } else {
+QTABQ set line [string map KWOTE| {; }KWOTE $line]
+    }
+
+    return $line
+}
+
+// set the info line
+proc gui_setinfo {newinfo}  {
+    global infoline
+    set infoline $newinfo
+
+    [info_widget] configure -text [split_line $newinfo 3]
+}
+
+
+// set the status line
+proc gui_setstatus {newstatus}  {
+    global statusline toplevel
+
+    set statusline $newstatus
+
+    [status_widget] configure -text [split_line $newstatus 1]
+}
+
+
+
+// copy the text from one text widget to another.
+// quietly do nothing if either window does not exist
+proc copytext {old new} {
+    catch {$new insert end [$old get 0.0 end-1c]}
+}
+
+
+
+// move the talk area to a separate window, or move it back
+proc gui_separateTalk {sep {win auto}} {
+    global toplevel talk_is_sep talkfont
+
+    if {$win == KWOTEautoKWOTE } {
+QTABQ set win $toplevel 
+    }
+
+    set talk_is_sep $sep
+
+
+    set padx 2
+    set pady 2   // XXX copied from gui_setup; these should be stashed
+                 // in a single place, perhaps as function calls
+
+
+    if $talk_is_sep {
+QTABQ catch {destroy .floaterTalk}
+
+QTABQ toplevel .floaterTalk
+QTABQ wm title .floaterTalk KWOTEFloater TalkKWOTE
+
+QTABQ talkframe .floaterTalk
+
+QTABQ .floaterTalk.text yview -pickplace end
+QTABQ copytext $win.talk.text .floaterTalk.text
+QTABQ $win.talk.text delete 0.0 end
+QTABQ pack forget $win.talk
+QTABQ pack $toplevel.talkfiller -side top -fill both -expand yes -padx $padx -pady $pady 
+    } else {
+QTABQ copytext .floaterTalk.text $win.talk.text
+QTABQ catch {destroy .floaterTalk}
+QTABQ pack forget $toplevel.talkfiller
+QTABQ pack $toplevel.talk -side top -fill both -expand yes -padx $padx -pady $pady 
+    }
+}
+
+
+
+proc gui_iscompact {} {
+    global toplevel
+    return [string equal $toplevel KWOTE.smallmainKWOTE]
+}
+
+
+// set whether the GUI is in the compact style or not
+proc gui_compact {compact} {
+    global toplevel showingauction showingbb talk_is_sep statusline infoline entryLinesShown_ gui_compact_
+
+    set gui_compact_ $compact
+
+    set saved_talktext [[talktext] get 0.0 end-1c]
+
+    set old_toplevel $toplevel
+
+    if $compact {
+QTABQ set new_toplevel .smallmain
+    } else {
+QTABQ set new_toplevel .bigmain
+    }
+
+    if {$old_toplevel == $new_toplevel} { return }
+
+    gui_setup $new_toplevel
+
+
+
+    // fix up the new toplevel with the old onekwerts info and layout
+    matrix_copycards $new_toplevel
+    copybids $new_toplevel
+
+
+    // display the new toplevel
+    destroy $old_toplevel
+    pack $new_toplevel -expand yes -fill both
+    set toplevel $new_toplevel
+
+
+
+    // show the appropriate panes
+    if [info exists showingauction] {
+QTABQ showauction $showingauction
+    }
+    if [info exists showingbb] {
+QTABQ showButtonBar $showingbb
+    }
+    if [info exists talk_is_sep] {
+QTABQ gui_separateTalk $talk_is_sep
+    }
+    if [info exists entryLinesShown_] {
+QTABQ showEntryLines $entryLinesShown_
+    }
+
+    // fix up the text
+    [talktext] delete 0.0 end
+    [talktext] insert end $saved_talktext  
+    if [info exists statusline] { gui_setstatus $statusline }
+    if [info exists infoline] { gui_setinfo $infoline }
+
+
+    // display the player names
+    // XXX should not really display the names if we are in limbo
+    foreach player {lho rho self pard} {
+QTABQ global playername position
+QTABQ setname $player $position($player) $playername($player)
+    }
+
+    // decide whether to hide the matrix
+    hideMatrixDuringAuction [string equal $toplevel .smallmain]
+
+
+    // fix the focus
+    focus_cmdline     // it would be best to mimick the old focus,
+                      // instead of always focussing the command line,
+                      // but so far no one has cared enough to bother
+                      // with making that work.
+
+    gui_setWindowSize
+}
+
+
+
+// set the size of Floaterkwerts main window
+proc gui_setWindowSize {} {
+    global screenheight screenwidth effectiveheight toplevel macintosh geometry_specified
+
+    if $geometry_specified { return }
+
+    if {$toplevel == KWOTE.bigmainKWOTE} {
+QTABQ set w 850
+    } else {
+QTABQ set w 600 
+    }
+    if $macintosh {
+QTABQ set w [expr $w + 100]
+    }
+    if {$w > [expr $screenwidth - 35]} {
+QTABQ set w [expr $screenwidth - 35]
+    }
+
+    set h 700
+    if {$h > $effectiveheight} {
+QTABQ set h $effectiveheight
+    }
+
+    wm geometry . [join KWOTE$w $hKWOTE x]
+
+
+    // these minimum sizes should be considered carefully.
+    // also, the minsize should depend on
+    // whether the GUI is in compact mode
+    wm minsize . 500 500
+}
+
+

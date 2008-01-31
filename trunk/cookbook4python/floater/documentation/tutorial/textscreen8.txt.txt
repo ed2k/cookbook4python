@@ -1,0 +1,50 @@
+ame and your email address.                               
+` Use a blank name to
+ abort.                                                    
+` Attempting to conn
+ect to login server at 128.32.34.48:2140                    
+` Logging in...    
+                                                             
+` You are now logg
+ed in as Buzz                                                 
+` You will receiv
+e your password by email                                       
+` Attempting to 
+connect to login server at 128.32.34.48:2140                    
+` Bill A is now
+ hosting a table.                                                
+` Jonathan is 
+now hosting a table.                                              
+Tables: Jonat
+han       IMP   3  need 1                                          
+Tables: Bill
+ A       IMP   1  full, kibbitzers welcome                          
+Tables: a t
+otal of 2 tables                                                     
+` Attempti
+ng to connect to 128.32.34.47:4062                                    
+` Communi
+cation established                                                     
+` Franco
+ has joined (2).                                                        
+` David
+ has joined (3).                                                         
+` Jona
+than has joined (4).                                                      
+` Jon
+athan is sitting South                                                     
+` Da
+vid is sitting East                                                         
+` F
+ranco is sitting West                                                        
+  
+                                                                              
+ 
+                                                                               
+
+--------------------------------------------------------------------------------
+
+command                                                                        
+ 
+   talk                                                                       
+  

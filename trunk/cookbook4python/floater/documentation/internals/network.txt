@@ -1,0 +1,590 @@
+NETWORK NODES
+   login server
+   result server
+   pseudomailer
+   client, which optionally hosts a table
+   
+
+Each node is listening on some port.  All nodes must listen on an IP
+and port that can be connected to from the Internet, with one
+exception: clients which are not hosting, do not need to be
+connectable from the Internet.
+
+
+COMMUNICATION
+
+Communications happens by message-passing over TCP sockets, and by
+email.
+
+Any node may connect to any other node and send messages across that
+socket.
+
+Clients also sometimes send email.
+
+Each kind of communication is described below.
+
+
+TOPOLOGY
+
+Otherwise, Floater uses TCP connections.  There are the following
+connections possible:
+
+   clients connect to login server
+   clients connect to results server
+   clients connect to pseudo-mailer
+   hosting clients connect to each other, forming a "table tree"
+
+
+
+TABLE TREE
+
+   Each table host takes part in a tree and passes messages up and down.
+
+   If a table is disconnected from the tree, then it tries to rejoin.
+   Play may continue while the table is disconnected.
+
+   (need to describe the message passing here....  is all
+   communication via neighbors, or what??)
+
+   To join the table tree, you send a message to anyone in the tree
+   requesting to join.  You then get a message back telling you either
+   that it is OK, or that you have been "shunted" to a different spot
+   to try to connect.
+
+
+KIBITZER TREE
+
+   There is some code in floater to support having clients connect to
+   tables in a tree, as well.  However, the code is not used right
+   now; when you join a table, you always join the table's host.
+
+
+MESSAGE FORMAT
+
+Within C code, network messages are passed around using the following
+struct:
+
+   typedef struct {
+     char kind;
+     char **args;
+     char *from, *ID;
+   } message;
+
+"kind" defines the type of message.  Messages have string arguments
+listed in args.  The individual types are described below, including
+what the arguments mean.
+
+"from" is the Floater ID of the sender, e.g. JoeBlow.  "ID" is the
+string representation of an integer that is different for each message
+that has been created on a particular node.
+
+Messages should be created using the makemsg* functions in message.h,
+so that from and ID are filled in correctly.
+
+
+MESSAGE ENCODING
+
+The functions msgtotext() and parsemessage() convert a message between
+a serialized format suitable for the net, and a struct message as
+described above.  The serialized network format is as follows.
+
+Each message begins with the following fields:
+
+
+    kind, as one byte
+    number of arguments, as a decimal string
+    one \ character  (to delimit the end of the number of arguments)
+    length of the "from" field, as a decimal string
+    one \ character
+    length of the "ID" field, as a decimal string
+    one \ character
+    the "from" string itself
+    the "ID" string itself
+
+After these fields, the lengths of the arguments are listed as decimal
+strings, with a \ character after each length.  Then, the argument
+strings themselves are listed, one after the other.
+
+
+For example, consider the following serialized message:
+
+    X2\7\5\JoeBlowfoo3\6\foopizazz
+
+
+This stands for a message of type 'X', sent by user JoeBlow, with two
+arguments: "foo" and "pizazz".
+
+    
+
+
+
+MESSAGE TYPES
+
+This section lists all the different message types Floater can send.
+
+
+
+MULTIMESSAGE (kind 'M')
+  arg 0...* : serialized messages
+
+A compound message.  It has the same meaning as if the component
+messages were sent one after the other.  It may have any number of
+arguments.
+
+
+
+TABLES_REQUEST (kind 't')
+  (no arguments)
+
+Request to know about all tables that the recipient knows about.  The
+recipient should send back a sequence of messages telling the sender
+what it knows including messages of type ANNOUNCE_LOGINSERVER,
+ANNOUNCE_TABLEROOT, ANNOUNCE_GLOBALDATE, and ANNOUNCE_TABLE.
+
+
+GOODBYE (kind 'g')
+  (no arguments)
+
+The sender is about to close the connection; they will send no more
+messages to the recipient on this connection.
+
+
+LOGIN (kind 'L')
+  arg 0:  protocol version
+  arg 1:  user name
+  arg 2:  password, or email address if it is a new 
+  arg 3:  IP address of client
+  arg 4:  port of client
+  arg 5:  "new", or blank
+  arg 6:  platform-description string, from TCL
+
+
+A request to login.  The recipient should be a login server.
+
+
+LOGGED_IN (kind 'i')
+  arg 0:  user name
+  arg 1:  "new" or "", followed by "y" or "n"
+
+The optional "new" part determines whether the account is new and a
+password is on the way in email.  The "y" or "n" specifies whether or
+not the recipient is allowed to host a table.
+
+
+
+WRONG_PASSWORD (kind 'w')
+  (no arguments)
+
+The password sent in a previous request, was incorrect.
+
+
+CHANGEPW (kind '_')
+  arg 0: user name
+  arg 1: old password
+  arg 2: new password
+
+A requeste to change a user's password.
+
+
+CHANGEDPW (kind '=')
+  arg 0: user name
+  arg 1: old password
+  arg 2: new password
+
+An acknowledgement that a password has been changed.
+
+
+CHANGEEMAIL (kind 'G')
+  arg 0: user name
+  arg 1: new email
+
+A request to change a user's email.
+
+
+CHANGEDEMAIL (kind 'h')
+  arg 0: user name
+  arg 1: new email
+
+An acknowledgement that a user's email has been changed.
+
+
+NAME_IN_USE (kind 'u')
+  (no arguments)
+
+The sender refuses to create the requested account, because the name
+is already being used.
+
+
+
+REQUEST_JOIN (kind 'J')
+  arg 0: protocol version
+  arg 1: user name
+  arg 2: IP address
+  arg 3: IP port
+  arg 4: joining capacity
+
+A request to join a table.  The joining capacity is one of:
+  KIBITZER 'K'
+  TABLE_SERVER 'T'
+  LHO 'L'
+
+
+REJECTED_JOIN (kind 'N')
+  arg 0: reason
+  arg 1: requested capacity
+
+The sender rejects the recipients request to join them.
+
+
+ACCEPTED_JOIN (kind 'Y')
+  arg 0: capacity
+  arg 1: IP address of host
+  arg 2: port of host
+
+The sender is letting the recipient join them.
+
+
+
+JOIN_ELSEWHERE (kind 'E')
+  arg 0: user name
+  arg 1: IP address
+  arg 2: port
+  arg 3: capacity
+
+The sender says not to join them directly, but instead to join the
+specified user/IP/port.
+
+
+
+REQUEST_SERVE (kind '[')
+
+(unused in the code?)
+
+
+
+SERVE (kind ']')
+
+(unused in the code?)
+
+
+RESULT (kind 'I')
+  arg 0: hand name
+  arg 1: points, from NS perspective
+  arg 2: auction
+  arg 3: play
+  arg 4: scoring
+  arg 5: north's username
+  arg 6: south's username
+  arg 7: east's username
+  arg 8: west's username
+  arg 9: "msg"  (???)
+
+
+A claim that this hand has bene played with the specified result.  The
+auction and play are formated how?  (XXX) The scoring is probably MP
+or IMP, but this has not been checked.  (XXX)
+
+The results server will automatically send back a list of results.
+
+
+REQUEST_RESULT (kind 'R')
+  arg 0:  Y or N
+  arg 1:  hand name
+
+The sender is requesting all results that the reciever (a results
+server) has for the specified hand.  If arg 0 is Y, then the server
+should disconnect after sending over the results.
+
+
+
+INFO (kind 'y')
+   arg 0: any string
+
+An informative message that should be displayed to the user.
+
+
+
+YOU_HAVE_SEEN (kind 'U')
+   arg 0: hand set
+   arg 1: encoded set of hands
+
+
+The hand set specifies a group of hands.  The encoded set of hands is
+descride in the function parse_you_have_seen().  (XXX insert description)
+
+
+FIND (kind 'b')
+   arg 0: user name
+
+Request information about the specified player.
+
+
+FOUND (kind 'B')
+   arg 0: informative string
+
+The result of the most recent FIND request.
+
+
+UPDATE_LOCATION (kind 'k')
+   arg 0: user name
+   arg 1: location info
+
+Tell the recipient the new location of the specified user.  (??? XXX)
+
+
+
+
+ANNOUNCE_LOGINSERVER (kind 'l')
+   arg 0: user name of sender
+   arg 1: login server's hostname
+   arg 2: login server's address
+   arg 3: login server's port
+
+Tell the recipient what login server you are using.
+
+
+
+ANNOUNCE_TABLEHOST (kind 'H')
+   arg 0: user name of sender
+   arg 1: table host's hostname
+   arg 2: table host's address
+   arg 3: table host's port
+
+Tell the recipient what table I am at.
+
+
+ANNOUNCE_TABLEROOT (kind '^')
+   arg 0: user name of sender
+   arg 1: table root's hostname
+   arg 2: table root's address
+   arg 3: table root's port
+
+Tell the recipient the sender's best idea of the current table root.
+
+
+PLAY_STATUS (kind 'p')
+   arg 0: hand ID
+   arg 1: play status
+
+??? (XXX)
+
+
+
+PASS_STATUS (kind 'j')
+   arg 0: hand ID
+   arg 1: pass status
+
+??? (XXX)
+
+
+
+AUCTION_STATUS (kind 'a')
+   arg 0: hand ID
+   arg 1: auction status
+
+??? (XXX)
+
+
+NEW_HAND (kind '*')
+   arg 0: hand ID
+   arg 1: hand name  (XXX huh?)
+   arg 2: seed
+   arg 3: auction status
+   arg 4: play status
+   arg 5: game state (hearts and rubber; "" otherwise)
+   arg 6: scoring method
+   arg 7: pass status (for hearts)
+
+Tell the recipient about the hand that is now being played.
+
+
+REQUEST_SEAT (kind 'S')
+   arg 0: user name of requestor
+   arg 1: seat string
+   arg 2: user IP address
+   arg 3: user port
+
+The sender wants to sit down at the recipient's table
+
+SEEN (kind 'e')
+   arg 0: seat (N, S, E, or W)
+   arg 1: ??? (XXX)
+   arg 2: seen string (XXX need to document the format; it's in the
+                       TCL code's "seen" function)
+
+Tell the recipient what hands they have seen.
+
+
+
+CC_TO_HOST (kind 'v')
+   arg 0: NS or EW
+   arg 1: the comment card
+
+Tell a table host about a new comment card.  If the recipient is a
+table host, then broadcast a CC message to everyone else at the table.
+Otherwise, pass the message on to your table's host.
+
+
+RESULT_DUMP (kind 'z')
+   arg 0: hand name
+   arg 1: "done" or other options (XXX)
+   arg 2: scoring format, as an integer  (XXX what are the codes?)
+   arg 3: hand number
+
+
+Tell the recipient to give a results dump to the user.
+
+(XXX the arguments are not yet documented)
+
+
+
+SAY (kind '"')
+   arg 0: user name
+   arg 1: what they say
+
+
+SAY_EXCEPT_PARD (kind '\'')
+   arg 0: user name
+   arg 1: what they say
+
+SAY_TO_ONE (kind '/')
+   arg 0: user name
+   arg 1: who they say it to
+   arg 1: what they say
+
+SAY_TO_OPP (kind 'O')
+   arg 0: user name
+   arg 1: what they say
+
+SAY_TO_SPEC (kind '%')
+   arg 0: user name
+   arg 1: what they say
+
+
+
+ANNOUNCE_CONNECT (kind 'C')
+   arg 0: user name that has connected
+
+There is a new user at the recipient's table
+
+
+ANNOUNCE_DISCONNECT (kind 'D')
+   arg 0: user name that has disconnected
+
+A user has left the recipient's table.
+
+
+ANNOUNCE_PRESENCE (kind 'P')
+   arg 0: a user name
+   arg 1: a hand ID, or "baloney"
+   arg 2: "1" if the user is a spectator, otherwise "0"
+
+Announce that the specified user is at the table.  The hand ID seems
+to be ignored.
+
+
+FORGET_WHO (kind 'F')
+  (no arguments)
+
+The recipient should clear their records of who is present at the
+table, because a series of ANNOUNCE_PRESENCE messages are about to
+arrive.
+
+
+
+SEATED (kind 's')
+   arg 0: user name that is sitting down
+   arg 1: seat string
+   arg 2: user IP address
+   arg 3: user port
+
+A user has sat down.
+
+
+CLAIM (kind 'c')
+   arg 0: hand ID
+   arg 1: tricks claimed
+
+The sender is claiming they can take the specified number of tricks.
+
+
+REJECT_CLAIM (kind 'r')
+   arg 0: hand ID
+   arg 1: tricks claimed
+
+
+ACCEPT_CLAIM (kind 'A')
+   arg 0: hand ID
+   arg 1: tricks claimed
+
+RETRACT_CLAIM (kind 'o')
+   arg 0: hand ID
+   arg 1: tricks claimed
+
+
+ANNOUNCE_GLOBALDATE (kind 'd')
+   arg 0: date
+   arg 1: seed
+
+
+KIB1 (kind 'K')
+   arg 0: player wanting to kibitz
+   arg 1: seat they want to kibitz
+   arg 2: handID they want to kibitz
+
+Someone is requesting to kibitz a single hand.
+
+
+SPEC (kind 'W')
+   arg 0: player wanting to spectate
+   arg 1: handID they want to spectate during
+
+
+CC (kind 'V')
+   arg 0: NW or EW
+   arg 1: the comment card
+
+A new comment card has been posted at the current table.
+
+
+
+FORGET_TABLES (kind 'f')
+   (no longer used)
+
+
+ANNOUNCE_TABLE (kind 'T')
+   arg 0: user name of table's host
+   arg 1: name of the root of this tree
+   arg 2: IP address of table host
+   arg 3: port of table host
+
+
+Announce that a table exists.
+
+
+TABLE_DEMISE (kind '-')
+   arg 0: user name
+
+Announce that a table is ceasing to exist.
+
+
+
+EMAIL
+
+The client sometimes sends email, using the pseudomailer if necessary.
+
+   bugs
+   results
+
+
+RESULT SERVER
+
+(uses normal protocol, ro wthat??)
+
+
+PSEUDOMAILER
+
+(I know this uses a hacked up format and not the normal stuff)
+
+(This should really be eradicated, eventually, anyway.  Have a real
+server, and stop using email from the client.)

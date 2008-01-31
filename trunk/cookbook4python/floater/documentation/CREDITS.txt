@@ -1,0 +1,39 @@
+# $Id: CREDITS.txt,v 1.2 2003/11/30 20:10:19 lexspoon Exp $
+# If you contribute something to Floater, then add a patch to this file along
+# with your contribution.   If you know of any contributions missing from
+# this file, please submit a patch or ask that it be fixed.
+
+
+
+Geoff Pike
+pike@cs.berkeley.edu
+Geoff Pike is the original author of Floater and is by far the person
+who has worked most on it.
+
+
+Andrei D. Caraman
+adc@floater.org
+Andrei Caraman has helped Floater in many ways, including maintaining
+www.floater.org and mania.floater.org.
+
+
+John Heidemann
+(unlisted)
+John Heidemann contributed bitmaps for the cards.
+
+
+Gary Sager
+(unlisted)
+Gary Sager contributed bitmaps for the playing cards.
+
+
+Jim Foster
+(unlisted)
+Jim Foster ported Floater to MacOS Classic.
+
+
+Lex Spoon
+lex@cc.gatech.edu
+Lex Spoon built the Debian package and started the Floater group on SourceForge.
+
+

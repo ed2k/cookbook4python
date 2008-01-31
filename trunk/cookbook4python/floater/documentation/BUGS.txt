@@ -1,0 +1,46 @@
+This file lists some of the known bugs and limitations of Floater as
+of version 1.3b2.  Future bug reports should use the Bug tracker on
+SourceForge.net.
+
+Older bugs are at toward the bottom; newer bugs are toward the top.
+An asterisk after the numeral indicates that the bug has been fixed.
+
+Send bug reports to bugs@floater.org.
+
+8. When I host, scoring method defaults to whatever it was at the
+previous table.  Furthermore, when I do, say, "score imp," the list of
+tables isn't updated immediately.
+
+7. When using the GUI, occasionally I have had the menu bar at the
+top disappear and not come back.  This appears to be a Tcl/Tk bug.  If
+it happens, iconify Floater and then restore it, and the menu bar
+will reappear.
+
+6. The review command sometimes puts your side's actions in parens.
+I think it should always put the other guys' actions in parens.
+
+5. Pseudomail works but doesn't correctly report whether it succeeded.
+(It always reports success.)
+
+4. The documentation is a work in progress.  For the latest, look at:
+     http://www.floater.org/doc
+
+3. Curses may be confused about your screen size or terminal attributes.
+Putting the following in your .cshrc may do the trick:
+    setenv TERM vt100
+
+    set noglob
+    eval `tset -s`
+    unset noglob
+
+Another possible fix is to try doing:
+    eval `resize`
+
+2. Logging in disconnects you from the table.  (This is becuase the other
+players would become confused if your name suddenly changed.  But it
+can be fixed.)
+
+1. Sometimes after being shunted (when you do the `host' command) you
+find that you do not get connected properly to the table tree.  When
+this happens, try again a few times.  As a last resort, you may do
+`host <tablename>' to try to join the table tree at that location.

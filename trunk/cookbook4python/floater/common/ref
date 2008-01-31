@@ -1,0 +1,310 @@
+	accept
+Accept declarer's claim.  Must be used by each defender for a claim to
+be accepted.
+	alert
+"Alert some ... text ..." is equivalent equivalent to "explain Alert!
+some ... text ..." and is traditionally used to self-alert bids or
+carding that is slightly unusual.  "Redalert" should be used for highly
+unusual bids or carding.
+	autodeal
+After a certain amount of time elapses at the end of a hand, Floater
+automatically deals a new hand if four people are seated.  To control
+the timing, "autodeal <N>" sets the number of seconds to wait between
+hands.  With no arguments, "autodeal" toggles on and off whether new
+hands are ever dealt automatically.  (By the way, you must be host of
+the table for your autodeal setting to have any effect.)
+	beep
+You may beep someone at your table by doing "beep <name>" (e.g., "beep
+Joe Smith"), or you may beep everyone at your table by just doing
+"beep."  The bell will ring on the recipient's machine and everyone at
+the table will see a message indicating who has beeped whom.
+	beepAtMyTurn
+There is an option that causes Floater to beep when it becomes your
+turn to bid or play.  To toggle the described behavior, invoke this
+command.  To turn it off, invoke this command with the argument "no."
+To turn it on, invoke this command with the argument "yes."  See also
+the options menu on the GUI.
+	bid
+Make a call.  For example, to bid 3 Notrump, do "bid 3n".  Each strain
+is represented by a single letter: c for clubs, d for diamonds, h for
+hearts, s for spades, and n for notrump.  "Bid p," "bid pass," "bid
+x," "bid xx," "bid double," and "bid redouble" have the obvious
+meanings.  Unless you have customized the bindings (see "bind"), the
+word "bid" may be omitted ("3n" is the same as "bid 3n" and so on).
+	bind
+Bind is used to create shorthand ways of specifying any command or
+sequence of commands.  For example, "bind typ say Thanks, pard!" would
+allow you to subsequently use "typ" as if it were a normal command.
+Another example: Blue Club players might do "bind 1c bid 1c; explain
+Blue club: 17+ points, any distribution."
+	bottom
+If you are using the textual user interface, bottom is used to go to
+the bottom of the scrolling talk window.  You may also use the scroll
+command or the up and down array keys to select the portion of the
+scrolling talk window you view.
+	bug
+Do "bug <arbitrarily long one-line description>" and an email message
+containing your description and a dump of some internal variables will
+be sent to the Floater maintainers.
+	c
+Play your lowest club.
+	cards
+Remind me what my cards were at the beginning of the hand.  May also
+be used by kibitzers, with analogous meaning.
+	cc
+Invokes the textual user interface's convention card editor.  By
+default you will be editing your side's convention card, or NS's if
+you are not seated.  ("Editing" of a conventioning card other than
+your own is really limited to viewing; changes are not allowed.)  The
+three forms of the command are "cc," "cc NS," and "cc EW."  If you are
+using the GUI, "cc" is equivalent to "ccdump" because there is no
+built-in editor for the GUI.
+	ccdump
+Show the specified convention card (e.g. "ccdump NS").  If none is specified,
+show my convention card if I am seated or NS's otherwise.  Furthermore,
+you may also specify a range of line numbers to display (e.g. "1-5" or
+"23-" or "-9" or just "17").  Put the range first, if any, first;
+so, "ccdump -3" or "ccdump 12-16 NS."
+	ccload
+Load a convention card from the named text file (e.g. "ccload sam.cc")
+and make it the convention card for my side.  You must be seated to
+invoke the ccload command.
+	ccsave
+Save your current convention card to the named text file.
+	children
+Show who gets messages from me in the communication tree.  Primarily
+intended for debugging.
+	claim
+As declarer, suggest to the defense that you are certain of some
+number of tricks, and further play is not necessary.  The defenders
+will be shown all four hands and may then use "accept" or "reject" and/or
+continue playing.  Simply doing "claim" claims the rest of the tricks;
+"claim 3" would mean a claim to make 3 of the remaining tricks;
+"claim -2" would be a claim to make all but 2 of the
+remaining tricks; "claim 0" means concede the rest; and "claim +3"
+would be a claim for the contract plus 3 overtricks.
+	close
+Stop hosting (or close) your table.  You must be hosting a table for
+this to be allowed.
+	compact
+The GUI has two general layouts: compact and non-compact.  Floater
+will try to pick the best layout for your screen size, but you can
+change it manually with this command.  Type "compact yes" or
+"compact no" to try the two different layouts.
+	competitive
+Turns on competitive mode.  This is the default.  Results will be
+reported by email for IMPs and MPs.  (Competitive mode is not relevant
+to hearts or rubber bridge.)
+	confusing
+Display the `CONFUSING' file.
+	copyright
+Display copyright and warranty information.
+	d
+Play your lowest diamond.
+	deal
+Go on to the next hand.  May only be used by the host of the table.
+	deiconifyIfBeeped
+Normally when you are beeped by another player (see "beep"), your
+Floater window is deiconified if it had been iconified.  This applies
+only to the GUI.  To toggle the described behavior, invoke this
+command.  To turn it off, invoke this command with the argument "no."
+To turn it on, invoke this command with the argument "yes."  See also
+the options menu on the GUI.
+	disconnect
+Close all network connections.  You will become a "lurker."  If you
+are hosting a table at the time you issue the command, it is
+equivalent to "close."
+	down
+A variant of the "claim" command.  For example, "Down 2" is a claim
+for 2 fewer tricks than you have contracted for.
+	e (or east)
+If the East seat is available, take it.
+	east (or e)
+If the East seat is available, take it.
+	emailchange
+This command may be used to inform the Floater login server of a change in
+your email address.  (Such changes do not apply to the Floater mailing list.)
+You must be logged in to use the command, and you should specify your
+full email address as an argument to the command (e.g., "emailchange
+bob@aol.com").
+	execute
+Read a file and interpret the lines of the file as if they were typed
+in on the command line at that moment.  E.g., "execute ~/floater/foo."
+	explain
+Say something that everyone at the table except partner can hear.
+This is typically used to explain conventional calls to the opponents
+and kibitzers, among other things.
+	find
+Find information about people.  For example, "find Joe Bob, elmo" will
+attempt to find information about the players Joe Bob and elmo.  Any
+number of names, separated by commas, is allowed.  Recent information
+about a player's location, if available, is among the things displayed.
+	follow
+Play the card of the named rank.  E.g. "follow k."  Unless you have
+customized the bindings (see "bind"), the word "follow" may be omitted
+("7" is the same as "follow 7" and so on).
+	font
+If you are using the GUI, you may change the font size for the matrix
+and auction by doing "font large," "font medium," or "font small." 
+(To change the font for the talk window, use the "talkfont" or
+"talkfontsize" command.) 
+	h
+Play your lowest heart.
+	hideAuction
+If you are using the GUI, you may use this command to control when
+during the first trick the auction is removed from view.  The command
+`hideAuction N' (for positive N) will cause the auction to be hidden
+at the end of trick one or N seconds after the end of the auction,
+whichever comes first.  The command `hideAuction -1' will cause the
+auction to be hidden when trick one has completed.
+	host
+Host a new table.  Others may then connect to your table to play.
+	ip
+Display the IP address and port number that others may use to connect
+to you.
+	join
+Join a table.  You must specify the name of the host of the table you
+wish to join, e.g., "join moe".  (Alternatively, you may specify an IP
+address and port separated by a colon, e.g., "join 128.110.38.14:8765."
+Or, to join a table hosted on your local machine, you may omit the IP
+address and simply put the port number after a colon.)
+	kibitz
+Watch over one player's shoulder.  e.g. "kib South" or "kib Joe Smith"
+	last
+Show the previous trick.
+	lho
+Say something to your left-hand opponent.  E.g. "lho Is that for penalty?"
+	login
+Connect to the login server and transmit your account name and
+password.  In return, the login server will check your password and
+authenticate you to let you play under that account name.  In
+addition, a list of tables currently in play will be sent to you,
+allowing the "tables" command to give up-to-date information.
+	make
+A variant of the "claim" command.  With no arguments it is a claim to
+make the contract exactly; with a positive integer argument it is a
+claim to make a grand total of that number of tricks plus six.
+	n (or north)
+If the North seat is available, take it.
+	newuser
+Log in as a new user (see also "login").
+	noncompetitive
+Turns off competitive mode.  You will play the same hands as you would
+otherwise, but results will not be reported by email.  (Not relevant
+for hearts or rubber bridge.)
+	north (or n)
+If the North seat is available, take it.
+	note
+Set the text that is listed alongside my table's name when people use
+the "tables" command.  For example, "note Need 1!"  You must be host
+of the table.
+	opp
+Say something just to your opponents.  Frequently one would use
+"explain" instead so that the kibitzers could also hear.
+	parent
+Show my parent in the communication tree.  Primarily intended for debugging.
+	password
+Change the password for an account.
+	play
+Play a card.  Cards are specified suit first, rank second.  For
+example, "play c3" would play the 3 of clubs.  Unless you have
+customized the bindings (see "bind"), the word "play" may be omitted
+("c2" is the same as "play c2" and so on).  In Hearts, this command is
+also used to add or remove a card from the set of cards you wish to
+pass to your opponent before the play of the hand.
+	previous
+Show the previous hand.
+	punt
+Forcibly make a player leave the table.  This command may only be used
+by the host of the current table.
+	quit
+Terminate Floater.
+	randomplay
+Toggle a switch that, when set, causes automatic random plays or bids
+whenever it is your turn.  Intended for debugging.
+	readme
+Display the `README' file.
+	redalert
+"Redalert some ... text ..." is equivalent equivalent to "explain Red Alert!
+some ... text ..." and is traditionally used to self-alert bids or
+carding that is highly unusual.  "Alert" should be used for only slightly
+unusual bids or carding.
+	reject
+Reject declarer's claim.  A rejection from either defender nixes the
+claim regardless of what the other defender may have done.  Others at
+the table are shown only that the claim was rejected, not by whom.
+	retract
+Declarer may use this command to retract a claim.
+	review
+Review the auction.
+	rho
+Say something to your right-hand opponent.  E.g. "rho What is 2D?"
+	s
+If the south seat is available, try to sit down.  Otherwise, if you
+are seated and it is your turn to play a card, play your lowest spade. 
+	say
+Say something to everyone present.  E.g. "say Hello There!"
+	score
+Select the form of scoring for subsequent deals.  The valid uses of
+the command are "score IMP" and "score MP."  See also "competitive"
+and "noncompetitive."
+	scroll
+If you are using the textual user interface, scroll is used to change
+which portion of the scrolling text window you view.  For example,
+"scroll -10" takes you back 10 lines; "scroll 20" takes you forward 20
+lines.  You may also use the bottom command or the up and down array
+keys to select the portion of the scrolling talk window you view.
+	showEntryLines
+There are two different text-entry prompts in the graphical interface
+to Floater: there is a "talk" entry line, and a "command" entry line.
+Entries in the "talk" line are treated as messages to be spoken to the
+others at the table, unless you prefix the entry with a slash (/) character.
+Entries in the "command" line are treated as commands to Floater,
+unless you prefix the entry with a double-quote (") character.  To
+change which entry lines you have available, type "showEntryLines talk",
+"showEntryLines command", or "showEntryLines both".
+	separateTalk
+This command applies only to the GUI.  By default, the messages (e.g.,
+from people talking) that Floater displays appear in a scrollable box
+towards the bottom of the main Floater window.  If invoked with no
+arguments, this command toggles whether that is true or whether
+Floater has a separate window just for those messages.  It also may be
+invoked with an argument of "yes" or "no," with the obvious meaning.
+See also the options menu in the GUI.
+	server
+Change which Floater server to use.  For example, you can do
+"server server.floater.org" to set the server to server.floater.org.
+Typing the name by itself returns the current server.  Most users
+can ignore this command and use the default setting.
+	south (or s)
+If the South seat is available, take it.
+	spec
+Become a double-dummy spectator.
+	stand
+If you are sitting North, South, East, or West, this is the way to get up.
+	tables
+List all tables.
+	talkfont
+If you are using the GUI, you may change the font family for the talk
+window by doing, for example, "talkfont times."  On some systems, not
+all fonts are available in all sizes.
+	talkfontsize
+If you are using the GUI, you may change the font size for the talk
+window by doing "talkfontsize N" for any number N.  The number N is
+interpreted as a size in points.  One point is roughly 1/72 inch.
+	unseat
+Forcibly make a player stand up from the seat they are in.  This
+command may only be used by the host of the current table.
+	w (or west)
+If the West seat is available, take it.
+	warranty
+Display copyright and warranty information.
+	west (or w)
+If the West seat is available, take it.
+	who
+List who is at the table I am at.
+	whois
+An IRC user suggested that "whois" should be interchangeable with
+"find" in Floater.  See find.
+	.
+Play your smallest card of the suit led.

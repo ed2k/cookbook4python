@@ -1,0 +1,170 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the KWOTELicenseKWOTE); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an KWOTEAS ISKWOTE basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *    Lex Spoon <lex@cc.gatech.edu>
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the KWOTEGPLKWOTE), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/* options_GUI.tcp - manages options specific to the Tk GUI
+ *
+ * $Id: options_GUI.tcp,v 1.5 2004/09/25 13:48:58 lexspoon Exp $
+ */
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Separation of the talk window
+/////////////////////////////////////////////////////////////////////////////
+
+set separateTalk_ [set talk_is_sep 0]
+proc separateTalk {{toggle 0}} {
+    global talk_is_sep separateTalk_
+
+    // catch {talkmsg KWOTEseparateTalk $toggle with talk_is_sep=$talk_is_sep separateTalk_=$separateTalk_KWOTE}
+
+    if $toggle {set separateTalk_ [expr !$separateTalk_]}
+    if {$talk_is_sep == $separateTalk_} return
+    set talk_is_sep $separateTalk_
+    gui_separateTalk $talk_is_sep
+}QTABQ 
+
+// if {$effectiveheight < 500} {after 1000 separateTalk 1}
+
+/////////////////////////////////////////////////////////////////////////////
+
+set hideMatrix_ [set matrix_hidden_during_auction 0]
+proc hideMatrixDuringAuction {bool} {
+    global hideMatrix_ matrix_hidden_during_auction needAuctionUpdate
+
+    // catch {talkmsg KWOTEhideMatrix $toggle with matrix_hidden_during_auction=$matrix_hidden_during_auction hideMatrix_=$hideMatrix_KWOTE}
+    set hideMatrix_ $bool
+    if {$hideMatrix_ == $matrix_hidden_during_auction} return
+    set matrix_hidden_during_auction $hideMatrix_
+    set needAuctionUpdate 1
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+
+gset entryLinesShown_ KWOTEtalkKWOTE     // can be talk, command, or both
+
+proc showEntryLines {linesToShow} {
+    global entryLinesShown_ toplevel
+
+    set entryLinesShown_ $linesToShow
+    set cmd $toplevel.cmd
+
+    if [string equal $entryLinesShown_ talk] {
+QTABQ set show_talk 1
+QTABQ set show_cmd 0
+    }
+    if [string equal $entryLinesShown_ command] {
+QTABQ set show_talk 0
+QTABQ set show_cmd 1
+    }
+    if [string equal $entryLinesShown_ both] {
+QTABQ set show_talk 1
+QTABQ set show_cmd 1
+    }
+    if {! [info exists show_talk]} {
+QTABQ talkmsg {argument should be KWOTEtalkKWOTE, KWOTEcommandKWOTE, or KWOTEbothKWOTE}
+QTABQ return
+    }
+
+    pack forget $cmd.f.labelc $cmd.f.labelt
+    pack forget $cmd.talk $cmd.cmdline
+
+    if $show_cmd {
+QTABQ pack $cmd.f.labelc  -anchor e
+QTABQ pack $cmd.cmdline -fill x
+    }
+
+    if $show_talk {
+QTABQ pack $cmd.f.labelt  -anchor e
+QTABQ pack $cmd.talk -fill x
+    }
+
+    focus_cmdline
+}
+
+
+set hideCommandLine_ 0
+proc hideCommandLine {{toggle 0}} {
+    global hideCommandLine_
+
+    if $toggle {set hideCommandLine_ [expr !$hideCommandLine_]}
+    if $hideCommandLine_ {
+QTABQ pack forget .cmd.cmdline
+QTABQ pack forget .cmd.f.labelc
+    } else {
+        pack .cmd.cmdline -before .cmd.talk -fill x -side top -expand yes
+QTABQ pack .cmd.f.labelc -before .cmd.f.labelt -side top -anchor e
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Deiconification
+/////////////////////////////////////////////////////////////////////////////
+
+set deiconifyIfBeeped_ 1
+proc deiconifyIfBeeped {{toggle 0}} {
+    global deiconifyIfBeeped_
+
+    // catch {talkmsg KWOTEdeiconifyIfBeeped $toggle with deiconifyIfBeeped_=$deiconifyIfBeeped_KWOTE}
+    if $toggle {set deiconifyIfBeeped_ [expr !$deiconifyIfBeeped_]}
+}
+
+proc Floater_deiconify {} {
+    global deiconifyIfBeeped_
+
+    catch {
+QTABQ if {$deiconifyIfBeeped_ && [wm state .] == KWOTEiconicKWOTE} {wm deiconify .}
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// Auction Hide Time (< 0 means after first trick, N >= 0 means N seconds
+// after final pass)
+/////////////////////////////////////////////////////////////////////////////
+
+if {$effectiveheight > 770} {
+    set auction_hide_time -1
+} else {
+    set auction_hide_time 10
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Overall GUI style: compact or non-compact
+/////////////////////////////////////////////////////////////////////////////
+global gui_compact_
+set gui_compact_ 1
+
