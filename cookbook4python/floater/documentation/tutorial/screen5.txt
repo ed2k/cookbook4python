@@ -1,0 +1,25 @@
+Floater 1.0beta               S 876                                             
+Not at a table                H 876                                             
+                              D 876                                             
+                              C 6543                                            
+                              -----------------                                 
+                             |                 |                                
+               S JT9         |                 | S 5432                         
+               H JT9         |                 | H 5432                         
+               D JT9         |                 | D 5432                         
+               C T987        |       7n        | C 2                            
+                              -----------------                                 
+                              S AKQ                                             
+                              H AKQ                                             
+                              D AKQ                                             
+                              C AKQJ                                            
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+` You will receive your password by email                                       
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Bill A is now hosting a table.                                                
+` Jonathan is now hosting a table.                                              
+Tables: Jonathan       IMP   3  need 1                                          
+Tables: Bill A       IMP   1  full, kibbitzers welcome                          
+                                                                                

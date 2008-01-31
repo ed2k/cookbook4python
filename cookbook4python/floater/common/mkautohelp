@@ -1,0 +1,21 @@
+#!/bin/sh
+
+ECHO_N="-n"
+ECHO_C=""
+
+echo "/* this file automatically generated; see Makefile.in */"
+
+cat autohelp1.c
+
+sed 's/"/\\"/g' $1 | sed 's/\(.*\)/\"\1\\n\"/g'
+
+cat autohelp2.c
+
+echo $ECHO_N "\"$ECHO_C"
+
+grep "	" $1 | tr "\012" " " | tr -d "\011" 
+
+echo $ECHO_N "\"$ECHO_C"
+
+cat autohelp3.c
+

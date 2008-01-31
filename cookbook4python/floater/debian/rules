@@ -1,0 +1,82 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+configure: configure-stamp
+configure-stamp:
+	dh_testdir
+	autoconf
+	./configure --prefix=/usr --enable-server
+	touch configure-stamp
+
+build: configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+	jam
+	chmod 755 serverfiles/scat
+	docbook-to-man debian/floater.sgml > floater.6
+	echo ".so man6/floater.6" > floatert.6
+
+	touch build-stamp
+
+clean:
+	dh_testdir
+	dh_clean -a
+	rm -rf debian/floater debian/floater-server
+	if [ -f Jamsettings ]; then jam clean; fi
+	rm -f build-stamp configure-stamp
+	rm -f */*.a */*.o  common/floater common/floatert floater.6 floatert.6
+	rm -f loginserver/floaterl resultserver/floaterr  pseudomailer/floaterpm
+	rm -rf Makefile config.log config.status config.cache autom4te.cache autoscan.log
+	find loginserver resultserver pseudomailer res2html -type l | xargs rm -f
+
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	install common/floater $(CURDIR)/debian/floater/usr/games/
+	ln -s floater $(CURDIR)/debian/floater/usr/games/floatert
+	install -d $(CURDIR)/debian/floater/usr/share/pixmaps
+	install -m 644 art/icons/floater-16.xpm art/icons/floater-24.xpm $(CURDIR)/debian/floater/usr/share/pixmaps
+
+
+	install -D loginserver/floaterl $(CURDIR)/debian/floater-server/usr/lib/floater/floaterl
+	install -D resultserver/floaterr $(CURDIR)/debian/floater-server/usr/lib/floater/floaterr
+	install -D pseudomailer/floaterpm $(CURDIR)/debian/floater-server/usr/lib/floater/floaterpm
+	install -D res2html/res2html $(CURDIR)/debian/floater-server/usr/lib/floater/res2html
+	install -d $(CURDIR)/debian/floater-server/var/lib/floater/serverfiles/
+	install -d $(CURDIR)/debian/floater-server/var/lib/floater/www/
+	install -d $(CURDIR)/debian/floater-server/var/lib/floater/www/rawresults/
+	install -m 644 serverfiles/Makefile  serverfiles/*.tcl* $(CURDIR)/debian/floater-server/var/lib/floater/serverfiles/
+	install -m 755 serverfiles/scat $(CURDIR)/debian/floater-server/var/lib/floater/serverfiles/
+
+
+
+binary-indep: build install
+
+
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs
+	dh_installinit -pfloater-server
+	dh_installmenu -pfloater
+	dh_installman -pfloater floater.6 floatert.6
+	dh_installcron
+	dh_installchangelogs 
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

@@ -1,0 +1,53 @@
+#!/usr/local/bin/tclsh
+
+proc x {c} {
+    if {$c == "\\"} {
+	return "\\\\"
+    } elseif {$c == "'"} {
+	return "\\'"
+    } else {return $c}
+}
+
+set outfile [lindex $argv end]
+set argv [lrange $argv 0 [expr [llength $argv] - 2]]
+
+exec cp floatcl1.c $outfile
+set n 0
+set quote \"
+set comma ", "
+set s ""
+foreach arg $argv {
+    if {[incr n] != 1} {set s $s$comma}
+    set s $s$quote$arg$quote
+}
+
+set f [open $outfile a]
+puts $f "$s};\n"
+
+set n 0
+foreach arg $argv {
+    puts $f "static char _x_$n\[\] = \{'x'"
+    set g [open $arg r]
+    set c 0
+    while {[gets $g s] >= 0} {
+	for {set k 0; set l [string length $s]} {$k < $l} {incr k} {
+	    puts -nonewline $f ", '[x [string index $s $k]]'"
+	}
+	puts $f ", '\\n'"
+	if [expr [incr c] % 500 == 0] {puts "Done with $c lines of $arg"}
+    }
+    puts $f ", '\\0'\};";
+    incr n
+}
+
+puts -nonewline $f "\nchar *tcl2cfiles\[\] = \{"
+set n 0
+foreach arg $argv {
+    if $n {puts -nonewline $f ", "}
+    puts -nonewline $f "_x_$n + 1"
+    incr n
+}
+# puts $f "};"
+close $f
+
+exec cat floatcl2.c >> $outfile

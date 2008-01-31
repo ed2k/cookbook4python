@@ -1,0 +1,26 @@
+This file is intended to list some of the more confusing aspects of
+using Floater.
+
+1. Floater relies on self-alerts.  If playing formally, you are
+expected to explain your bidding and carding agreements as carefully
+as you would at a tournament.  In any case, you alert by using the
+commands `alert,' `redalert' and `explain.'   You should alert
+at the same time or before you take an alertable action.  There are no
+fixed rules as to what agreements are alertable---use your judgment
+and do unto others as you would have them do unto you.
+
+The easy way to alert an action is to type "!" (or "!!" for redalert)
+on the same line as the command to perform that action---and
+optionally put an explanation at the end.  For example, you could type
+"2D!weak two in either major" to bid and alert your own bid
+simultaneously.  See also the help on `alert,' `redalert' and
+`explain.'
+
+If you are using the graphical user interface, you may click on the
+"Alert" or "Redalert" checkboxes BEFORE clicking on the call you wish
+to make.  For example, clicking on "1C" when the "Alert" checkbox is
+highlighted will have the same effect as typing "1C!" on the keyboard.
+
+Everyone at the table except partner sees your alerts.
+
+2. See also the file called BUGS.

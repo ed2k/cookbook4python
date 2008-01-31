@@ -1,0 +1,21 @@
+#!/usr/bin/tclsh
+
+# "Safe" cat: concatenate the files in argv that exist and are readable.
+
+catch {
+    foreach name $argv {
+	if [file exists $name] {lappend s $name}
+    }
+}
+
+catch {
+    foreach name $s {
+	catch {
+	    set f [open $name r]
+	    while {[gets $f line] >= 0} {if [catch {puts $line}] {exit 1}}
+	    close $f
+	}
+    }
+}
+
+exit 0

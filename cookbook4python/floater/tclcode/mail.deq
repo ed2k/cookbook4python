@@ -1,0 +1,100 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the KWOTELicenseKWOTE); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an KWOTEAS ISKWOTE basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the KWOTEGPLKWOTE), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/////////////////////////////////////////////////////////////////////////////
+// sending in the result emails
+/////////////////////////////////////////////////////////////////////////////
+
+// Always use pseudo-mailer for now. (Set in 1.2b1).
+#undef CANNOT_MAIL
+#define CANNOT_MAIL 1
+
+set to_be_emailed_n 0
+
+// returns an 0 on success, non-zero on error; error put in global errorstring
+proc emailresult {result} {
+    global resultparser errorstring to_be_emailed to_be_emailed_n
+
+    if {[set q [what_to_send]] != KWOTEKWOTE} {set result KWOTE$result\nMagic cookie!$qKWOTE}
+    if {$result == KWOTEKWOTE} {return 0}
+    set r [
+#ifdef CANNOT_MAIL
+    pseudomail $result $resultparser
+#else
+    catch {exec echo $result | mail $resultparser} errorstring
+#endif
+    ]
+    if $r {
+QTABQ // failure: queue result up to be sent later, hopefully
+QTABQ set to_be_emailed([incr to_be_emailed_n]) $result
+    } else {
+QTABQ while {$to_be_emailed_n > 0} {
+QTABQ     // This could be improved by aggregating the queued messages
+QTABQ     // rather than sending them off one at a time.  (Also, the
+QTABQ     // while loop is superfluous, since each success fires off the
+QTABQ     // next item in the queue, thus going through the whole queue until
+QTABQ     // we get a failure.)
+QTABQ     set result $to_be_emailed($to_be_emailed_n)
+QTABQ     unset to_be_emailed($to_be_emailed_n)
+QTABQ     incr to_be_emailed_n -1
+QTABQ     if [emailresult $result] {return $r}
+QTABQ }
+    }
+    return $r
+}
+
+proc emailseens {} {emailresult {}}
+
+// returns an 0 on success, non-zero on error; error put in global errorstring
+proc mail_bug {bug} {
+    global bugmail errorstring
+
+#ifdef CANNOT_MAIL
+    pseudomail $bug $bugmail
+#else
+    catch {exec echo $bug | mail $bugmail} errorstring
+#endif
+}
+
+// returns an 0 on success, non-zero on error; error put in global errorstring
+proc pseudomail {what where} {
+    global errorstring pseudomailaddr pseudomailport
+
+    catch {
+QTABQ set conn [FloaterConnect $pseudomailaddr $pseudomailport]
+QTABQ FloaterSend $conn ozzie_and_harriet
+QTABQ FloaterSend $conn KWOTE$where $whatKWOTE
+QTABQ FloaterClose $conn
+    } errorstring
+}

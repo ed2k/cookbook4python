@@ -1,0 +1,13 @@
+This package holds the Floater server.
+
+To start, stop, or restart the server, use the script in /etc/init.d.
+The relevant commands are:
+
+	/etc/init.d/floater-server start
+	/etc/init.d/floater-server restart
+	/etc/init.d/floater-server stop
+
+
+By default, the server will run automatically when the system boots.
+
+

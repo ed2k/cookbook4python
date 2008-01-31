@@ -1,0 +1,902 @@
+
+<html><head><TITLE>Floater Tutorial</TITLE></head>
+<body bgcolor="#ffffff" text="#000000" link="#CC0000" alink="#FF3300" vlink="#0000CC">
+
+<P align=center>
+<img BORDER=0 SRC="medwhitefloater.gif" ALT="Floater">
+
+<center><H3>Tutorial</H3></center>
+<p>
+
+This tutorial was constructed using Floater 1.0beta in late 1996.  It
+is still a good introduction to using Floater, however.<p>
+
+For the purposes of this tutorial, we will use screen shots from the
+Floater's textual user interface.  In real life, most people will use
+the GUI instead.  Nonetheless, this should be useful to all.<p>
+
+Here is what you see when you start up Floater:
+
+<pre>
+<!-- including gtextscreen1.txt -->
+Floater 1.0beta               S 876                                             
+Not at a table                H 876                                             
+                              D 876                                             
+                              C 6543                                            
+                              -----------------                                 
+                             |                 |                                
+               S JT9         |                 | S 5432                         
+               H JT9         |                 | H 5432                         
+               D JT9         |                 | D 5432                         
+               C T987        |       7n        | C 2                            
+                              -----------------                                 
+                              S AKQ                                             
+                              H AKQ                                             
+                              D AKQ                                             
+                              C AKQJ                                            
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+                                                                                
+                                                                                
+                                                                                
+</pre>
+
+To get started, you either use <tt><a href=ref.html#login>login</a></tt> or, if you are new,
+<tt><a href=ref.html#newuser>newuser</a></tt>.  For demonstration purposes we use the latter;
+<tt><a href=ref.html#login>login</a></tt> is similar except that it queries you for your password
+rather than for your email address.
+
+<pre>
+<!-- including gtextscreen2.txt -->
+Floater 1.0beta               S 876                                             
+Not at a table                H 876                                             
+                              D 876                                             
+                              C 6543                                            
+                              -----------------                                 
+                             |                 |                                
+               S JT9         |                 | S 5432                         
+               H JT9         |                 | H 5432                         
+               D JT9         |                 | D 5432                         
+               C T987        |       7n        | C 2                            
+                              -----------------                                 
+                              S AKQ                                             
+                              H AKQ                                             
+                              D AKQ                                             
+                              C AKQJ                                            
+command newuser                                                                 
+   talk                                                                         
+--------------------------------------------------------------------------------
+                                                                                
+                                                                                
+                                                                                
+</pre>
+Above, I have typed "newuser" and Floater has displayed what I
+typed on "the command line."  After pressing return, I then enter my
+chosen name and press return, and enter my full email address:
+<pre>
+<!-- including gtextscreen3.txt -->
+Floater 1.0beta               S 876                                             
+Not at a table                H 876                                             
+                              D 876                                             
+                              C 6543                                            
+                              -----------------                                 
+                             |                 |                                
+               S JT9         |                 | S 5432                         
+               H JT9         |                 | H 5432                         
+               D JT9         |                 | D 5432                         
+               C T987        |       7n        | C 2                            
+                              -----------------                                 
+                              S AKQ                                             
+                              H AKQ                                             
+                              D AKQ                                             
+                              C AKQJ                                            
+   Name Buzz                                                                    
+  Email qx@slat.grat.com                                                        
+--------------------------------------------------------------------------------
+` Enter your desired name and your email address.                               
+` Use a blank name to abort.                                                    
+                                                                                
+</pre>
+After pressing return again:
+<pre>
+<!-- including gtextscreen4.txt -->
+Floater 1.0beta               S 876                                             
+Not at a table                H 876                                             
+                              D 876                                             
+                              C 6543                                            
+                              -----------------                                 
+                             |                 |                                
+               S JT9         |                 | S 5432                         
+               H JT9         |                 | H 5432                         
+               D JT9         |                 | D 5432                         
+               C T987        |       7n        | C 2                            
+                              -----------------                                 
+                              S AKQ                                             
+                              H AKQ                                             
+                              D AKQ                                             
+                              C AKQJ                                            
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+` Enter your desired name and your email address.                               
+` Use a blank name to abort.                                                    
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Logging in...                                                                 
+` You are now logged in as Buzz                                                 
+` You will receive your password by email                                       
+</pre>
+
+Now I am "logged in."  Because in the future I must enter a password
+to play as "Buzz," and only I will receive that password by email, no
+one else can play as Buzz.  Also, now that I have logged in, Floater
+will attribute my results to me.<p>
+
+I would like to play some bridge, so I use the <tt><a href=ref.html#tables>tables</a></tt>
+command to what tables are being hosted by other players.  That is, on
+the command line, I type <tt>tables</tt> followed by return or enter.
+The result:
+
+<pre>
+<!-- including gtextscreen5.txt -->
+Floater 1.0beta               S 876                                             
+Not at a table                H 876                                             
+                              D 876                                             
+                              C 6543                                            
+                              -----------------                                 
+                             |                 |                                
+               S JT9         |                 | S 5432                         
+               H JT9         |                 | H 5432                         
+               D JT9         |                 | D 5432                         
+               C T987        |       7n        | C 2                            
+                              -----------------                                 
+                              S AKQ                                             
+                              H AKQ                                             
+                              D AKQ                                             
+                              C AKQJ                                            
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+` You will receive your password by email                                       
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Bill A is now hosting a table.                                                
+` Jonathan is now hosting a table.                                              
+Tables: Jonathan     IMP   3  need 1                                          
+Tables: Bill A       IMP   6  full, kibbitzers welcome                          
+                                                                                
+</pre>
+
+I see Jonathan has 3 players and seems to want someone to <tt><a href=ref.html#join>join</a></tt>, so I
+go to his table by using the command
+<tt>join Jonathan</tt>
+.  (If I'd wanted to, I could instead have used the
+<tt><a href=ref.html#host>host</a></tt> command to host a table of my own.)
+<pre>
+<!-- including gtextscreen6.txt -->
+Floater 1.0beta       (North) S                                                 
+Connected                     H                                                 
+                              D                                                 
+                              C                                                 
+                              -----------------                                 
+               Turbot (W)    |                 | David (E)                      
+               S             |                 | S                              
+               H             |                 | H                              
+               D             |                 | D                              
+               C             |       7n        | C                              
+                              -----------------                                 
+                 Jonathan (S) S                                                 
+                              H                                                 
+                              D                                                 
+                              C                                                 
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+` Communication established                                                     
+` Turbot has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South                                                     
+` David is sitting East                                                         
+` Turbot is sitting West                                                        
+</pre>
+
+I am now at Jonathan's table and I see Jonathan, Turbot, and David
+are seated.<p>
+
+At this point, however, some of the information at the bottom of the
+screen has scrolled away, and I'd like to go back to look at it.  In
+the GUI, I could just use the scroll bar, but for the textual user
+interface I need to use the arrow keys (or the <tt><a href=ref.html#scroll>scroll</a></tt> command).
+Just to illustrate, here is what I see after pressing the up arrow key:
+
+<pre>
+<!-- including gtextscreen7.txt -->
+Floater 1.0beta       (North) S                                                 
+Connected                     H                                                 
+                              D                                                 
+                              C                                                 
+                              -----------------                                 
+               Turbot (W)    |                 | David (E)                      
+               S             |                 | S                              
+               H             |                 | H                              
+               D             |                 | D                              
+               C             |       7n        | C                              
+                              -----------------                                 
+                 Jonathan (S) S                                                 
+                              H                                                 
+                              D                                                 
+                              C                                                 
+command                                                                         
+   talk                                                                         
+-----------------------------------------------------------------13-19/20-------
+` Attempting to connect to 128.32.34.47:4062                                    
+` Communication established                                                     
+` Turbot has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South                                                     
+` David is sitting East                                                         
+</pre>
+
+Notice that the text at the bottom of the screen has scrolled back one
+line.  Also, on the "status bar"---the line just below "talk" and just
+above the scrolling text region---notice that <tt>13-19/20</tt> indicates
+I am now viewing lines 13 through 19 of the 20 lines that have
+been presented to me thus far in the talk region.<p>
+
+However, since we aren't playing bridge yet, I might as well switch to
+the other view of the world that Floater's textual user interface
+offers.  By typing Control-v I can toggle between a screen that
+looks like the previous screens in the tutorial and a screen that
+looks like:
+
+<pre>
+<!-- including gtextscreen8.txt -->
+` Enter your desired name and your email address.                               
+` Use a blank name to abort.                                                    
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Logging in...                                                                 
+` You are now logged in as Buzz                                                 
+` You will receive your password by email                                       
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Bill A is now hosting a table.                                                
+` Jonathan is now hosting a table.                                              
+Tables: Jonathan     IMP   3  need 1                                          
+Tables: Bill A       IMP   6  full, kibbitzers welcome                          
+Tables: a total of 2 tables                                                     
+` Attempting to connect to 128.32.34.47:4062                                    
+` Communication established                                                     
+` Turbot has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South                                                     
+` David is sitting East                                                         
+` Turbot is sitting West                                                        
+                                                                                
+                                                                                
+--------------------------------------------------------------------------------
+command                                                                         
+   talk                                                                         
+</pre>
+
+Now the scrolling text region that had just occupied a few lines at
+the bottom of the screen is much larger---at the expense of not
+showing the "newspaper bridge column" view of the action (also known
+as "the matrix").  By the way, the arrow keys and the
+<tt><a href=ref.html#scroll>scroll</a></tt>
+command also work here, but at the moment they are unnecessary because
+everything that has been displayed thus far fits on the screen at once.
+(Note that the Control-v feature is not implemented for the GUI.)<p>
+
+Moving along: below we see that Jonathan and Turbot have said hi, and
+I'm about to ask "need 1?" by entering it on the "talk line."  To
+switch between typing on the talk line and the command line, use the
+tab key.
+
+<pre>
+<!-- including gtextscreen9.txt -->
+` Enter your desired name and your email address.                               
+` Use a blank name to abort.                                                    
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Logging in...                                                                 
+` You are now logged in as Buzz                                                 
+` You will receive your password by email                                       
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Bill A is now hosting a table.                                                
+` Jonathan is now hosting a table.                                              
+Tables: Jonathan     IMP   3  need 1                                          
+Tables: Bill A       IMP   6  full, kibbitzers welcome                          
+Tables: a total of 2 tables                                                     
+` Attempting to connect to 128.32.34.47:4062                                    
+` Communication established                                                     
+` Turbot has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South                                                     
+` David is sitting East                                                         
+` Turbot is sitting West                                                        
+Jonathan: hi Buzz                                                               
+Turbot: hi Buzz                                                                 
+--------------------------------------------------------------------------------
+command                                                                         
+   talk need 1?                                                                 
+</pre>
+
+The North seat is not spoken for, so I take it by using the
+<tt><a href=ref.html#north>north</a></tt> command.  In practice I typed <tt>/north</tt> on the
+talk line, which is equivalent to typing <tt>north</tt> on the command
+line.  (In general, anything on the talk line that starts with
+<tt>/</tt> is interpreted as if it were typed on the command line.
+Similarly, entering <tt>"Hi there</tt> on the command line is
+equivalent to entering <tt>Hi there</tt> on the talk line.)
+
+<pre>
+<!-- including gtextscreen10.txt -->
+` Attempting to connect to login server at 128.32.34.48:2140                    
+` Bill A is now hosting a table.                                                
+` Jonathan is now hosting a table.                                              
+Tables: Jonathan     IMP   3  need 1                                          
+Tables: Bill A       IMP   6  full, kibbitzers welcome                          
+Tables: a total of 2 tables
+` Attempting to connect to 128.32.34.47:4062                                    
+` Communication established                                                     
+` Turbot has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South
+` David is sitting East                                                         
+` Turbot is sitting West                                                        
+Jonathan: hi Buzz                                                               
+Turbot: hi Buzz                                                                 
+Buzz: need 1?                                                                   
+Jonathan: sure, take N                                                          
+` Requesting seat...                                                            
+You haven't seen any hands from 15Sep96IMP                                      
+You haven't seen any hands from 15Sep96MP                                       
+` You are sitting North                                                         
+--------------------------------------------------------------------------------
+command                                                                         
+   talk                                                                         
+</pre>
+I have taken the North seat, and some cursory discussion of
+system ensues...
+<pre>
+<!-- including gtextscreen11.txt -->
+Tables: Jonathan     IMP   3  need 1                                          
+Tables: Bill A       IMP   6  full, kibbitzers welcome                          
+Tables: a total of 2 tables                                                     
+` Attempting to connect to 128.32.34.47:4062                                    
+` Communication established                                                     
+` Turbot has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South                                                     
+` David is sitting East                                                         
+` Turbot is sitting West                                                        
+Jonathan: hi Buzz                                                               
+Turbot: hi Buzz                                                                 
+Buzz: need 1?                                                                   
+Jonathan: sure, take N                                                          
+` Requesting seat...                                                            
+You haven't seen any hands from 15Sep96IMP                                      
+You haven't seen any hands from 15Sep96MP                                       
+` You are sitting North                                                         
+Buzz: system, pard?                                                             
+Jonathan: SA?                                                                   
+Buzz: ok                                                                        
+--------------------------------------------------------------------------------
+command                                                                         
+   talk                                                                         
+</pre>
+
+At this point, I check on both our convention card and the opponents'.
+Normally, the <tt><a href=ref.html#ccdump>ccdump</a></tt> command displays our convention card; by
+specifying a direction, I can see their convention card (in this
+case, <tt>ccdump EW</tt>).  Here is the result of entering the two
+commands <tt>ccdump</tt> and <tt>ccdump EW</tt> in succession:
+
+<pre>
+<!-- including gtextscreen12.txt -->
+Jonathan: hi Buzz                                                               
+Turbot: hi Buzz                                                                 
+Buzz: need 1?                                                                   
+Jonathan: sure, take N                                                          
+` Requesting seat...                                                            
+You haven't seen any hands from 15Sep96IMP                                      
+You haven't seen any hands from 15Sep96MP                                       
+` You are sitting North                                                         
+Buzz: system, pard?                                                             
+Jonathan: SA?                                                                   
+Buzz: ok                                                                        
+` CC for NS is empty.                                                           
+` CC for EW (9 lines):                                                          
+2/1; 1N=10-13 nv123; 1N=15-17 otherwise                                         
+mulch; cole runouts; lebensohl                                                  
+2N=20-21+; jacoby, texas, puppet stayman; super gerber                          
+negative & responsive doubles to 4D                                             
+negative free bids                                                              
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+--------------------------------------------------------------------------------
+command                                                                         
+   talk                                                                         
+</pre>
+
+Apparently we don't have a convention card set (though we have
+verbally agreed to play SA); the opponents are playing 2/1 with
+various gadgets.<p>
+
+Now, the host of the table has decided to start play. (He issued the
+<tt><a href=ref.html#deal>deal</a></tt> command.  Only the host may do so.)  I see:
+
+<pre>
+<!-- including gtextscreen13.txt -->
+Buzz: need 1?                                                                   
+Jonathan: sure, take N                                                          
+` Requesting seat...                                                            
+You haven't seen any hands from 15Sep96IMP                                      
+You haven't seen any hands from 15Sep96MP                                       
+` You are sitting North                                                         
+Buzz: system, pard?                                                             
+Jonathan: SA?                                                                   
+Buzz: ok                                                                        
+` CC for NS is empty.                                                           
+` CC for EW (9 lines):                                                          
+2/1; 1N=10-13 nv123; 1N=15-17 otherwise                                         
+mulch; cole runouts; lebensohl                                                  
+2N=20-21+; jacoby, texas, puppet stayman; super gerber                          
+negative & responsive doubles to 4D                                             
+negative free bids                                                              
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+-------------[ NS vul., E dealt | S AJ6532 H 65 D 86 C T43 ]--------------------
+command                                                                         
+   talk                                                                         
+</pre>
+
+My cards and other relevant information are visible on the status bar,
+but since we're playing now, I decide to use Control-v again to switch back to
+the other view.
+
+<pre>
+<!-- including gtextscreen14.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |                 | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | ?               | H              .?              
+               D             |                 | D              .               
+               C             |                 | C              .               
+                              -----------------                 .               
+                     Buzz (N) S AJ6532                          .               
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+negative free bids                                                              
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+</pre>
+Now the auction begins...
+<pre>
+<!-- including gtextscreen15.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       ?         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | 1h              | H              .1H  ?          
+               D             |                 | D              .               
+               C             |                 | C              .               
+                              -----------------                 .               
+                     Buzz (N) S AJ6532                          .               
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+negative free bids                                                              
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+</pre>
+...and the auction continues...
+<pre>
+<!-- including gtextscreen16.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       p         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | 1h          ?   | H              .1H  P   ?      
+               D             |                 | D              .               
+               C             |                 | C              .               
+                              -----------------                 .               
+                     Buzz (N) S AJ6532                          .               
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+negative free bids                                                              
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+</pre>
+...and then RHO takes a bid...
+<pre>
+<!-- including gtextscreen17.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       p         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | 1h          1s  | H              .1H  P   1S  ?  
+               D             |                 | D              .               
+               C             |       ?         | C              .               
+                              -----------------                 .               
+                     Buzz (N) S AJ6532                          .               
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+-&lt;BID&gt;--------------------------------------------------------------------------
+negative free bids                                                              
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+</pre>
+
+OK, my turn to bid!  This is indicated on the status bar and by the
+<tt>?</tt>'s in the obvious places.  Pass seems clear, so I enter <tt>p</tt>
+on the command line.
+
+<pre>
+<!-- including gtextscreen18.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       p         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | ?           1s  | H              .1H  P   1S  P  
+               D             |                 | D              .?              
+               C             |       p         | C              .               
+                              -----------------                 .               
+                     Buzz (N) S AJ6532                          .               
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+negative free bids                                                              
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+</pre>
+
+My pass appeared in the matrix and in the auction summary on the right,
+just as expected.
+
+<pre>
+<!-- including gtextscreen19.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       ?         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | 2d          1s  | H              .1H  P   1S  P  
+               D             |                 | D              .2D  ?          
+               C             |       p         | C              .               
+                              -----------------                 .               
+                     Buzz (N) S AJ6532                          .               
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+support doubles and redoubles                                                   
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+Jonathan: p                                                                     
+</pre>
+Ooops! Partner typed <tt>p</tt> on the talk line when he wanted
+to pass.  No harm done, but Floater didn't interpret it as a call, so
+partner had to re-enter <tt>p</tt> on the command line (or <tt>/p</tt>
+on the talk line).  Skipping ahead a bit...
+<pre>
+<!-- including gtextscreen20.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       p         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | 2d          3c  | H              .1H  P   1S  P  
+               D             |                 | D              .2D  P   3C  ?  
+               C             |       ?         | C              .               
+                              -----------------                 .               
+                     Buzz (N) S AJ6532                          .               
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+-&lt;BID&gt;--------------------------------------------------------------------------
+inverted minors                                                                 
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+Jonathan: p                                                                     
+Turbot! Alert!  4th suit forcing                                                
+</pre>
+Here we see that Turbot has alerted.  The fact that we see
+<tt>Turbot!</tt> rather than <tt>Turbot:</tt> in front of <tt>Alert!
+4th suit forcing</tt> indicates that Turbot's partner did not see
+anything.  <b>In Floater, one is expected to alert one's own bids!</b>
+Several mechanisms are provided for doing.  One may either enter, for
+example, <tt>3c!4th suit forcing</tt>, or one may use the
+<tt><a href=ref.html#alert>alert</a></tt> command.  And for particularly unusual bidding or
+carding agreements, one may use <tt>3c!!4th suit forcing</tt> or the
+<tt><a href=ref.html#redalert>redalert</a></tt> command.  Deciding what merits an alert and what
+merits a <font color="#FF0000">red alert</font> is completely up to you.<p>
+
+(By the way, just because you are expected to alert your own bids
+doesn't mean you shouldn't alert partner's bids as well.  Try to be helpful!)
+<p>
+OK.  Later in the auction, I see:
+
+<pre>
+<!-- including gtextscreen21.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                                                 
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       ?         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             | p           6h  | H              .1H  P   1S  P  
+               D             |                 | D              .2D  P   3C  P  
+               C             |       p         | C              .3H  P   4N  P  
+                              -----------------                 .5C  P   6H  P  
+                     Buzz (N) S AJ6532                          .P   ?          
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+Jonathan: p                                                                     
+Turbot! Alert!  4th suit forcing                                                
+David! Alert!  artificial game force                                            
+</pre>
+And after the auction is over:
+<pre>
+<!-- including gtextscreen22.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                   Jonathan's lead               
+15Sep96IMP2                   D                   Tricks won: 0; lost: 0        
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       ?         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             |                 | H              .1H  P   1S  P  
+               D             |                 | D              .2D  P   3C  P  
+               C             |                 | C              .3H  P   4N  P  
+                              -----------------                 .5C  P   6H  P  
+                     Buzz (N) S AJ6532                          .P   P          
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+x-over limit raises                                                             
+reverse drury (on in competition) and forcing notrump by a passed hand          
+` New hand is 15Sep96IMP2; East dealt                                           
+` Displaying hand 15Sep96IMP2                                                   
+Jonathan: p                                                                     
+Turbot! Alert!  4th suit forcing                                                
+David! Alert!  artificial game force                                            
+</pre>
+At this point I'm wondering what 4N and 5C meant in this
+auction, so I use the <tt><a href=ref.html#opp>opp</a></tt> command to send a message that only
+the opponents see.  I don't want partner to see what I'm asking,
+because that is unauthorized information that he neither needs nor
+wants to know.  I enter <tt>opp what is 5C?</tt> on the
+command line.
+<pre>
+<!-- including gtextscreen23.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                   Tricks won: 0; lost: 0        
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       cq        | Turbot (W)     ................
+               S             |                 | S KT74         .LHO Par RHO you
+               H             |             ?   | H KQT          .1H  P   1S  P  
+               D             |                 | D AJ3          .2D  P   3C  P  
+               C             |                 | C AK5          .3H  P   4N  P  
+                              -----------------                 .5C  P   6H  P  
+                     Buzz (N) S AJ6532                          .P   P          
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+Turbot! Alert!  4th suit forcing                                                
+David! Alert!  artificial game force                                            
+Buzz= what is 5C?                                                               
+David= 5C shows 1 or 4 keycards                                                 
+Turbot- 5c shows one or four keycards                                           
+Turbot: good luck, partner                                                      
+David: thanks pard                                                              
+</pre>
+The main thing to see here is that an <tt>=</tt> after a
+player's name rather than a <tt>:</tt> indicates that the message went
+only to that player's opponents; a <tt>-</tt> indicates that the
+message went only to me.<p>
+
+Now, as it turns out, the hand is cold for 13 tricks, so declarer claims.
+
+<pre>
+<!-- including gtextscreen24.txt -->
+Floater 1.0beta  Jonathan (S) S Q98                                             
+Connected                     H 4                                               
+15Sep96IMP2                   D 942               Tricks won: 0; lost: 0        
+NS vul.                       C J8762             Claiming 13 tricks total      
+E dealt                       -----------------                                 
+               David (E)     |       cq        | Turbot (W)     ................
+               S             |                 | S KT74         .LHO Par RHO you
+               H AJ98732     |             ?   | H KQT          .1H  P   1S  P  
+               D KQT75       |                 | D AJ3          .2D  P   3C  P  
+               C 9           |                 | C AK5          .3H  P   4N  P  
+                              -----------------                 .5C  P   6H  P  
+                     Buzz (N) S AJ6532                          .P   P          
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+David! Alert!  artificial game force                                            
+Buzz= what is 5C?                                                               
+David= 5C shows 1 or 4 keycards                                                 
+Turbot- 5c shows one or four keycards                                           
+Turbot: good luck, partner                                                      
+David: thanks pard                                                              
+` Continue playing or use `accept' or `reject' at any time.                     
+</pre>
+I use the <tt><a href=ref.html#accept>accept</a></tt> command.
+<pre>
+<!-- including gtextscreen26.txt -->
+Floater 1.0beta  Jonathan (S) S Q98                                             
+Connected                     H 4                                               
+15Sep96IMP2                   D 942               Tricks won: 0; lost: 13       
+NS vul.                       C QJ8762            Claiming 13 tricks total      
+E dealt                       -----------------   Made 7, -1010                 
+               David (E)     |       cq        | Turbot (W)     ................
+               S             |                 | S KT74         .LHO Par RHO you
+               H AJ98732     |             ?   | H KQT          .1H  P   1S  P  
+               D KQT75       |                 | D AJ3          .2D  P   3C  P  
+               C 9           |                 | C AK5          .3H  P   4N  P  
+                              -----------------                 .5C  P   6H  P  
+                     Buzz (N) S AJ6532                          .P   P          
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+David: thanks pard                                                              
+` Continue playing or use `accept' or `reject' at any time.                     
+Turbot: "sorry pard, my fault for not reaching 7                                
+` Result successfully reported by email                                         
+Result: -+&gt; 15Sep96IMP2 &lt;+-                                                     
+Result: 6H by E, -1010 (0.0 IMPs); 1H 1S 2D 3C 3H 4N 5C 6H; CQ led              
+Result:   Buzz(N) Jonathan(S) David(E) Turbot(W)                                
+</pre>
+
+Apparently partner has accepted the claim as well, and we now see both
+our result and the results from other tables, if any.  In this case no
+one else has played the hand yet, so we just see our result.  Later,
+after the hands for 15Sep96 are no longer in play, the results that
+came after ours as well as those that came before will be scored at
+duplicate and posted to the Floater web page.<p>
+
+The first hand is over.  I see my cards for the next deal here:
+
+<pre>
+<!-- including gtextscreen27.txt -->
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP3                   D                                                 
+EW vul.                       C                                                 
+S dealt                       -----------------                                 
+               David (E)     |       ?         | Turbot (W)     ................
+               S             |                 | S              .LHO Par RHO you
+               H             |                 | H              .    ?          
+               D             |                 | D              .               
+               C             |                 | C              .               
+                              -----------------                 .               
+                     Buzz (N) S J872                            .               
+                              H QT                              .               
+                              D QJ987                           .               
+                              C 74                              .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+Turbot: "sorry pard, my fault for not reaching 7                                
+` Result successfully reported by email                                         
+Result: -+&gt; 15Sep96IMP2 &lt;+-                                                     
+Result: 6H by E, -1010 (0.0 IMPs); 1H 1S 2D 3C 3H 4N 5C 6H; CQ led              
+Result:   Buzz(N) Jonathan(S) David(E) Turbot(W)                                
+` New hand is 15Sep96IMP3; South dealt                                          
+` Displaying hand 15Sep96IMP3                                                   
+</pre>
+
+That ends this brief Floater tutorial.  To learn more, look at the
+rest of the <a href=index.html>Floater documentation</a>.<p>
+Last modified 
+<!-- including |date -->
+Thu Apr  1 20:06:42 PST 1999
+
+.
+<HR>        
+<address>
+<A HREF=http://www.cs.berkeley.edu/~pike>Geoff Pike</A>,<A HREF=mailto:floater@priam.cs.berkeley.edu>
+&lt;pike@cs.berkeley.edu&gt;</A>, is the author of
+<a href=../core.html>Floater</a> and maintainer of this WWW page.
+</address>
+

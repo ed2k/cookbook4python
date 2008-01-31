@@ -1,0 +1,174 @@
+floater (1.4.15-1) unstable; urgency=low
+
+  * New upstream release.
+  * Use dh_strip to strip binaries, not "install -s".  (closes: bug#436842).
+  * Updated the debhelper compatibility level to 5.
+  * Updated the Debian policy conformance level to 3.7.2.
+
+ -- Lex Spoon <lex@debian.org>  Sun, 12 Aug 2007 10:25:23 -0400
+
+floater (1.4.14-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sat,  2 Apr 2005 16:11:29 -0500
+
+floater (1.4.13-2) unstable; urgency=low
+
+  * Minor bugfix.
+
+ -- Lex Spoon <lex@debian.org>  Sun, 27 Feb 2005 13:23:35 -0500
+
+floater (1.4.13-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sun, 27 Feb 2005 12:27:52 -0500
+
+floater (1.4.12-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sat,  7 Aug 2004 23:51:41 -0400
+
+floater (1.4.11-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sun, 27 Jun 2004 21:33:25 -0700
+
+floater (1.4.8-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sat, 24 Apr 2004 20:56:01 -0400
+
+floater (1.4.7-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Fri, 16 Apr 2004 22:05:00 -0400
+
+floater (1.4.6-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Tue, 23 Mar 2004 23:11:22 -0500
+
+floater (1.4.5-1) unstable; urgency=low
+
+  * New upstream release.
+  * Added an icon to the menu item.
+
+ -- Lex Spoon <lex@debian.org>  Sun, 29 Feb 2004 01:00:12 -0500
+
+floater (1.4.4-1) unstable; urgency=low
+
+  * New upstream release.
+  * added xutils to build-depends.  (closes: bug#226805) (closes: bug#234968)
+
+ -- Lex Spoon <lex@debian.org>  Thu, 26 Feb 2004 00:07:58 -0500
+
+floater (1.4.3-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sat,  7 Feb 2004 12:11:20 -0500
+
+floater (1.4.2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Thu, 29 Jan 2004 17:00:04 -0500
+
+floater (1.4.1-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sun,  4 Jan 2004 21:03:09 -0500
+
+floater (1.4.0-1) unstable; urgency=low
+
+  * This is the first release from the CVS repository on SourceForge.
+
+ -- Lex Spoon <lex@debian.org>  Fri, 28 Nov 2003 23:15:40 -0500
+
+floater (1.3b2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Lex Spoon <lex@debian.org>  Sun, 16 Nov 2003 22:34:48 -0500
+
+floater (1.3b1-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Lex Spoon <lex@debian.org>  Sun,  4 May 2003 13:33:02 -0400
+
+floater (1.2b1-10) unstable; urgency=low
+
+  * Added Andrei Caraman's patch to change some IP addresses
+
+ -- Lex Spoon <lex@debian.org>  Mon, 19 Aug 2002 22:02:46 -0400
+
+floater (1.2b1-9) unstable; urgency=low
+
+  * Changed maintainer address
+
+ -- Lex Spoon <lex@debian.org>  Thu, 25 Oct 2001 21:01:32 -0400
+
+floater (1.2b1-8) unstable; urgency=low
+
+  * remove emacs crud from changelog file
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Tue, 16 Oct 2001 17:30:21 -0400
+
+floater (1.2b1-7) unstable; urgency=low
+
+  * remove undeeded preinst, prerm, and postrm scripts
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Tue, 16 Oct 2001 14:19:12 -0400
+
+floater (1.2b1-6) unstable; urgency=low
+
+  * (closes: bug#115193)
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Fri, 12 Oct 2001 00:22:06 -0400
+
+floater (1.2b1-5) unstable; urgency=low
+
+  * updated clean rule, again
+  * removed the bogus debian/info file
+  * don't install Bugs, which is just a symlink to BUGS
+  * install and document floatert, for playing on a tty instead of in an XWindow
+
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Thu, 11 Oct 2001 19:53:16 -0400
+
+floater (1.2b1-4) unstable; urgency=low
+
+  * cleaned up copyright file
+  * beef up clean rule to remove config.*
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Thu, 11 Oct 2001 01:25:04 -0400
+
+floater (1.2b1-3) unstable; urgency=low
+
+  * Many improvements suggested by Stephen Stafford:
+  * control file and debian/ subdirectory cleaned up
+  * Build-Depends beefed up
+  * section changed to non-free (oops!)
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Wed, 10 Oct 2001 10:11:09 -0400
+
+floater (1.2b1-2) unstable; urgency=low
+
+  * Added postinst, prerm, and postrm scripts
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Sat,  6 Oct 2001 15:32:36 -0400
+
+floater (1.2b1-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Lex Spoon <lex@cc.gatech.edu>  Tue, 26 Jun 2001 23:09:10 -0400

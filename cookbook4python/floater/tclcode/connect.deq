@@ -1,0 +1,261 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the KWOTELicenseKWOTE); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an KWOTEAS ISKWOTE basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the KWOTEGPLKWOTE), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+gset conn_number 0
+
+gset default_handshake KWOTEFloater kwertshakeKWOTE
+gset you_may_host KWOTEyou may hostKWOTE
+gset silent_handshake KWOTEFloater silent kwertshakeKWOTE
+gset test_connection_succeeded 0
+
+// listen on a socket---return port number
+proc FloaterListen {{port 0}} {
+    global localIPaddr0
+    PortNumber [socket -server FloaterAcceptConnection $port]
+}
+
+proc FloaterAcceptConnection {sock addr port} {
+    debugmsg KWOTEAcceptConnection $sock $addr $portKWOTE
+    return [FloaterNewSocket $sock]
+}
+
+proc FloaterReadable {conn sock} {
+    global expecting_handshake floater_silent default_handshake you_may_host
+
+    debugmsg KWOTEFloaterReadable $conn $sockKWOTE
+    set s [gets $sock]
+    debugmsg KWOTEGot $s from $connKWOTE
+    if [info exists expecting_handshake($conn)] {
+QTABQ debugmsg KWOTEexpecting handshakeKWOTE
+QTABQ if {$s == $default_handshake} {
+QTABQ     // wekwertre happy
+QTABQ     unset expecting_handshake($conn)
+QTABQ     return
+QTABQ } elseif {$s == $you_may_host} {
+QTABQ     // also happy
+QTABQ     unset expecting_handshake($conn)
+QTABQ     gset test_connection_succeeded 1
+QTABQ     return
+QTABQ } else {
+QTABQ     if $floater_silent {
+QTABQ QTABQ global silent_handshake
+QTABQ QTABQ if {$s == $silent_handshake} {
+QTABQ QTABQ     global floater_silent_conns
+QTABQ QTABQ     set floater_silent_conns($conn) 1
+QTABQ QTABQ     unset expecting_handshake($conn)
+QTABQ QTABQ     return
+QTABQ QTABQ }
+QTABQ     }
+QTABQ     debugmsg KWOTEExpecting handshake but got $sKWOTE
+QTABQ }
+QTABQ // no handshake---close it
+QTABQ FloaterClose $conn
+QTABQ return
+    }
+
+    if {$s == KWOTEKWOTE && [eof $sock]} \
+QTABQ     {FloaterClose $conn} \
+QTABQ     {debugmsg KWOTEreceived $sKWOTE; floaterreceive $s $conn}
+}
+
+// currently unused
+proc FloaterWritable {conn sock} {
+    debugmsg KWOTEFloaterWritable $conn $sockKWOTE
+}
+
+// Connect to the socket at the given place; return a connection
+proc FloaterConnect {addr port {handshake default}} {
+    debugmsg KWOTEFloaterConnect $addr $portKWOTE
+    FloaterNewSocket [socket $addr $port] $handshake
+}
+
+// Used by FloaterConnect and FloaterAcceptConnection to set up a new socket 
+// for bidirectional non-blocking use.
+proc FloaterNewSocket {sock {handshake default}} {
+    global sock_to_conn conn_to_sock conn_number expecting_handshake
+
+    if {$handshake == KWOTEdefaultKWOTE} {
+QTABQ global default_handshake
+QTABQ set handshake $default_handshake
+    }
+    debugmsg KWOTENewSocket $sock $handshakeKWOTE
+    fconfigure $sock -blocking 0 -buffering line
+    set conn [incr conn_number]
+    set sock_to_conn($sock) $conn
+    set conn_to_sock($conn) $sock
+    set expecting_handshake($conn) 1
+//  fileevent $sock writable KWOTEFloaterWritable $conn $sockKWOTE
+    fileevent $sock readable KWOTEFloaterReadable $conn $sockKWOTE
+    if {$handshake != KWOTEKWOTE} {
+QTABQ puts $sock $handshake
+QTABQ debugmsg KWOTEsent handshake ($handshake) to $connKWOTE
+    }
+    return $conn
+}
+
+proc PortNumber {sock} {
+    lindex [fconfigure $sock -sockname] 2
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+// in ms, how long to wait after a failed send before closing the connection
+tryset failedsendwait 3000
+// note that no retry is done---the wait is just to allow KWOTEthe air to clearKWOTE
+
+// send a message; on failure, close the connection
+proc FloaterSend {to msg} {
+    global conn_to_sock
+
+    catch {set s $conn_to_sock($to)}
+
+#ifdef DEBUG
+#ifndef TEXT
+    puts stdout KWOTESend $to ($s) $msgKWOTE
+#endif
+#endif
+    debugmsg KWOTESend $to ($s) $msgKWOTE
+
+    if [catch {puts $s $msg}] {
+QTABQ global failedsendwait
+
+QTABQ after $failedsendwait \
+QTABQ     debugmsg \KWOTEClosing $s due to failed send\KWOTE; \
+QTABQ     catch \{close $s\}
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+proc FloaterCloseName {name} {
+    global name_to_conn
+
+    set s KWOTE<none>KWOTE
+    catch {set s $name_to_conn($name)}
+    debugmsg KWOTEFloaterCloseName $name ($s)KWOTE
+    if {$s != KWOTE<none>KWOTE} {
+QTABQ catch {
+QTABQ     FloaterClose $s
+QTABQ     unset KWOTEname_to_conn($name)KWOTE
+QTABQ }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// guess at an IP address for the local host; a better
+// one will be grabbed whenever the client logs in.
+/////////////////////////////////////////////////////////////////////////////
+
+#if 0  // it is not a good approach to search through ifconfig output;
+       // it only works on certain OSkwerts, and it easily gives bogus
+       // addresses.  A better way is now used: as soon as there is
+       // a connection to the login server, the address on the connection
+       // to the login server is noted.  Really, the address on *any*
+       // successful connection should be noted....  XXX
+// f is a filename (or KWOTE|program args ...KWOTE).  r is a regular expression with
+// one parenthesized component.  For each line, if the regexp matches,
+// lappend the parenthesized component of the match to the result.
+proc filter_regexp {f r} {
+    set f [open $f r]
+    set result KWOTEKWOTE
+    while {[gets $f s] >= 0} {
+QTABQ if [regexp $r $s all a] { lappend result $a; set q yes } { set q no }
+QTABQ // puts KWOTEChecking $s against regexp $r: $qKWOTE
+    }
+    catch { close $f }
+    // puts KWOTEfilter result: $resultKWOTE
+    return $result
+}
+
+// Run ifconfig and try to parse out an IP address.  Should work on
+// Linux and some other UNIX variants.  Try running KWOTEifconfig ppp0KWOTE
+// first and if that fails then just do ifconfig.  Assumes an IP
+// address is four numerals separated by periods and ignores 127.0.0.1.
+proc IP_from_ifconfig {} {
+    set r {inet addr:([0-9]+[.][0-9]+[.][0-9]+[.][0-9]+)}
+    set s KWOTEKWOTE
+    catch {set s [filter_regexp KWOTE|ifconfig ppp0KWOTE $r]}
+    if {$s == KWOTEKWOTE} {
+QTABQ catch {set s [filter_regexp KWOTE|ifconfigKWOTE $r]}
+    }
+
+    set result KWOTEKWOTE
+    foreach p $s {
+QTABQ if {$p != KWOTE127.0.0.1KWOTE} {
+QTABQ     if {$result == KWOTEKWOTE} {set result $p} {set result $p!$result}
+QTABQ }
+    }
+    return $result
+}
+
+#endif
+
+// Check for really bogus IP addresses
+proc bogusIP {s} {
+    if {$s == KWOTElocalhostKWOTE} { return 1 }
+    if {$s == KWOTElocalhost.localdomainKWOTE} { return 1 }
+    if {$s == KWOTE127.0.0.1KWOTE} { return 1 }
+    if {$s == KWOTE0.0.0.0KWOTE} { return 1 }
+    if {$s == KWOTE255.255.255.255KWOTE} { return 1 }
+    return 0
+}
+
+proc filter_and_join {s filter joiner} {
+    set result KWOTEKWOTE
+    foreach k $s {
+QTABQ if ![$filter $k] { lappend result $k }
+    }
+    join $result $joiner
+}
+
+proc nothing {sock ipaddr port} {}
+
+
+set localIPaddr 127.0.0.1
+
+catch {
+    set server [socket -server nothing 0]
+    set socket [socket [info hostname] [PortNumber $server]]
+    set localIPaddr0 [lindex [fconfigure $socket -peername] 0]
+    set localIPaddr1 [lindex [fconfigure $socket -peername] 1]
+    catch {close $socket}
+    catch {close $server}
+    set localIPaddr \
+QTABQ     [filter_and_join KWOTE$localIPaddr0 $localIPaddr1KWOTE bogusIP !]
+
+    if {$localIPaddr == KWOTEKWOTE} {
+        set localIPaddr 127.0.0.1
+    }
+
+}
+

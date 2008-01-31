@@ -1,0 +1,50 @@
+han (S)gin server at 128.32.34.48:2140                    
+` Bill A is now hosti
+ng a table.                                                
+` Jonathan is now ho
+sting a table.                                              
+Tables: Jonathan   
+    IMP   3  need 1                                          
+Tables: Bill A    
+   IMP   1  full, kibbitzers welcome                          
+Tables: a totalDa
+vid (E)                         Franco (W)                     
+` Attempting to 
+connect to 128.32.34.47:4062                                    
+` Communication
+ established                                                     
+` Franco has j
+oined (2).                                                        
+` David has j
+oined (3).                                                         
+` Jonathan h
+as joined (4).                                                      
+` Jonathan 
+is s      Buzz (N)                                                   
+` David is
+ sitting East                                                         
+` Franco 
+is sitting West                                                        
+Jonathan
+: hi Buzz                                                               
+Franco:
+ hi Buzz                                                                 
+Buzz: 
+need 1?                                                                   
+Jonat
+han: sure, take N                                                          
+` Re
+questing seat...                                                            
+You
+ haven't seen any hands from 15Sep96IMP                                      
+Yo
+u haven't seen any hands from 15Sep96MP                                       
+`
+ You are sitting North                                                         
+
+--------------------------------------------------------------------------------
+
+command                                                                        
+ 
+   talk                                                                       
+  

@@ -1,0 +1,25 @@
+Floater 1.0beta  Jonathan (S) S                                                 
+Connected                     H                                                 
+15Sep96IMP2                   D                   Tricks won: 0; lost: 0        
+NS vul.                       C                                                 
+E dealt                       -----------------                                 
+               David (E)     |       cq        | Franco (W)     ................
+               S             |                 | S KT74         .LHO Par RHO you
+               H             |             ?   | H KQT          .1H  P   1S  P  
+               D             |                 | D AJ3          .2D  P   3C  P  
+               C             |                 | C AK5          .3H  P   4N  P  
+                              -----------------                 .5C  P   6H  P  
+                     Buzz (N) S AJ6532                          .P   P          
+                              H 65                              .               
+                              D 86                              .               
+                              C T43                             .               
+command                                                                         
+   talk                                                                         
+--------------------------------------------------------------------------------
+Franco! Alert!  4th suit forcing                                                
+David! Alert!  artificial game force                                            
+Buzz= what is 5C?                                                               
+David= 5C shows 1 or 4 keycards                                                 
+Franco- 5c shows one or four keycards                                           
+Franco: good luck, partner                                                      
+David: thanks pard                                                              

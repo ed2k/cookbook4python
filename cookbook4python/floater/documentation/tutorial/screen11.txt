@@ -1,0 +1,25 @@
+Tables: Jonathan       IMP   3  need 1                                          
+Tables: Bill A       IMP   1  full, kibbitzers welcome                          
+Tables: a total of 2 tables                                                     
+` Attempting to connect to 128.32.34.47:4062                                    
+` Communication established                                                     
+` Franco has joined (2).                                                        
+` David has joined (3).                                                         
+` Jonathan has joined (4).                                                      
+` Jonathan is sitting South                                                     
+` David is sitting East                                                         
+` Franco is sitting West                                                        
+Jonathan: hi Buzz                                                               
+Franco: hi Buzz                                                                 
+Buzz: need 1?                                                                   
+Jonathan: sure, take N                                                          
+` Requesting seat...                                                            
+You haven't seen any hands from 15Sep96IMP                                      
+You haven't seen any hands from 15Sep96MP                                       
+` You are sitting North                                                         
+Buzz: system, pard?                                                             
+Jonathan: SA?                                                                   
+Buzz: ok                                                                        
+--------------------------------------------------------------------------------
+command                                                                         
+   talk                                                                         

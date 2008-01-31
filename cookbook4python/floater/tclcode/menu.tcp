@@ -1,0 +1,541 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *   Lex Spoon <lex@cc.gatech.edu>
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the "GPL"), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/* menu.tcp - the menu bar for the Tcl/Tk GUI
+ *
+ * $Id: menu.tcp,v 1.10 2004/09/25 13:44:53 lexspoon Exp $
+ */	
+
+#ifndef CASCADING_FONT_MENU
+#define CASCADING_FONT_MENU 1
+#endif
+
+global m
+
+// Add a menu item that invokes a given Floater command (as if typed by user).
+proc simple {label {command <none>}} {
+    global m
+
+    if {"<none>" == $command} {set command $label}
+    $m add command -label $label -command "command \"$command\""
+//    puts "$m add command -label $label -command \"command \"$command\"\""
+}
+
+// Add a radiobutton menu item that invokes a given Floater command
+// (as if typed by user).
+proc addrb {var label {command <none>} {value <none>}} {
+    global m
+
+    if {"<none>" == $command} {set command $label}
+    if {"<none>" == $value} {set value $label}
+    $m add radiobutton -label $label -command "command \"$command\"" \
+	    -variable $var -value "$value"
+}
+
+// Create a cascaded menu and optionally add some simple commands.
+proc cascade {label {subcommands {}}} {
+    global m
+
+    $m add cascade -label $label -menu [set m2 "$m.cas$label"]
+    menu $m2 -tearoff no
+    set oldm $m
+    set m $m2
+    foreach sub $subcommands {
+	eval "simple $sub"
+    }
+    set m $oldm
+    return $m2
+}
+
+// Create a cascaded menu and optionally add some radiobuttons.
+proc rcascade {label var {subcommands {}}} {
+    global m
+
+    $m add cascade -label $label -menu [set m2 "$m.cas[join $label _]"]
+    menu $m2 -tearoff no
+    set oldm $m
+    set m $m2
+    foreach sub $subcommands {
+	eval "addrb $var $sub"
+    }
+    set m $oldm
+    return $m2
+}
+
+
+set m [menu .menu.file -tearoff no]
+.menu add cascade -menu $m -label File -underline 0
+
+
+#if 0
+if $macintosh {
+    .menu add cascade -menu .menu.apple
+    menu .menu.apple -tearoff no
+    .menu.apple add command -label "About..." -command {command about}
+} else {
+    .menu.file add command -label "About..." -command {command about}
+//	-underline 0 -accelerator "<F1>"
+    .menu.file add separator
+}
+#endif
+
+simple "Login..." login
+simple "Change Password..." password
+simple "Load CC..." ccload 
+simple "Save CC..." ccsave
+#if 0
+simple "Execute File..." execute
+#endif
+set needseated_fmenu_entries {2 3}
+$m add separator
+simple Quit
+
+// join menu ////////////////////////////////////////////////////////////////
+
+set m [menu .menu.join -tearoff no]
+.menu add cascade -menu $m -label Join -underline 0
+
+proc no_tables_to_join {b} {
+    if $b {
+	global join_menu_length join_menu
+	.menu.join delete 0 end
+	.menu.join add command -label "(none)" -state disabled
+	.menu.join add separator
+	.menu.join add command -label "Check for tables" \
+		-command "command tables"
+	set join_menu_length 0
+	foreach i [array names join_menu] { unset join_menu($i) }
+    } else {
+	catch {.menu.join delete "(none)"}
+    }
+}
+
+no_tables_to_join 1
+
+proc join_menu_add_table {name fullname} {
+    global join_menu_length join_menu
+
+    if [info exists join_menu($name)] {
+	if {$fullname != $join_menu($name)} {
+	    .menu.join entryconfigure $join_menu($name) -label $fullname
+	    set join_menu($name) $fullname
+	}
+	return
+    }
+    if {[incr join_menu_length] == 1} {no_tables_to_join 0}
+    set join_menu($name) $fullname
+    .menu.join insert 0 command -label $fullname -command "command \"join $name\""
+}
+
+proc join_menu_remove_table {name} {
+    global join_menu_length join_menu
+
+    if ![info exists join_menu($name)] return
+    .menu.join delete $join_menu($name)
+    if {[incr join_menu_length -1] == 0} {
+	no_tables_to_join 1
+    } else {
+	unset join_menu($name)
+    }
+}    
+
+// table menu ////////////////////////////////////////////////////////////////
+
+set m [menu .menu.table -tearoff no]
+.menu add cascade -menu $m -label Table -underline 0
+
+simple Host
+$m add separator
+cascade Sit {North South East West}
+simple Stand
+$m add separator
+cascade Kibitz
+$m.casKibitz configure -postcommand {update_kibitz_menu}
+simple Spec
+$m add separator
+cascade Unseat
+$m.casUnseat configure -postcommand {update_unseat_menu}
+cascade Communications {Disconnect {"Show Parent" parent} \
+	{"Show Children" children} {"Show Net Location" ip}}
+simple "Show who's here" who
+simple "Beep everyone" beep
+set needtable_tmenu_entries {2 3 5 6 8 9 10 11 12}
+
+
+// return the name of the player seated at a specified compass
+// direction, or an empty string if there is no player there
+proc playername_atcompass {compassdir} {
+    global playername position
+    foreach p {lho rho pard self} {
+        if [info exists position($p)] {
+            if [info exists playername($p)] {
+                if [string equal $position($p) $compassdir] {
+                    set name $playername($p)
+                    if {[string first "(" $name] == -1} {
+                        return $name
+                    }
+                }
+            }
+        }
+    }
+    return ""
+}
+
+// return whether the seat at a specified compass direction is occupied
+proc compassdir_occupied {compassdir} {
+    if [string equal [playername_atcompass $compassdir] ""] {
+        return 0
+    } else {
+        return 1
+    }
+}
+
+// return a string with a playername and a compass direction, if possible;
+// if not, return a full string for the compass direction.  The
+// compassdir should be N, S, E, or W
+proc compass_description {compassdir} {
+    set name [playername_atcompass $compassdir]
+    if [ string equal $name "" ] {
+        if [ string equal $compassdir "N" ] { return "North" }
+        if [ string equal $compassdir "S" ] { return "South" }
+        if [ string equal $compassdir "E" ] { return "East" }
+        if [ string equal $compassdir "W" ] { return "West" }
+        floaterror "$compassdir is an invalid compass direction"
+    } else {
+        return "$name ($compassdir)"
+    }
+}
+
+proc update_kibitz_menu {} { 
+    global m
+
+    set m .menu.table.casKibitz
+
+    $m delete 0 end
+
+    simple None  {kibitz 0}
+    foreach dir {N S E W} {
+        simple [compass_description $dir]  "kibitz $dir"
+    }
+}
+
+
+proc update_unseat_menu {} {
+    global m
+
+    set m .menu.table.casUnseat
+
+    $m delete 0 end
+
+    foreach dir {N S E W} {
+        if [compassdir_occupied $dir] {
+            simple [compass_description $dir]  "unseat $dir"
+        }
+    }
+}
+
+// bridge menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.bridge -tearoff no]
+.menu add cascade -menu $m -label Bridge -underline 0
+
+global claimmenu
+set claimmenu [cascade Claim]
+foreach i {13 12 11 10 9 8 7 6 5 4 3 2 1 0} {
+    $claimmenu add command -label "$i tricks" -command "GUIclaim $i"
+}
+simple "Accept claim" accept
+simple "Reject claim" reject
+simple "Retract claim" retract
+simple Review
+simple "Show initial cards" cards
+simple "Show last trick" last
+simple "Show EW CC" {ccdump EW}
+simple "Show NS CC" {ccdump NS}
+$m add separator
+set scoringmenu [cascade Scoring]
+$scoringmenu add radiobutton -label IMP -command "command \"score IMP\"" \
+	-variable radioscoring
+$scoringmenu add radiobutton -label MP -command "command \"score MP\"" \
+	-variable radioscoring
+$scoringmenu add radiobutton -label Rubber \
+	-command "command \"score Rubber\"" \
+	-variable radioscoring -value RUBBER
+$scoringmenu add radiobutton -label Hearts \
+	-command "command \"score Hearts\"" \
+	-variable radioscoring -value HEARTS
+$scoringmenu add separator
+$scoringmenu add radiobutton -label Competitive \
+	-command "command competitive" -variable radiocompetitive
+$scoringmenu add radiobutton -label Noncompetitive \
+	-command "command noncompetitive" -variable radiocompetitive
+.menu.bridge entryconfigure 10 -state disabled // disable scoring menu
+proc menus_tablehost {b {scoring {}} {competitive {}}} {
+    global radiocompetitive radioscoring scoringmenu
+
+    set radioscoring $scoring
+    set radiocompetitive $competitive
+    if $b {set setting normal} {set setting disabled}
+    .menu.bridge entryconfigure 10 -state $setting
+    .menu.bridge entryconfigure 11 -state $setting
+}    
+simple "Deal next hand" deal
+.menu.bridge entryconfigure 11 -state disabled // disable deal
+simple "Show previous deal" previous
+set needbridge_bmenu_entries {0 1 2 3 4 5 6}
+set needtable_bmenu_entries {7 8} // for deal and scoring see menus_tablehost
+.menu.bridge entryconfigure 12 -state disabled // initially, no previous deal
+proc menus_enable_previous {} { .menu.bridge entryconfigure 12 -state normal }
+
+// options menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.options -tearoff no]
+.menu add cascade -menu $m -label Options -underline 0
+
+$m add checkbutton -label "Compact GUI" -command {gui_compact $gui_compact_} -variable gui_compact_
+/* if $gui_compact_ { $m invoke last } */
+$m add checkbutton -label "Separate talk window" -command {command "separateTalk $separateTalk_"} -variable separateTalk_
+$m add checkbutton -label "Beep at my turn" -command {command "beepAtMyTurn $beepAtMyTurn_"} -variable beepAtMyTurn_
+$m add checkbutton -label "Deiconify if I'm beeped" -command {command "deiconifyIfBeeped $deiconifyIfBeeped_"} -variable deiconifyIfBeeped_
+rcascade "Entry lines shown" entryLinesShown_ \
+                        {{"talk" "showEntryLines talk" talk}
+   		         {"command" "showEntryLines command" command}
+			 {"both" "showEntryLines both" both}}
+rcascade "Hide auction" auction_hide_time \
+			{{"after first trick" "hideAuction -1" -1}
+			 {"end of auction + 5 seconds" "hideAuction 5" 5}
+			 {"end of auction + 10 seconds" "hideAuction 10" 10}}
+
+$m add separator
+$m add command -label "Bridge Font" -state disabled
+tryset radiofont Medium
+$m add radiobutton -label "Large" -command "command \"font large\"" -variable radiofont
+$m add radiobutton -label "Medium" -command "command \"font medium\"" -variable radiofont
+$m add radiobutton -label "Small" -command "command \"font small\"" -variable radiofont
+
+// font menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.font -tearoff no]
+.menu add cascade -menu $m -label Font -underline 2
+foreach f [lsort [fontfamilies]] {
+#if CASCADING_FONT_MENU
+    set firstchar [string index $f 0]
+    if {![info exists prev] || $firstchar != $prev} {
+	set submenu [cascade [set prev $firstchar]]
+    }
+    $submenu add radiobutton -label $f -command "updatetalkfontfam \{$f\}" \
+	    -variable fontfam
+#else
+    $m add radiobutton -label $f -command "updatetalkfontfam \{$f\}" \
+	    -variable fontfam
+#endif
+            
+}
+set fontfam [lindex $talkfont 0]
+
+// fontsize menu //////////////////////////////////////////////////////////
+
+set m [menu .menu.fontsize -tearoff no]
+.menu add cascade -menu $m -label Fontsize -underline 4
+foreach s {8 9 10 11 12 14 18 24 28 32 36} {
+    $m add radiobutton -label $s -command "updatetalkfontsize $s" \
+	    -variable fontsiz
+}
+set fontsiz [lindex $talkfont 1]
+
+// help menu //////////////////////////////////////////////////////////////
+
+set m [menu .menu.help -tearoff no]
+if $macintosh { set h Docs } else { set h Help }
+.menu add cascade -menu $m -label $h -underline 0
+
+simple "About" about
+$m add separator
+
+proc prevchar {c} {
+    scan $c %c i
+    format %c [incr i -1]
+}
+
+proc menus_helpcommands {commands} {
+    global m help_texts
+
+    set m .menu.help
+    set endchars \[fq\]
+    set begin a
+    foreach s $commands {
+	if {![string match "*(*" $s] && ![string match "*)*" $s]} {
+	    if {[regexp $endchars [set first [string range $s 0 0]]] &&
+	    ![info exists doneit($first)]} {
+		set doneit($first) 1
+		cascade "$begin-[prevchar $first]" $w
+		set begin $first
+		set w {}
+	    }
+	    lappend w "$s \"help $s\""
+	}
+    }
+    if {$w != {}} {cascade $begin-z $w}
+
+    $m add separator
+    foreach text $help_texts {
+	simple $text
+    }
+}
+
+// The below assumes "Accept claim" and "Reject claim" are entries 1 and 2 and
+// "Retract claim" is 3.
+
+proc menus_noclaim {} {
+    foreach i {1 2 3} {
+	.menu.bridge entryconfigure $i -state disabled
+    }
+}
+
+proc menus_defclaim {} {
+    foreach i {1 2} {
+	.menu.bridge entryconfigure $i -state normal
+    }
+}
+
+proc menus_declclaim {} {
+    .menu.bridge entryconfigure 3 -state normal
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+// n is which entry to modify (# of tricks); setting is 1 or 0
+proc claimable {n setting} {
+    global claimmenu
+
+    set n [expr 13 - $n]
+    if $setting {set setting normal} {set setting disabled}
+    $claimmenu entryconfigure $n -state $setting
+}
+
+// a claim for n tricks total
+proc GUIclaim {n} {
+    global contract_tricks
+
+//    puts "GUIclaim $n"
+    if ![info exists contract_tricks] return
+    if {$n >= $contract_tricks} {
+	command "make [expr $n - 6]"
+    } else {
+	command "down [expr $contract_tricks - $n]"
+    }
+}
+
+proc update_claimmenu {decltricks deftricks} {
+//  talkmsg "update_claimmenu $decltricks $deftricks"
+    set max [expr 13 - $deftricks]
+    for {set i 0} {$i <= 13} {incr i} {
+	if {$i < $decltricks || $i > $max} {
+	    claimable $i 0
+	} else {
+	    claimable $i 1
+	}
+    }
+}    
+
+// if I am declarer, enable claim menu option; otherwise disable
+proc menus_declaring {b} {
+    if $b {set setting normal} {set setting disabled}
+    .menu.bridge entryconfigure 0 -state $setting
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+set bridge_menus_state 1 // normally 0 or 1
+
+proc activate_bridge_menus {b} {
+    global bridge_menus_state needbridge_bmenu_entries
+
+    if {$b == $bridge_menus_state} return
+    
+    if [set bridge_menus_state $b] {set setting normal} {set setting disabled}
+    foreach n $needbridge_bmenu_entries {
+	.menu.bridge entryconfigure $n -state $setting
+    }
+//    for {set i 0} {$i <= 13} {incr i} {claimable $i $bridge_menus_state}
+}
+
+proc menus_newhand {} {
+    activate_bridge_menus 1
+    menus_noclaim
+    menus_declaring 0
+}
+
+proc menus_nobridge {} {activate_bridge_menus 0; menus_noclaim}
+
+menus_nobridge
+
+
+set seated_menus_state 1
+
+proc activate_seated_menus {b} {
+    global seated_menus_state needseated_fmenu_entries
+
+    if {$b == $seated_menus_state} return
+    
+    if [set seated_menus_state $b] {set setting normal} {set setting disabled}
+    foreach n $needseated_fmenu_entries {
+	// .menu.file.m entryconfigure $n -state $setting
+	.menu.file entryconfigure $n -state $setting
+    }
+    if !$b {menus_noclaim; menus_declaring 0}
+}
+
+activate_seated_menus 0
+
+
+set table_menus_state 1
+
+proc activate_table_menus {b} {
+    global table_menus_state needtable_bmenu_entries needtable_tmenu_entries
+
+    if {$b == $table_menus_state} return
+    if !$b {activate_seated_menus 0; menus_tablehost 0}
+    
+    if [set table_menus_state $b] {set setting normal} {set setting disabled}
+    foreach n $needtable_bmenu_entries {
+	.menu.bridge entryconfigure $n -state $setting
+    }
+    foreach n $needtable_tmenu_entries {
+	.menu.table entryconfigure $n -state $setting
+    }
+}
+
+activate_table_menus 0

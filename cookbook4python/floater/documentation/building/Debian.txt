@@ -1,0 +1,25 @@
+BUILDING DEBIAN PACKAGES
+
+This file describes how to build Floater's Debian packages.
+
+
+1. Run ./build/mkdist to make a new source distribution.
+
+2. Rename the resulting source file to the Debian naming
+   convention for source tarballs, something like:
+   
+     floater_1.4.15.orig.tar.gz
+
+3. Move this file to an empty working directory, and untar it.
+   Change directory (cd) to the resulting directory.
+
+4. Edit debian/control and delete the section about the floater-server
+   package.  The floater-server package is not distributed through
+   Debian, and is only useful for people wanting to run their own
+   server.
+
+5. Run "dpkg-buildpackage -rfakeroot".
+
+
+
+

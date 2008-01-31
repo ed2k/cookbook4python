@@ -1,0 +1,410 @@
+<html><head><TITLE>Floater Command Reference</TITLE></head>
+<body bgcolor="#ffffff" text="#000000" link="#CC0000" alink="#FF3300" vlink="#0000CC">
+
+<P align=center>
+<img BORDER=0 SRC="../images/medwhitefloater.png" ALT="Floater">
+
+<center><H3>Command Reference</H3></center>
+<p>
+<!--
+last modified Sat Nov 13 08:07:20 PST 1999
+-->
+<a href="#accept">accept</a>
+<a href="#alert">alert</a>
+<a href="#autodeal">autodeal</a>
+<a href="#beep">beep</a>
+<a href="#beepAtMyTurn">beepAtMyTurn</a>
+<a href="#bid">bid</a>
+<a href="#bidButtons">bidButtons</a>
+<a href="#bind">bind</a>
+<a href="#bottom">bottom</a>
+<a href="#bug">bug</a>
+<a href="#bugs">bugs</a>
+<a href="#c">c</a>
+<a href="#cards">cards</a>
+<a href="#cc">cc</a>
+<a href="#ccdump">ccdump</a>
+<a href="#ccload">ccload</a>
+<a href="#ccsave">ccsave</a>
+<a href="#changelog">changelog</a>
+<a href="#children">children</a>
+<a href="#claim">claim</a>
+<a href="#close">close</a>
+<a href="#competitive">competitive</a>
+<a href="#confusing">confusing</a>
+<a href="#copyright">copyright</a>
+<a href="#d">d</a>
+<a href="#deal">deal</a>
+<a href="#deiconifyIfBeeped">deiconifyIfBeeped</a>
+<a href="#disconnect">disconnect</a>
+<a href="#down">down</a>
+<a href="#e (or east)">e (or east)</a>
+<a href="#east (or e)">east (or e)</a>
+<a href="#emailchange">emailchange</a>
+<a href="#execute">execute</a>
+<a href="#explain">explain</a>
+<a href="#find">find</a>
+<a href="#follow">follow</a>
+<a href="#font">font</a>
+<a href="#h">h</a>
+<a href="#hideAuction">hideAuction</a>
+<a href="#hideCommandLine">hideCommandLine</a>
+<a href="#hideMatrix">hideMatrix</a>
+<a href="#host">host</a>
+<a href="#ip">ip</a>
+<a href="#join">join</a>
+<a href="#kibbitz">kibbitz</a>
+<a href="#last">last</a>
+<a href="#lho">lho</a>
+<a href="#login">login</a>
+<a href="#make">make</a>
+<a href="#n (or north)">n (or north)</a>
+<a href="#newuser">newuser</a>
+<a href="#noncompetitive">noncompetitive</a>
+<a href="#north (or n)">north (or n)</a>
+<a href="#note">note</a>
+<a href="#opp">opp</a>
+<a href="#parent">parent</a>
+<a href="#password">password</a>
+<a href="#previous">previous</a>
+<a href="#play">play</a>
+<a href="#quit">quit</a>
+<a href="#randomplay">randomplay</a>
+<a href="#readme">readme</a>
+<a href="#redalert">redalert</a>
+<a href="#reject">reject</a>
+<a href="#retract">retract</a>
+<a href="#review">review</a>
+<a href="#rho">rho</a>
+<a href="#s">s</a>
+<a href="#say">say</a>
+<a href="#score">score</a>
+<a href="#scroll">scroll</a>
+<a href="#separateTalk">separateTalk</a>
+<a href="#south (or s)">south (or s)</a>
+<a href="#spec">spec</a>
+<a href="#tables">tables</a>
+<a href="#talkfont">talkfont</a>
+<a href="#talkfontsize">talkfontsize</a>
+<a href="#w (or west)">w (or west)</a>
+<a href="#warranty">warranty</a>
+<a href="#west (or w)">west (or w)</a>
+<a href="#who">who</a>
+<a href="#whois">whois</a>
+<a href="#.">.</a>
+<!-- Now, the meat -->
+<p><b><a name="accept">accept</a></b>
+Accept declarer&#146;s claim.  Must be used by each defender for a claim to
+be accepted.
+<p><b><a name="alert">alert</a></b>
+&#147;Alert some ... text ...&#148; is equivalent equivalent to &#147;explain Alert!
+some ... text ...&#148; and is traditionally used to self-alert bids or
+carding that is slightly unusual.  &#147;Redalert&#148; should be used for highly
+unusual bids or carding.
+<p><b><a name="autodeal">autodeal</a></b>
+After a certain amount of time elapses at the end of a hand, Floater
+automatically deals a new hand if four people are seated.  To control
+the timing, &#147;autodeal <N>&#148; sets the number of seconds to wait between
+hands.  With no arguments, &#147;autodeal&#148; toggles on and off whether new
+hands are ever dealt automatically.  (By the way, you must be host of
+the table for your autodeal setting to have any effect.)
+<p><b><a name="beep">beep</a></b>
+You may beep someone at your table by doing &#147;beep <name>&#148; (e.g., &#147;beep
+Joe Smith&#148;), or you may beep everyone at your table by just doing
+&#147;beep.&#148;  The bell will ring on the recipient&#146;s machine and everyone at
+the table will see a message indicating who has beeped whom.
+<p><b><a name="beepAtMyTurn">beepAtMyTurn</a></b>
+There is an option that causes Floater to beep when it becomes your
+turn to bid or play.  To toggle the described behavior, invoke this
+command.  To turn it off, invoke this command with the argument &#147;no.&#148;
+To turn it on, invoke this command with the argument &#147;yes.&#148;  See also
+the options menu on the GUI.
+<p><b><a name="bid">bid</a></b>
+Make a call.  For example, to bid 3 Notrump, do &#147;bid 3n&#148;.  Each strain
+is represented by a single letter: c for clubs, d for diamonds, h for
+hearts, s for spades, and n for notrump.  &#147;Bid p,&#148; &#147;bid pass,&#148; &#147;bid
+x,&#148; &#147;bid xx,&#148; &#147;bid double,&#148; and &#147;bid redouble&#148; have the obvious
+meanings.  Unless you have customized the bindings (see &#147;bind&#148;), the
+word &#147;bid&#148; may be omitted (&#148;3n&#148; is the same as &#147;bid 3n&#148; and so on).
+<p><b><a name="bidButtons">bidButtons</a></b>
+If you are using the GUI, by default (unless your screen is small)
+Floater displays, during the auction, a set of buttons for bidding.
+To toggle the described behavior, invoke this command.  To turn it
+off, invoke this command with the argument &#147;no.&#148;  To turn it on,
+invoke this command with the argument &#147;yes.&#148;  See also the options
+menu on the GUI.
+<p><b><a name="bind">bind</a></b>
+Bind is used to create shorthand ways of specifying any command or
+sequence of commands.  For example, &#147;bind typ say Thanks, pard!&#148; would
+allow you to subsequently use &#147;typ&#148; as if it were a normal command.
+Another example: Blue Club players might do &#147;bind 1c bid 1c; explain
+Blue club: 17+ points, any distribution.&#148;
+<p><b><a name="bottom">bottom</a></b>
+If you are using the textual user interface, bottom is used to go to
+the bottom of the scrolling talk window.  You may also use the scroll
+command or the up and down array keys to select the portion of the
+scrolling talk window you view.
+<p><b><a name="bug">bug</a></b>
+Do &#147;bug <arbitrarily long one-line description>&#148; and an email message
+containing your description and a dump of some internal variables will
+be sent to floater-bugs@priam.cs.berkeley.edu.
+<p><b><a name="bugs">bugs</a></b>
+Display the &#145;BUGS&#146; file.
+<p><b><a name="c">c</a></b>
+Play your lowest club.
+<p><b><a name="cards">cards</a></b>
+Remind me what my cards were at the beginning of the hand.  May also
+be used by kibitzers, with analogous meaning.
+<p><b><a name="cc">cc</a></b>
+Invokes the textual user interface&#146;s convention card editor.  By
+default you will be editing your side&#146;s convention card, or NS&#146;s if
+you are not seated.  (&#148;Editing&#148; of a conventioning card other than
+your own is really limited to viewing; changes are not allowed.)  The
+three forms of the command are &#147;cc,&#148; &#147;cc NS,&#148; and &#147;cc EW.&#148;  If you are
+using the GUI, &#147;cc&#148; is equivalent to &#147;ccdump&#148; because there is no
+built-in editor for the GUI.
+<p><b><a name="ccdump">ccdump</a></b>
+Show the specified convention card (e.g. &#147;ccdump NS&#148;).  If none is specified,
+show my convention card if I am seated or NS&#146;s otherwise.  Furthermore,
+you may also specify a range of line numbers to display (e.g. &#147;1-5&#148; or
+&#147;23-&#148; or &#147;-9&#148; or just &#147;17&#148;).  Put the range first, if any, first;
+so, &#147;ccdump -3&#148; or &#147;ccdump 12-16 NS.&#148;
+<p><b><a name="ccload">ccload</a></b>
+Load a convention card from the named text file (e.g. &#147;ccload sam.cc&#148;)
+and make it the convention card for my side.  You must be seated to
+invoke the ccload command.
+<p><b><a name="ccsave">ccsave</a></b>
+Save your current convention card to the named text file.
+<p><b><a name="changelog">changelog</a></b>
+Display the log of changes to Floater.
+<p><b><a name="children">children</a></b>
+Show who gets messages from me in the communication tree.  Primarily
+intended for debugging.
+<p><b><a name="claim">claim</a></b>
+As declarer, suggest to the defense that you are certain of some
+number of tricks, and further play is not necessary.  The defenders
+will be shown all four hands and may then use &#147;accept&#148; or &#147;reject&#148; and/or
+continue playing.  Simply doing &#147;claim&#148; claims the rest of the tricks;
+&#147;claim 3&#148; would mean a claim to make 3 of the remaining tricks;
+&#147;claim -2&#148; would be a claim to make all but 2 of the
+remaining tricks; &#147;claim 0&#148; means concede the rest; and &#147;claim +3&#148;
+would be a claim for the contract plus 3 overtricks.
+<p><b><a name="close">close</a></b>
+Stop hosting (or close) your table.  You must be hosting a table for
+this to be allowed.
+<p><b><a name="competitive">competitive</a></b>
+Turns on competitive mode.  This is the default.  Results will be
+reported by email for IMPs and MPs.  (Competitive mode is not relevant
+to hearts or rubber bridge.)
+<p><b><a name="confusing">confusing</a></b>
+Display the &#145;CONFUSING&#146; file.
+<p><b><a name="copyright">copyright</a></b>
+Display copyright and warranty information.
+<p><b><a name="d">d</a></b>
+Play your lowest diamond.
+<p><b><a name="deal">deal</a></b>
+Go on to the next hand.  May only be used by the host of the table.
+<p><b><a name="deiconifyIfBeeped">deiconifyIfBeeped</a></b>
+Normally when you are beeped by another player (see &#147;beep&#148;), your
+Floater window is deiconified if it had been iconified.  This applies
+only to the GUI.  To toggle the described behavior, invoke this
+command.  To turn it off, invoke this command with the argument &#147;no.&#148;
+To turn it on, invoke this command with the argument &#147;yes.&#148;  See also
+the options menu on the GUI.
+<p><b><a name="disconnect">disconnect</a></b>
+Close all network connections.  You will become a &#147;lurker.&#148;  If you
+are hosting a table at the time you issue the command, it is
+equivalent to &#147;close.&#148;
+<p><b><a name="down">down</a></b>
+A variant of the &#147;claim&#148; command.  For example, &#147;Down 2&#148; is a claim
+for 2 fewer tricks than you have contracted for.
+<p><b><a name="e (or east)">e (or east)</a></b>
+If the East seat is available, take it.
+<p><b><a name="east (or e)">east (or e)</a></b>
+If the East seat is available, take it.
+<p><b><a name="emailchange">emailchange</a></b>
+This command may be used to inform the Floater login server of a change in
+your email address.  (Such changes do not apply to the Floater mailing list.)
+You must be logged in to use the command, and you should specify your
+full email address as an argument to the command (e.g., &#147;emailchange
+bob@aol.com&#148;).
+<p><b><a name="execute">execute</a></b>
+Read a file and interpret the lines of the file as if they were typed
+in on the command line at that moment.  E.g., &#147;execute ~/floater/foo.&#148;
+<p><b><a name="explain">explain</a></b>
+Say something that everyone at the table except partner can hear.
+This is typically used to explain conventional calls to the opponents
+and kibitzers, among other things.
+<p><b><a name="find">find</a></b>
+Find information about people.  For example, &#147;find Joe Bob, elmo&#148; will
+attempt to find information about the players Joe Bob and elmo.  Any
+number of names, separated by commas, is allowed.  Recent information
+about a player&#146;s location, if available, is among the things displayed.
+<p><b><a name="follow">follow</a></b>
+Play the card of the named rank.  E.g. &#147;follow k.&#148;  Unless you have
+customized the bindings (see &#147;bind&#148;), the word &#147;follow&#148; may be omitted
+(&#148;7&#148; is the same as &#147;follow 7&#148; and so on).
+<p><b><a name="font">font</a></b>
+If you are using the GUI, you may change the font size for the matrix
+and auction by doing &#147;font large,&#148; &#147;font medium,&#148; or &#147;font small.&#148; 
+(To change the font for the talk window, use the &#147;talkfont&#148; or
+&#147;talkfontsize&#148; command.) 
+<p><b><a name="h">h</a></b>
+Play your lowest heart.
+<p><b><a name="hideAuction">hideAuction</a></b>
+If you are using the GUI, you may use this command to control when
+during the first trick the auction is removed from view.  The default,
+which can also be achieved by do &#145;hideAuction -1&#146; is to removed the
+auction after trick one.  The command &#145;hideAuction N&#146; (for positive N)
+will cause the auction to be hidden at the end of trick one or N
+seconds after the end of the auction, whichever comes first.
+<p><b><a name="hideCommandLine">hideCommandLine</a></b>
+If you are using the GUI, you may have either a talk line by itself,
+or a talk line and a command line.  Use this command with no arguments
+to toggle between the two, or use it with an argument of &#147;yes&#148; or &#147;no&#148;
+with the obvious meaning.  Note that commands may be executed on the talk
+line by starting the line with a slash (e.g., &#147;/pass&#148;).
+<p><b><a name="hideMatrix">hideMatrix</a></b>
+If you are using the GUI and have a small screen, Floater will, by
+default, hide the matrix during the auction to give more room to other
+things on the screen.  (Your cards appear at the top of the Floater
+window.)  To toggle the described behavior, invoke this command.  To
+turn it off, invoke this command with the argument &#147;no.&#148;  To turn it
+on, invoke this command with the argument &#147;yes.&#148;  See also the options
+menu on the GUI.
+<p><b><a name="host">host</a></b>
+Host a table.
+<p><b><a name="ip">ip</a></b>
+Display the IP address and port number that others may use to connect
+to you.
+<p><b><a name="join">join</a></b>
+Join a table.  You must specify the name of the host of the table you
+wish to join, e.g., &#147;join moe&#148;.  (Alternatively, you may specify an IP
+address and port separated by a colon, e.g., &#147;join 128.110.38.14:8765.&#148;
+Or, to join a table hosted on your local machine, you may omit the IP
+address and simply put the port number after a colon.)
+<p><b><a name="kibbitz">kibbitz</a></b>
+If you are sitting North, South, East, or West, this is the way to get up.
+<p><b><a name="last">last</a></b>
+Show the previous trick.
+<p><b><a name="lho">lho</a></b>
+Say something to your left-hand opponent.  E.g. &#147;lho Is that for penalty?&#148;
+<p><b><a name="login">login</a></b>
+Connect to the login server and transmit your account name and
+password.  In return, the login server will check your password and
+authenticate you to let you play under that account name.  In
+addition, a list of tables currently in play will be sent to you,
+allowing the &#147;tables&#148; command to give up-to-date information.
+<p><b><a name="make">make</a></b>
+A variant of the &#147;claim&#148; command.  With no arguments it is a claim to
+make the contract exactly; with a positive integer argument it is a
+claim to make a grand total of that number of tricks plus six.
+<p><b><a name="n (or north)">n (or north)</a></b>
+If the North seat is available, take it.
+<p><b><a name="newuser">newuser</a></b>
+Log in as a new user (see also &#147;login&#148;).
+<p><b><a name="noncompetitive">noncompetitive</a></b>
+Turns off competitive mode.  You will play the same hands as you would
+otherwise, but results will not be reported by email.  (Not relevant
+for hearts or rubber bridge.)
+<p><b><a name="north (or n)">north (or n)</a></b>
+If the North seat is available, take it.
+<p><b><a name="note">note</a></b>
+Set the text that is listed alongside my table&#146;s name when people use
+the &#147;tables&#148; command.  For example, &#147;note Need 1!&#148;  You must be host
+of the table.
+<p><b><a name="opp">opp</a></b>
+Say something just to your opponents.  Frequently one would use
+&#147;explain&#148; instead so that the kibitzers could also hear.
+<p><b><a name="parent">parent</a></b>
+Show my parent in the communication tree.  Primarily intended for debugging.
+<p><b><a name="password">password</a></b>
+Change the password for an account.
+<p><b><a name="previous">previous</a></b>
+Show the previous hand.
+<p><b><a name="play">play</a></b>
+Play a card.  Cards are specified suit first, rank second.  For
+example, &#147;play c3&#148; would play the 3 of clubs.  Unless you have
+customized the bindings (see &#147;bind&#148;), the word &#147;play&#148; may be omitted
+(&#148;c2&#148; is the same as &#147;play c2&#148; and so on).  In Hearts, this command is
+also used to add or remove a card from the set of cards you wish to
+pass to your opponent before the play of the hand.
+<p><b><a name="quit">quit</a></b>
+Terminate Floater.
+<p><b><a name="randomplay">randomplay</a></b>
+Toggle a switch that, when set, causes automatic random plays or bids
+whenever it is your turn.  Intended for debugging.
+<p><b><a name="readme">readme</a></b>
+Display the &#145;README&#146; file.
+<p><b><a name="redalert">redalert</a></b>
+&#147;Redalert some ... text ...&#148; is equivalent equivalent to &#147;explain Red Alert!
+some ... text ...&#148; and is traditionally used to self-alert bids or
+carding that is highly unusual.  &#147;Alert&#148; should be used for only slightly
+unusual bids or carding.
+<p><b><a name="reject">reject</a></b>
+Reject declarer&#146;s claim.  A rejection from either defender nixes the
+claim regardless of what the other defender may have done.  Others at
+the table are shown only that the claim was rejected, not by whom.
+<p><b><a name="retract">retract</a></b>
+Declarer may use this command to retract a claim.
+<p><b><a name="review">review</a></b>
+Review the auction.
+<p><b><a name="rho">rho</a></b>
+Say something to your right-hand opponent.  E.g. &#147;rho What is 2D?&#148;
+<p><b><a name="s">s</a></b>
+If the south seat is available, try to sit down.  Otherwise, if you
+are seated and it is your turn to play a card, play your lowest spade. 
+<p><b><a name="say">say</a></b>
+Say something to everyone present.  E.g. &#147;say Hello There!&#148;
+<p><b><a name="score">score</a></b>
+Select the form of scoring for subsequent deals.  The valid uses of
+the command are &#147;score IMP&#148; and &#147;score MP.&#148;  See also &#147;competitive&#148;
+and &#147;noncompetitive.&#148;
+<p><b><a name="scroll">scroll</a></b>
+If you are using the textual user interface, scroll is used to change
+which portion of the scrolling text window you view.  For example,
+&#147;scroll -10&#148; takes you back 10 lines; &#147;scroll 20&#148; takes you forward 20
+lines.  You may also use the bottom command or the up and down array
+keys to select the portion of the scrolling talk window you view.
+<p><b><a name="separateTalk">separateTalk</a></b>
+This command applies only to the GUI.  By default, the messages (e.g.,
+from people talking) that Floater displays appear in a scrollable box
+towards the bottom of the main Floater window.  If invoked with no
+arguments, this command toggles whether that is true or whether
+Floater has a separate window just for those messages.  It also may be
+invoked with an argument of &#147;yes&#148; or &#147;no,&#148; with the obvious meaning.
+See also the options menu in the GUI.
+<p><b><a name="south (or s)">south (or s)</a></b>
+If the South seat is available, take it.
+<p><b><a name="spec">spec</a></b>
+Become a double-dummy spectator.
+<p><b><a name="tables">tables</a></b>
+List all tables.
+<p><b><a name="talkfont">talkfont</a></b>
+If you are using the GUI, you may change the font family for the talk
+window by doing, for example, &#147;talkfont times.&#148;  On some systems, not
+all fonts are available in all sizes.
+<p><b><a name="talkfontsize">talkfontsize</a></b>
+If you are using the GUI, you may change the font size for the talk
+window by doing &#147;talkfontsize N&#148; for any number N.  The number N is
+interpreted as a size in points.  One point is roughly 1/72 inch.
+<p><b><a name="w (or west)">w (or west)</a></b>
+If the West seat is available, take it.
+<p><b><a name="warranty">warranty</a></b>
+Display copyright and warranty information.
+<p><b><a name="west (or w)">west (or w)</a></b>
+If the West seat is available, take it.
+<p><b><a name="who">who</a></b>
+List who is at the table I am at.
+<p><b><a name="whois">whois</a></b>
+An IRC user suggested that &#147;whois&#148; should be interchangeable with
+&#147;find&#148; in Floater.  See find.
+<p><b><a name=".">.</a></b>
+Play your smallest card of the suit led.
+<HR>        
+<address>
+<A HREF=http://http.cs.berkeley.edu/~pike>Geoff Pike</A>,<A HREF=mailto:floater@priam.cs.berkeley.edu>
+&lt;pike@cs.berkeley.edu&gt;</A>, is the author of Floater and
+maintainer of this WWW page.
+</address>
+

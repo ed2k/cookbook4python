@@ -1,0 +1,62 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the "GPL"), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/* obsolete -- this has been integrated into matrixsize.tcp */
+
+gset handx(self) 320
+gset handy(self) 370
+gset handx(pard) $handx(self)
+gset handy(pard) 50
+gset handx(lho) 50
+gset handy(lho) 150
+gset handx(rho) 490
+gset handy(rho) $handy(lho)
+gset rhomaxx 650
+
+gset canv([matrix_widget], matrix) "200 100 440 300"
+
+gset canv([matrix_widget], height) 415
+
+foreach p {lho self pard rho} {
+    gset namex($p) $handx($p)
+    gset namey($p) [expr $handy($p) - 43]
+}
+
+gset suitgap 50
+gset ourcardgap 25
+gset theircardgap 20
+gset vgap 38
+
+gset cardrectvgap 5
+

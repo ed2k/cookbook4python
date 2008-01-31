@@ -1,0 +1,30 @@
+#!/usr/local/bin/tclsh
+
+puts stderr "argv is $argv"
+
+exec cat common/floatcl1.c >@ stdout
+
+set n 0
+set quote \"
+set comma ", "
+set s ""
+
+foreach arg $argv {
+    if {[incr n] != 1} {set s $s$comma}
+    set s $s$quote[file tail $arg]$quote
+}
+
+
+puts "$s};\nchar *tcl2cfiles\[\] = \{"
+
+
+set n 0
+foreach arg $argv {
+    puts stderr "Processing $arg"
+    if {[incr n] != 1} {puts "," }
+    exec sed s/\\\\/\\\\\\\\/g < $arg | sed s/\"/\\\\\"/g | \
+	    sed s/\\\\\\\\$/\\\\/g | sed s/^.*$/"&\\\\n"/ >@ stdout
+}
+
+exec cat common/floatcl2.c >@stdout
+

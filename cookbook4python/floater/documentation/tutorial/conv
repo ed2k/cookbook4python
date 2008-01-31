@@ -1,0 +1,4 @@
+#!/usr/sww/bin/tcsh
+foreach i (screen*)
+  tr -d "\000" < $i | curses2text > text$i.txt
+end

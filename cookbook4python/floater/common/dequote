@@ -1,0 +1,4 @@
+s|	|QTABQ |g
+s|\"|KWOTE|g
+s|[']|kwert|g
+s|\#include.*KWOTE\(.*\)KWOTE|#include "\1"|g

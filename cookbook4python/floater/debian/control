@@ -1,0 +1,22 @@
+Source: floater
+Section: games
+Priority: optional
+Maintainer: Lex Spoon <lex@debian.org>
+Standards-Version: 3.7.2
+Build-Depends: debhelper (>> 5), tcl8.4-dev, tk8.4-dev, docbook-to-man, libncurses5-dev, autoconf, xutils, jam
+
+Package: floater
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Free Internet bridge client
+ Floater is a free program for duplicate bridge play on the Internet.
+ It also supports non-duplicate bridge and 3-player hearts.
+
+
+Package: floater-server
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, tcl8.4 | tclsh, make
+Description: Free Internet bridge server
+ Floater is a free program for duplicate bridge play on the Internet.
+ It also supports non-duplicate bridge and 3-player hearts.
+ This package contains the server.

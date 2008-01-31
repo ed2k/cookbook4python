@@ -1,0 +1,5 @@
+?package(floater):needs="X11" section="Games/Card" \
+  title="Floater" command="/usr/games/floater" \
+  icon="/usr/share/pixmaps/floater-24.xpm"  \
+  icon16x16="/usr/share/pixmaps/floater-16.xpm" \
+  icon32x32="/usr/share/pixmaps/floater-24.xpm" 

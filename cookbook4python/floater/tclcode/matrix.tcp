@@ -1,0 +1,593 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Floater Bridge Network.
+ *
+ * The Initial Developer of the Original Code is
+ * Geoff Pike <pike@EECS.Berkeley.EDU>.
+ * Portions created by the Initial Developer are Copyright (C) 1996-2003
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * Alternatively, the contents of this file may be used under the
+ * terms of either the GNU General Public License Version 2 or later
+ * (the "GPL"), in which case the provisions of the GPL are applicable
+ * instead of those above. If you wish to allow use of your version of
+ * this file only under the terms of the GPL, and not to allow others
+ * to use your version of this file under the terms of the MPL,
+ * indicate your decision by deleting the provisions above and replace
+ * them with the notice and other provisions required by the GPL. If
+ * you do not delete the provisions above, a recipient may use your
+ * version of this file under the terms of either the MPL or the GPL.
+ * ***** END LICENSE BLOCK ***** */
+
+/* matrix.tcp - code to handle the "matrix", which is the
+ *    part of the display which shows the cards and the cards
+ *    which have been played.  See also matrix0.tcp.
+ */
+
+/* Global variables:
+
+   $canv($c, frame, $who)   - widget for the specified player
+   $canv($c, exile[xy])  - deltas to use when moving a card off the
+                       screen.  (XXX can't it simply be hidden?)
+   $canv($c, m[xy],$who)    - where in the matrix cards are displayed
+   $canv($c, YMatrixHide)   - delta to move the matrix elements to hide everything??
+   $canv($c, matrixHiddenHeight)  - ??
+   $canv($c, highlighted)
+
+   $canv($c, height)
+   $canv($c, matrix)  - bounds of the inner portion of the matrix 
+
+   $canv($c,[fb]g,[shdc])    - foreground and background colors to use
+                             - XXX eliminate these; make them functions 
+
+   $canv($c, fg_,$n)            - foreground color of card widget $n
+   $canv($c, item_to_card,$n)   - $suit$card for the card widget $n
+   $canv($c, $card$suit)        - card widget for card $suit$card
+                              (for all combinations of lower and uppercase)
+                         - XXX make it just lowercase 
+
+   $canv($c, matrixtext, $who)   - text area for drawing in matrix
+   
+
+   $namewid($c,$who)
+
+   $lhomaxx($c)
+   $handx($c,$who)
+   $handy($c,$who)
+  
+   $purple($t)   
+   $matrix_showing($c)    - whether the full matrix is currently visible,
+                            versus merely the player's cards 
+
+   $matrix_cards($c, $who)
+*/
+
+
+
+#include "matrixsize.deq"
+
+global matrix_showing
+
+
+proc matrix_showcards {b who} {
+    global matrixcards matrix_showing
+    if {$b != $matrixcards([matrix_widget],$who)} {
+	global canv
+	set c [matrix_widget]
+	if [set matrixcards([matrix_widget],$who) $b] {
+	    $c coords $canv([matrix_widget],frame,$who) $canv([matrix_widget],exilex) $canv([matrix_widget],exiley)
+	} else {
+	    $c coords $canv([matrix_widget],frame,$who) $canv([matrix_widget],mx,$who) \
+		    [expr $canv([matrix_widget],my,$who) + \
+		    ($matrix_showing([matrix_widget]) ? 0 : $canv([matrix_widget],YMatrixHide))]
+	}	
+    }
+}    
+
+proc highlight_card {tag w x y} {
+    global canv
+    $w itemconfigure $tag -background #c0c0c0
+    set canv([matrix_widget],highlighted) [$w find withtag $tag]
+}
+
+proc unhighlight_card {tag w x y} {
+    global canv
+    $w itemconfigure $tag -background white
+    catch {unset canv([matrix_widget],highlighted)}
+}
+
+set last_click_card_time -1
+proc click_card {tag w time x y} {
+    global canv last_click_card_time last_click_card_x last_click_card_y
+
+    // ignore second click of a double click (Floater uses single clicks)
+    if {$last_click_card_time > 0
+        && [expr $time - $last_click_card_time] < 750
+        && [expr abs($last_click_card_x - $x)] < 5
+        && [expr abs($last_click_card_y - $y)] < 5} return
+    set last_click_card_time $time
+    set last_click_card_x $x
+    set last_click_card_y $y
+
+    if [info exists canv([matrix_widget],highlighted)] {
+	if {$canv([matrix_widget],highlighted) == [$w find withtag $tag]} {
+	    command $canv([matrix_widget],item_to_card,[$w find withtag $tag])
+	}
+    }
+}
+
+// set up a matrix widget at the specified path
+proc matrixsetup {c} {
+    global canv cardwidth cardheight matrixcards cardrectvgap
+    global tinymat smallmat screenheight screenwidth matrix_showing
+
+    set tinymat [expr $screenheight <= 600]
+    set smallmat [expr !$tinymat && ($screenheight <= 1000)]
+
+    if {$tinymat || $smallmat} {
+	if $tinymat {
+	    tryset fixedfont {Courier 8}
+	    tinymatrix $c
+	} else {
+	    tryset fixedfont {Courier 10}
+	    smallmatrix $c 0 30
+	}
+    } else {
+	bigmatrix $c
+	tryset fixedfont {Courier 12}
+    }
+
+    set matrix_showing($c) 1
+
+
+    catch {destroy $c}
+    canvas $c -height $canv($c,height) -width $canv($c,width) -borderwidth 0 -highlightthickness 0
+
+    set x [set canv($c,exilex) -2000]
+    set y [set canv($c,exiley) 0]
+    set canv($c,fg,s) black
+    set canv($c,fg,h) red
+    set canv($c,fg,d) red
+    set canv($c,fg,c) black
+    set canv($c,bg,s) white
+    set canv($c,bg,h) white
+    set canv($c,bg,d) white
+    set canv($c,bg,c) white
+    foreach suit {s h d c} {
+	foreach card {a k q j t 9 8 7 6 5 4 3 2} {
+	    set n [$c create bitmap $x $y -tags livecard]
+	    $c itemconfigure $n -bitmap c_$card$suit \
+		    -background $canv($c,bg,$suit) -foreground $canv($c,fg,$suit)
+	    set canv($c,fg_,$n) $canv($c,fg,$suit)
+	    set canv($c,item_to_card,$n) $suit$card
+	    set canv($c,$card$suit) $n
+	    set canv($c,[string toupper $card]$suit) $n
+	    set canv($c,$card[string toupper $suit]) $n
+	    set canv($c,[string toupper $card$suit]) $n
+	}
+    }
+
+// bindings
+    $c bind livecard <Any-Enter> { highlight_card current %W %x %y }
+    $c bind livecard <Any-Leave> { unhighlight_card current %W %x %y }
+    $c bind livecard <ButtonRelease-1> { click_card current %W %t %x %y }
+
+    set bbox [$c bbox $canv($c,as)]
+    set cardwidth [expr [lindex $bbox 2] - [lindex $bbox 0]]
+    set cardheight [expr [lindex $bbox 3] - [lindex $bbox 1]]
+
+// names
+    global namefont namewid namex namey
+    foreach p {self pard} {
+	set namewid($c,$p) [
+	$c create text $namex($p) $namey($p) -font $namefont -justify center
+	]
+    }
+    foreach p {lho rho} {
+	// Left edge of name aligns with left edge of leftmost card.
+	set x [expr $namex($p) - $cardwidth / 2]
+	set namewid($c,$p) [
+	$c create text $x $namey($p) -font $namefont -justify left -anchor w 
+	]
+    }
+
+    global lhomaxx handx handy
+    eval "$c create rect $canv($c,matrix)"
+    set matrixleft [set lhomaxx($c) [lindex $canv($c,matrix) 0]]
+    set matrixright [lindex $canv($c,matrix) 2]
+    set matrixtop [lindex $canv($c,matrix) 1]
+    set matrixbot [lindex $canv($c,matrix) 3]
+    set canv($c,YMatrixHide) [expr - ($matrixbot + 4)]
+    set canv($c,matrixHiddenHeight) \
+	    [expr $handy($c,self) - $matrixbot + $cardheight / 2 + 3]
+
+// where in the matrix cards are displayed
+    set canv($c,mx,lho) [expr $matrixleft + $cardwidth / 2 + 5]
+    set canv($c,my,lho) [expr ($matrixtop + $matrixbot) / 2]
+    set canv($c,mx,rho) [expr $matrixright - $cardwidth / 2 - 5]
+    set canv($c,my,rho) [expr ($matrixtop + $matrixbot) / 2]
+    set canv($c,mx,self) $handx($c,self)
+    set canv($c,my,self) [expr $matrixbot - $cardheight / 2 - $cardrectvgap]
+    set canv($c,mx,pard) $canv($c,mx,self)
+    set canv($c,my,pard) [expr $matrixtop + $cardheight / 2 + $cardrectvgap]
+
+    global suitfont cardfont
+// text in the matrix (for question marks only)
+    foreach p {lho self rho pard} {
+	set canv($c,matrixtext,$p) [
+	$c create text $canv($c,mx,$p) $canv($c,my,$p) -font $cardfont
+	]
+    }
+
+// text in the matrix (for the auction)
+    foreach p {lho self rho pard} {
+	set path [frame $c.f$p]
+#if 0  // handled in drawbid
+	refont [label $path.card -font $cardfont -borderwidth 0] cardfont
+	canvas $path.suit -width 20 -height 14 -borderwidth 0 -highlightthickness 0
+	pack $path.card $path.suit -side left
+#endif
+	set canv($c,frame,$p) \
+		[$c create window $canv($c,mx,$p) $canv($c,my,$p) -window $path]
+	set matrixcards($c,$p) 0
+    }
+
+
+
+
+    foreach p {lho rho pard self} {gset matrixcards($c,$p) 0}
+}
+
+// Display a player's name above his cards
+// player should be lho, rho, pard, or self
+proc setname {player compassdir name} {
+    global namefont playername position canv namewid
+
+    set playername($player) $name
+    set position($player) $compassdir
+    set f $namewid([matrix_widget],$player)
+    set w [matrix_widget]
+    if {[string first "(" $name] == -1} {set name "$name  ($compassdir)"}
+/* XXX get rid of this catch */
+    catch {$w itemconfigure $f -text $name} c
+    if {$c != ""} {}
+}
+
+proc eraseallcards {} {
+    erasebidplay all
+    foreach suit {s h d c} {
+	foreach card {a k q j t 9 8 7 6 5 4 3 2} {
+	    erasecard $suit $card
+	}
+    }
+}
+
+// Erase a card, and reset its color to its normal color.
+proc erasecard {suit card} {
+    global canv
+
+    drawcard $suit $card $canv([matrix_widget],exilex) $canv([matrix_widget],exiley)
+    [matrix_widget] itemconfigure $canv([matrix_widget],$card$suit) -foreground $canv([matrix_widget],fg,$suit)
+}
+
+proc drawcard {suit card x y} {
+    global canv
+
+    set c [matrix_widget]
+    showMatrix 1
+    $c coords $canv([matrix_widget],$card$suit) $x $y
+}
+
+// Becoming a spectator and other violent reconfigurations of the screen may
+// destroy the matrix.  This should restore any cards that were there.
+proc redrawmatrixcards {} {
+    global canv
+
+    foreach p {lho rho self pard} {
+	if [info exists canv([matrix_widget],matrixcard,$p)] {
+	    eval "showplay $p $canv([matrix_widget],matrixcard,$p)"
+	}
+    }
+}
+
+#define erasecardifnotinmatrix erasecard
+
+//proc erasecardifnotinmatrix {suit card} {
+//    global canv
+//    
+//    set x [string toupper "$suit $card"]
+//    foreach p {lho rho self pard} {
+//	if [info exists canv([matrix_widget],matrixcard,$p)] {
+//	    if ![string compare $x [string toupper $canv([matrix_widget],matrixcard,$p)]] return
+//	}
+//    }
+//    erasecard $suit $card
+//}
+
+// redraw who's hand after removing the indicated card
+proc redohand {who suit card} {
+    global curhandx curhandy hands handsx handsy
+
+    regsub -nocase $card [set o $hands($who,$suit)] {} n
+    // catch {talkmsg "redohand $who $suit $card ($o => $n)"}
+    if [string compare $n $o] {
+	erasecardifnotinmatrix $suit $card
+	if {$who == "lho" || $who == "rho"} {
+	    // only redraw the suit affected if lho or rho
+	    set curhandx $handsx($who,$suit)
+	    set curhandy $handsy($who,$suit)
+	    suit $who $n $suit
+	} else {
+	    set hands($who,$suit) $n
+	    hand $who \
+		    $hands($who,s) $hands($who,h) $hands($who,d) $hands($who,c)
+	}
+    }
+}
+
+// Restore any and all purple cards to their normal color.
+proc tprestore {} {
+    global canv purple
+    set c [matrix_widget]
+    foreach t [array names purple] {
+	unset purple($t)
+	catch {talkmsg "Restoring color to $t"}
+	$c itemconfig $t -foreground $canv([matrix_widget],fg_,$t)
+    }
+}
+
+proc tpcard {what} {
+    global canv purple
+    set c [matrix_widget]
+    set t $canv([matrix_widget],$what)
+    if ![info exists purple($t)] {
+	set purple($t) 1
+	$c itemconfig $t -foreground purple
+	lappend canv([matrix_widget],maybepass) $t
+	// talkmsg "tpcard: $what set to purple"
+    } else {
+	unset purple($t)
+	$c itemconfig $t -foreground $canv([matrix_widget],fg_,$t)
+	// talkmsg "tpcard: $what set to $canv([matrix_widget],fg_,$t)"
+    }
+}
+
+proc suit {who cards suit} {
+    global removecard togglepassedaction cardgap curhandx curhandy \
+	    lhomaxx rhomaxx cardwidth hands handsx handsy canv
+
+    // talkmsg "suit $who $cards $suit"
+    set hands($who,$suit) $cards
+    set handsx($who,$suit) $curhandx
+    set handsy($who,$suit) $curhandy
+    set l [string length $cards]
+    set spacing $cardgap
+    set xmin [expr $cardwidth / 2]
+    if {$who == "lho" || $who == "rho"} {
+	if {$l > 6} {incr spacing -2}
+	if {$l > 7} {incr spacing -3}
+	if {$l > 8} {incr spacing -2}
+	if {$l > 9} {incr spacing -3}
+	if {$spacing < 10} {set spacing 10}
+	if {$who == "lho"} {set xmax $lhomaxx([matrix_widget])} {set xmax $rhomaxx([matrix_widget])}
+	while {[expr $curhandx + $cardwidth / 2 + ($l - 1) * $spacing + 3] \
+		> $xmax} {
+	    if {$curhandx > $xmin} {incr curhandx -3} {incr spacing -1}
+	}
+    }
+    if {$curhandx < $xmin} {set curhandx xmin}
+    for {set i 0} {$i < $l} {incr i} {
+	set card [string index $cards $i]
+	drawcard $suit $card $curhandx $curhandy
+	set removecard([string toupper $suit$card]) "redohand $who $suit $card"
+	set togglepassedaction([string toupper $suit$card]) "tpcard $card$suit"
+	set canv([matrix_widget],dealt,[string tolower $suit$card]) 1
+	incr curhandx $spacing
+    }
+}
+
+
+proc hand {who s h d c} {
+    global handx handy curhandx curhandy suitgap cardgap hands vgap \
+	    ourcardgap theircardgap
+
+    // catch {talkmsg "hand $who $s $h $d $c"}
+    if {$who == "self" || $who == "pard"} {
+	set cardgap $ourcardgap
+	set width [expr ([string length $s] + [string length $h] + [string length $d] + [string length $c]) * $cardgap + (([string length $s] > 0) + ([string length $h] > 0) + ([string length $d] > 0)) * $suitgap]
+	set curhandx [expr $handx([matrix_widget],$who) - round(0.5 * $width)]
+	set curhandy $handy([matrix_widget],$who)
+
+	suit $who $s s
+	if {$s != ""} {incr curhandx $suitgap}
+	suit $who $h h
+	if {$h != ""} {incr curhandx $suitgap}
+	suit $who $d d
+	if {$d != ""} {incr curhandx $suitgap}
+	suit $who $c c
+    } else {
+	set cardgap $theircardgap
+	set curhandx $handx([matrix_widget],$who)
+	set curhandy $handy([matrix_widget],$who)
+	suit $who $s s
+	incr curhandy $vgap
+	set curhandx $handx([matrix_widget],$who)
+	incr curhandx 10
+	suit $who $h h
+	incr curhandy $vgap
+	set curhandx $handx([matrix_widget],$who)
+	suit $who $d d
+	incr curhandy $vgap
+	set curhandx $handx([matrix_widget],$who)
+	incr curhandx 10
+	suit $who $c c
+    }
+}
+
+proc fulldeal_erase_straglers {} {
+    global canv
+    foreach suit {s h d c} {
+	foreach card {a k q j t 9 8 7 6 5 4 3 2} {
+	    if !$canv([matrix_widget],dealt,$suit$card) { erasecardifnotinmatrix $suit $card }
+	}
+    }
+}
+
+// draw the given cards and erase any others
+proc fulldeal {s h d c LHOs LHOh LHOd LHOc \
+		   Ps Ph Pd Pc RHOs RHOh RHOd RHOc} {
+    global canv
+
+    // catch {talkmsg "full $s $h $d $c . $LHOs $LHOh $LHOd $LHOc . $Ps $Ph $Pd $Pc . $RHOs $RHOh $RHOd $RHOc"}
+
+    foreach suit {s h d c} {
+	foreach card {a k q j t 9 8 7 6 5 4 3 2} {
+	    set canv([matrix_widget],dealt,$suit$card) 0
+	}
+    }
+
+    tprestore
+
+
+    if {"$Ps$Ph$Pd$Pc$LHOs$LHOh$LHOd$LHOc$RHOs$RHOh$RHOd$RHOc" != ""} {
+	// common case
+	hand self $s $h $d $c
+	hand pard $Ps $Ph $Pd $Pc
+	hand lho $LHOs $LHOh $LHOd $LHOc
+	hand rho $RHOs $RHOh $RHOd $RHOc
+	fulldeal_erase_straglers
+    } else {
+	// Special case: a fulldeal only showing my cards shouldn't
+	// affect whether the matrix is showing.
+	global matrix_showing
+	set z $matrix_showing([matrix_widget])
+	hand self $s $h $d $c
+	hand pard $Ps $Ph $Pd $Pc
+	hand lho $LHOs $LHOh $LHOd $LHOc
+	hand rho $RHOs $RHOh $RHOd $RHOc
+	fulldeal_erase_straglers
+	showMatrix $z // restore state of matrix to what it was initially
+    }
+}
+
+// for testing
+proc sillynames {} {
+    setname self S {hairy dude}
+    setname lho W {skinny dude}
+    setname pard N {goofball}
+    setname rho E {elephant water}
+}    
+
+proc matrixtext {player s {options {}}} {
+    global canv
+
+    eval "[matrix_widget] itemconfigure $canv([matrix_widget],matrixtext,$player) -text \{$s\} \
+	    $options"
+}
+
+proc showplay {player suit card} {
+    global canv
+
+    if {$suit == "?"} {
+	matrixtext $player "?"
+    } else {
+	removecardfromhand $suit $card
+	erasebidplay $player
+	matrix_showcards 1 $player
+	drawcard $suit $card $canv([matrix_widget],mx,$player) $canv([matrix_widget],my,$player)
+	set canv([matrix_widget],matrixcard,$player) "$suit $card"
+    }
+}
+
+proc showbid {player level strain} {
+    global canv
+
+    matrix_showcards 0 $player
+    drawbid [matrix_widget].f$player $level $strain
+}
+
+// Erase a bid or play from the matrix
+// who should be lho, rho, pard, self, or all
+proc erasebidplay {who} {
+    global tricktimeOK
+
+    if {!$tricktimeOK} {
+	after 100 erasebidplay who
+    }
+
+    if {$who == "all"} {
+	global needtoerase
+
+	set needtoerase 0
+	erasebidplay lho
+	erasebidplay rho
+	erasebidplay pard
+	erasebidplay self
+    } else {
+	global canv
+	matrixtext $who ""
+	if [info exists canv([matrix_widget],matrixcard,$who)] {
+	    eval "erasecard $canv([matrix_widget],matrixcard,$who)"
+	    unset canv([matrix_widget],matrixcard,$who)
+	}
+	matrix_showcards 1 $who
+    }
+}
+
+
+proc showMatrix {b} { 
+    global matrix_showing canv
+
+    set c [matrix_widget]
+
+    // catch {talkmsg "showMatrix $b"}
+    if {$b == $matrix_showing($c)} return
+
+    if [set matrix_showing($c) $b] {
+	$c move all 0 [expr - $canv($c,YMatrixHide)]
+	$c configure -height $canv($c,height)
+    } else {
+	$c move all 0 $canv($c,YMatrixHide)
+	$c configure -height $canv($c,matrixHiddenHeight)
+    }
+}
+
+
+
+// copy cards over from the current matrix to a new one
+proc matrix_copycards {new_toplevel} {
+    global canv hands toplevel
+
+    // temporarily set toplevel
+    set old_toplevel $toplevel
+    set toplevel $new_toplevel
+
+    // do the hands
+    foreach who {lho rho self pard} {
+	hand $who $hands($who,s) $hands($who,h) $hands($who,d) $hands($who,c) 
+    }
+
+
+    // copy over the played cards
+    foreach p {lho rho self pard} {
+	set canv($new_toplevel,matrixcard,$p) canv($old_toplevel,matrixcard,$p)
+    }
+    
+
+
+    set toplevel $old_toplevel
+}
+

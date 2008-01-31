@@ -1,0 +1,4 @@
+#!/usr/sww/bin/tcsh
+foreach i (textscreen*)
+  sed "s/</\&lt;/g" $i | sed "s/>/\&gt;/g" > g$i
+end

@@ -1,0 +1,124 @@
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2
+#
+# The contents of this file are subject to the Mozilla Public License Version 
+# 1.1 (the "License"); you may not use this file except in compliance with 
+# the License. You may obtain a copy of the License at 
+# http://www.mozilla.org/MPL/
+#
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is the Floater Bridge Network.
+#
+# The Initial Developer of the Original Code is
+# Geoff Pike  <pike@EECS.Berkeley.EDU>.
+# Portions created by the Initial Developer are Copyright (C) 1996--2003
+# the Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#    Lex Spoon <lex@cc.gatech.edu>
+#
+# Alternatively, the contents of this file may be used under the terms
+# of either the GNU General Public License Version 2 or later (the
+# "GPL"), in which case the provisions of the GPL are applicable instead
+# of those above. If you wish to allow use of your version of this file
+# only under the terms of the GPL, and not to allow others to use your
+# version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the
+# notice and other provisions required by the GPL. If you do not delete
+# the provisions above, a recipient may use your version of this file
+# under the terms of either the MPL or the GPL.
+# ***** END LICENSE BLOCK *****
+
+
+# rule NOP -- do nothing
+rule NOP { }
+
+
+# rule UserObject -- support treating .o files as objects
+rule UserObject {
+    switch $(2:S) {
+        case .o : NOP ;    # do nothing if it's already an object file
+
+        case * : ERROR "unknown object type for $(2); edit rule UserObject" ;
+    }
+}
+
+
+# rule Tcl_In_C -- embed TCL files into a C file
+rule Tcl_In_C {
+  DEPENDS $(1) : <common>tcl2c ;
+  DEPENDS $(1) : $(2) ;
+  Clean clean : $(1) ;
+
+  SEARCH on <common>tcl2c = $(SEARCH_SOURCE) ;
+  LOCATE on $(1) = $(LOCATE_SOURCE) ;
+}
+actions Tcl_In_C {
+  tclsh common/tcl2c $(2)  > $(1) ;
+}
+
+
+# hide the quote marks in a TCL file so that things inside the
+# quotes may be substituted
+rule DequoteHeader {
+  INCLUDES $(1:S=.deq) : $(tcldir)/$(2) ;
+}
+
+rule Dequote {
+  DEPENDS $(1) : $(2) ;
+  Clean clean : $(1) ;
+
+  HDRSCAN on $(2) = "#include [\"<]([a-zA-Z0-9_]+.deq)[\">]" ;
+  HDRRULE on $(2) = DequoteHeader ;
+}
+actions Dequote {
+  sed -f $(TOP)/common/dequote < $(2) > $(1) ;
+}
+
+# undo the above dequoting, and then run the C preprocessor
+rule PreprocessRequote {
+  DEPENDS $(1) : $(2) ;
+  Clean clean : $(1) ;
+}
+actions PreprocessRequote {
+  $(CPP) $(CPPFLAGS) $(2) | sed -f $(TOP)/common/requote > $(1)
+}
+
+
+# compile a MS Windows resource file using windres 
+rule WindRes {
+  DEPENDS $(1) : $(2) ;
+  SEARCH on $(2) = $(SEARCH_SOURCE) ;
+  LOCATE on $(1) = $(LOCATE_SOURCE) ;
+  Clean clean : $(1) ;
+}
+
+actions WindRes {
+  $(WINDRES) -i $(2) -o $(1) ;
+}
+
+
+
+# generic rule for a TCP file
+rule Tcp {
+  Dequote $(tcldir)/$(1).deq : $(tcldir)/$(1).tcp ;
+}
+
+
+# generating autohelp
+rule Autohelp {
+  DEPENDS $(1) : $(2) $(TOP)/common/autohelp1.c $(TOP)/common/autohelp2.c $(TOP?/common/autohelp3.c $(TOP)/common/mkautohelp ;
+  Clean clean : $(1) ;
+
+  LOCATE on $(1) = $(LOCATE_SOURCE) ;
+  SEARCH on $(2) = $(SEARCH_SOURCE) ;
+}
+actions Autohelp {
+  (cd $(TOP)/common; $(TOP)/common/mkautohelp $(2) > $(1)) ;
+}
+
+

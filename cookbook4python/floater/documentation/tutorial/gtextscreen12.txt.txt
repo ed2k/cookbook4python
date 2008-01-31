@@ -1,0 +1,50 @@
+                                                          
+Franco: hi Buzz      
+                                                           
+Buzz: need 1?       
+                                                            
+Jonathan: sure, tak
+e N                                                          
+` Requesting seat.
+..                                                            
+You haven't seen 
+any hands from 15Sep96IMP                                      
+You haven't seen
+ any hands from 15Sep96MP                                       
+` You are sitti
+ng North                                                         
+Buzz: system, 
+pard?                                                             
+Jonathan: SA?
+                                                                   
+Buzz: ok    
+                                                                    
+` CC for NS
+ is empty.                                                           
+` CC for E
+W (9 lines):                                                          
+2/1; 1N=1
+0-13 nv123; 1N=15-17 otherwise                                         
+mulch; c
+ole runouts; lebensohl                                                  
+2N=20-2
+1+; jacoby, texas, puppet stayman; super gerber                          
+negati
+ve & responsive doubles to 4D                                             
+negat
+ive free bids                                                              
+supp
+ort doubles and redoubles                                                   
+inv
+erted minors                                                                 
+x-
+over limit raises                                                             
+r
+everse drury (on in competition) and forcing notrump by a passed hand          
+
+--------------------------------------------------------------------------------
+
+command                                                                        
+ 
+   talk                                                                       
+  

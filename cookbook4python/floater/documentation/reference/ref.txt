@@ -1,0 +1,220 @@
+accept
+Accept declarer's claim.  Must be used by each defender for a claim to
+be accepted.
+
+alert
+"Alert some ... text ..." is equivalent equivalent to "explain Alert!
+some ... text ..." and is traditionally used to self-alert bids or
+carding that is slightly unusual.  "Redalert" should be used for highly
+unusual bids or carding.
+
+bid
+Make a call.  For example, to bid 3 Notrump, do "bid 3n".  Each strain
+is represented by a single letter: c for clubs, d for diamonds, h for
+hearts, s for spades, and n for notrump.  "Bid p," "bid pass," "bid
+x," "bid xx," "bid double," and "bid redouble" have the obvious
+meanings.  Unless you have customized the bindings (see "bind"), the
+word "bid" may be omitted ("3n" is the same as "bid 3n" and so on).
+
+bind
+Bind is used to create shorthand ways of specifying any command or
+sequence of commands.  For example, "bind typ say Thanks, pard!" would
+allow you to subsequently use "typ" as if it were a normal command.
+Another example: Blue Club players might do "bind 1c bid 1c; explain
+Blue club: 17+ points, any distribution."
+
+bug
+Do "bug <arbitrarily long one-line description>" and an email message
+containing your description and a dump of some internal variables will
+be sent to floater-bugs@priam.cs.berkeley.edu.  You may also send email
+to floater-bugs@priam.cs.berkeley.edu by hand, of course.
+
+c
+Play your lowest club.
+
+cards
+Remind me what my cards were at the beginning of the hand.  May also
+be used by kibitzers, with analogous meaning.
+
+children
+Show who gets messages from me in the communication tree.  Primarily
+intended for debugging.
+
+claim
+As declarer, suggest to the defense that you are certain of some
+number of tricks, and further play is not necessary.  The defenders
+will be shown all four hands and may then use "accept" or "reject" and/or
+continue playing.  Simply doing "claim" claims the rest of the tricks;
+"claim 3" would mean a claim to make 3 of the remaining tricks;
+"claim -2" would be a claim to make all but 2 of the
+remaining tricks; "claim 0" means concede the rest; and "claim +3"
+would be a claim for the contract plus 3 overtricks.
+
+close
+Stop hosting (or close) your table.  You must be hosting a table for
+this to be allowed.
+
+competitive
+Turns on competitive mode.  This is the default.  Results will be
+reported by email.
+
+d
+Play your lowest diamond.
+
+deal
+Go on to the next hand.  May only be used by the host of the table.
+
+disconnect
+Close all network connections.  You will become a "lurker."  If you
+are hosting a table at the time you issue the command, it is
+equivalent to "close."
+
+down
+A variant of the "claim" command.  For example, "Down 2" is a claim
+for 2 fewer tricks than you have contracted for.
+
+e (or east)
+If the East seat is available, take it.
+
+east (or e)
+If the East seat is available, take it.
+
+execute
+Read a file and interpret the lines of the file as if they were typed
+in on the command line at that moment.  E.g. "execute ~/floater/foo."
+
+explain
+Say something that everyone at the table except partner can hear.
+This is typically used to explain conventional calls to the opponents
+and kibitzers, among other things.
+
+follow
+Play the card of the named rank.  E.g. "follow k."  Unless you have
+customized the bindings (see "bind"), the word "follow" may be omitted
+("7" is the same as "follow 7" and so on).
+
+h
+Play your lowest heart.
+
+host
+Host a table.
+
+join
+Join a table.  You must specify the name of the host of the table you
+wish to join, e.g., "join moe".  (Alternatively, you may specify an IP
+address and port separated by a colon, e.g., "join 128.110.38.14:8765."
+Or, to join a table hosted on your local machine, you may omit the IP
+address and simply put the port number after a colon.)
+
+kibbitz
+If you are sitting North, South, East, or West, this is the way to get up.
+
+last
+Show the previous trick.
+
+lho
+Say something to your left-hand opponent.  E.g. "lho Is that for penalty?"
+
+login
+Connect to the login server and transmit your account name and
+password.  In return, the login server will check your password and
+authenticate you to let you play under that account name.  In
+addition, a list of tables currently in play will be sent to you,
+allowing the "tables" command to give up-to-date information.
+
+make
+A variant of the "claim" command.  With no arguments it is a claim to
+make the contract exactly; with a positive integer argument it is a
+claim to make 6 plus that number of tricks.
+
+n (or north)
+If the North seat is available, take it.
+
+newuser
+Log in as a new user (see also "login").
+
+noncompetitive
+Turns off competitive mode.  You will play the same hands as you
+would otherwise, but results will not be reported by email.
+
+north (or n)
+If the North seat is available, take it.
+
+opp
+Say something just to your opponents.  Frequently one would use
+"explain" instead so that the kibitzers could also hear.
+
+parent
+Show my parent in the communication tree.  Primarily intended for debugging.
+
+password
+Change the password for an account.
+
+previous
+Show the previous hand.
+
+play
+Play a card.  Cards are specified suit first, rank second.  For
+example, "play c3" would play the 3 of clubs.  Unless you have
+customized the bindings (see "bind"), the word "play" may be omitted
+("c2" is the same as "play c2" and so on).
+
+quit
+Terminate Floater.
+
+randomplay
+Toggle a switch that, when set, causes automatic random plays or bids
+whenever it is your turn.  Intended for debugging.
+
+redalert
+"Redalert some ... text ..." is equivalent equivalent to "explain Red Alert!
+some ... text ..." and is traditionally used to self-alert bids or
+carding that is highly unusual.  "Alert" should be used for only slightly
+unusual bids or carding.
+
+reject
+Reject declarer's claim.  A rejection from either defender nixes the
+claim regardless of what the other defender may have done.  Others at
+the table are shown only that the claim was rejected, not by whom.
+
+retract
+Declarer may use this command to retract a claim.
+
+review
+Review the auction.
+
+rho
+Say something to your right-hand opponent.  E.g. "rho What is 2D?"
+
+s
+If the south seat is available, try to sit down.  Otherwise, if you
+are seated and it is your turn to play a card, play your lowest spade. 
+
+say
+Say something to everyone present.  E.g. "say Hello There!"
+
+score
+Select the form of scoring for subsequent deals.  The valid uses of
+the command are "score IMP" and "score MP."  See also "competitive"
+and "noncompetitive."
+
+south (or s)
+If the South seat is available, take it.
+
+spec
+Become a double-dummy spectator.
+
+tables
+List all tables.
+
+w (or west)
+If the West seat is available, take it.
+
+west (or w)
+If the West seat is available, take it.
+
+who
+List who is at the table I am at.
+
+.
+Play your smallest card of the suit led.

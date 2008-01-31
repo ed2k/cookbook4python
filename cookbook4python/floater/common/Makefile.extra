@@ -1,0 +1,215 @@
+# $Id: Makefile.extra,v 1.2 2003/12/03 00:45:29 lexspoon Exp $
+#
+# This file is not currently used, but it has some makefile routines that
+# should be updated and taken advantage of....
+
+
+TEXTS := Copyright Readme Confusing Bugs
+TARFILE := floater.tar
+BASEDIR := XXXFLOATERDIRXXX
+WEBDIR := $(BASEDIR)/HTTP
+ALL_FILES = `echo $(FLOBS) | sed 's/ tkAppInit.o//' | tr . - \
+		| sed s/-o/-c/g | tr - .` $(HEADERS) \
+	dequote requote ref autohelp?.c floatcl?.c Floaterlogo.gif \
+	floatcl.c computer.c computer.h \
+	bitmaps/{bitmaps.c,*._} \
+	depend.inc depend2.inc Makefile.in floatert \
+	configure configure.in configure.info config.guess config.sub \
+	install-sh \
+	README CONFUSING BUGS NEWS Readme Confusing Bugs Copyright \
+	copyright.message tcl2c \
+	tclcode/{*.tcl,*.TCL}
+TEMP_DIRNAME := xyz-temp
+
+
+tclcode/the_texts.TCL: $(TEXTS)
+	-rm -f $@
+	for i in $(TEXTS) ; \
+	    do \
+	    (echo "gset $$i {" ; \
+	     sed sx//xslashslashxg < $$i ; \
+	     echo "}") >> $@ ; \
+	    done;
+	echo "gset help_texts {$(TEXTS)}" >> $@
+	@echo "Made the_texts.TCL from: $(TEXTS)"
+	
+cr:
+	@echo Putting copyright notice on files...
+	@tclsh copyright $(ALL_FILES)
+
+uncr:
+	@echo Removing copyright notice on files...
+	@tclsh uncopyright $(ALL_FILES)
+
+docs:
+	cp -p README $(WEBDIR)/README.txt
+	cp -p BUGS $(WEBDIR)/BUGS.txt
+	cp -p CHANGELOG $(WEBDIR)/CHANGELOG.txt
+	cp -p CONFUSING $(WEBDIR)/CONFUSING.txt
+	cp -p ref.pdf ref.ps ref.html tut0/tut.html $(WEBDIR)/doc/
+	cp -p docindex.html $(WEBDIR)/doc/index.html
+
+ref.html: ref ref1.html ref2.html
+	-rm -f ref.html
+	cp ref1.html ref.html
+	echo "<!--" >> ref.html
+	echo -n "last modified " >> ref.html
+	date >> ref.html
+	echo "-->" >> ref.html
+	grep "	" ref | \
+		sed 'sv	\(.*\)v<a href="\#\1">\1</a>vg' >> ref.html
+	echo "<!-- Now, the meat -->" >> ref.html
+	html-fixquotes ref | \
+		sed 'sv	\(.*\)v<p><b><a name="\1">\1</a></b>vg' >> ref.html
+	cat ref2.html >> ref.html
+
+ref.tex: ref ref1.tex ref2.tex floaterlogo.ps
+	-rm -f ref.tex
+	cp ref1.tex ref.tex
+	texquote < ref | sed "s/	\(.*\)/}\\\\\\\\ \\\\cmd{\1}{/g" | \
+		tr "<>" "\`'" >> ref.tex
+	cat ref2.tex >> ref.tex
+	latex ref.tex
+	dvips -D600 ref.dvi -o ref.ps
+	ps2pdf ref.ps
+
+docindex.html: docindex1.html docindex2.html ref.html tut0/tut.html
+	-rm -f docindex.html
+	cp docindex1.html docindex.html
+	echo -n "Tutorial last modified " >> docindex.html
+	grep "[0-9 ][0-9]:[0-9][0-9]:[0-9][0-9]" tut0/tut.html >> docindex.html
+	echo -n ".<p>Command reference " >> docindex.html
+	grep "[0-9 ][0-9]:[0-9][0-9]:[0-9][0-9]" ref.html >> docindex.html
+	echo . >> docindex.html
+	cat docindex2.html >> docindex.html
+
+scratch:
+	$(MAKE) clean
+	$(MAKE)
+	-$(MAKE) -C ../floaterr scratch
+	-$(MAKE) -C ../floaterl scratch
+	-$(MAKE) -C ../floaterpm scratch
+	$(MAKE) docs
+
+#	$(MAKE) floaterp
+#-csh -c "(cd ../floaterr; gmake ss)"
+#-csh -c "(cd ../floaterl; gmake scratch)"
+#-csh -c "(cd ../floaterpm; gmake scratch)"
+
+
+dist:
+	@$(MAKE) clean
+	@$(MAKE) docs
+	@$(MAKE)
+	@$(MAKE) cr
+	@$(MAKE) tar
+
+wc:
+	wc $(HEADERS)
+	wc tclcode/*.tcl
+	wc tclcode/*.TCL
+	wc `echo $(FLOBS) | tr . ~ | sed s/~o/~c/g | tr ~ .`
+
+showflags:
+	-egrep "define (TUTOR|USER_TCL|CORE_DUMPS|DBG|DEBUG|LOGGING)" debug.h
+
+TARDIRNAME := floater-$(VERSION)
+
+tar: showflags floatcl.c autohelp.c
+	-rm -f ../$(TARFILE)
+	mv depend.inc depend.inc.--good--
+	mv depend2.inc depend2.inc.--good--
+	mv Makefile.in Makefile.in--good--
+	echo > depend.inc
+	echo > depend2.inc
+	grep -v Makefile.extra Makefile.in--good-- > Makefile.in
+	csh -c "gtar --exclude-from=exclude-file -cf $(TARFILE) $(ALL_FILES)"
+	mv depend.inc.--good-- depend.inc
+	mv depend2.inc.--good-- depend2.inc
+	mv Makefile.in--good-- Makefile.in
+	mkdir -p $(TEMP_DIRNAME)/$(TARDIRNAME)
+	cd $(TEMP_DIRNAME)/$(TARDIRNAME) && tar xf ../../$(TARFILE) && \
+	  cd .. && rm ../$(TARFILE) && tar cf ../$(TARFILE) * && \
+	  cd .. && rm -rf $(TEMP_DIRNAME)
+
+
+.PHONY: mac_tcl_in_c mactar
+
+# These tar files for the mac live in ../mac/
+MAC_HTARFILE = mac-h.tar
+MAC_CTARFILE = mac-c.tar
+
+MAC_UNWANTED = floatcl*.* computer.c autohelp?.c win*.c sun.h maximize.* shortcut.*
+
+mac_tcl_in_c: tclcode/floaterw.tcl wtcl2c
+	cd ../mac && cp ../floater/floatcl?.c . && \
+		tclsh ../floater/wtcl2c tclcode/floater.tcl ../mac/src/mactcl.c
+
+mactar: showflags mac_tcl_in_c
+	-rm -f ../mac/$(MAC_CTARFILE) ../mac/$(MAC_HTARFILE)
+	csh -c "cp -p *.[ch] ../mac && cd ../mac && /bin/rm $(MAC_UNWANTED) && mv *.c src && tar cvf $(MAC_CTARFILE) src/*.c"
+	csh -c "cd ../mac && mv *.h headers && tar cvf $(MAC_HTARFILE) headers/*.h"
+
+WINDOZE_ZIPFILE = $(BASEDIR)/fl.tgz
+WINDOZE_DISTFILE = $(BASEDIR)/windist.zip
+
+windoze80:
+	$(MAKE) tclcode/floaterw.tcl
+	-rm -f $(WINDOZE_ZIPFILE)
+	-rm -rf ../windoze80-win-oldfloater
+	-mv ../windoze80/win/floater  ../windoze80-win-oldfloater
+	mkdir ../windoze80/win/floater
+	cp *.[ch] ../windoze80/win/floater
+	mv ../windoze80/win/winMain.c ../windoze80/win/_winMain.c
+	mv ../windoze80/win/floater/winMain.c ../windoze80/win
+	cp Floaterlogo.gif ref.pdf BUGS CONFUSING README NEWS ../windoze80/win
+	csh -c "cd ../windoze80/win/floater; mkdir tclcode; cd tclcode; ln -s ../../../../floater/tclcode/floaterw.tcl floater.tcl; cd ..; tclsh ../../../floater/wtcl2c tclcode/floater.tcl floatcl.c; rm floatcl?.c autohelp?.c; mkdir bitmaps; cd bitmaps; cp ../../../../floater/bitmaps/* .; cd ../../../..; tar cvf - windoze80/win | gzip -9 > $(WINDOZE_ZIPFILE)" 
+
+windoze80full:
+	$(MAKE) tclcode/floaterw.tcl
+	-rm -f $(WINDOZE_ZIPFILE)
+	-rm -rf ../windoze80-win-oldfloater
+	-mv ../windoze80/win/floater  ../windoze80-win-oldfloater
+	mkdir ../windoze80/win/floater
+	cp *.[ch] ../windoze80/win/floater
+	mv ../windoze80/win/winMain.c ../windoze80/win/_winMain.c
+	mv ../windoze80/win/floater/winMain.c ../windoze80/win
+	cp Floaterlogo.gif ref.pdf BUGS CONFUSING README NEWS ../windoze80/win
+	csh -c "cd ../windoze80/win/floater; mkdir tclcode; cd tclcode; ln -s ../../../../floater/tclcode/floaterw.tcl floater.tcl; cd ..; tclsh ../../../floater/wtcl2c tclcode/floater.tcl floatcl.c; rm floatcl?.c autohelp?.c; mkdir bitmaps; cd bitmaps; cp ../../../../floater/bitmaps/* .; cd ../../../..; tar cvf - windoze80 | gzip -9 > $(WINDOZE_ZIPFILE)" 
+
+windoze84:
+	rm -f tclcode/floaterw.tcl
+	$(MAKE) tclcode/floaterw.tcl
+	-rm -f $(WINDOZE_ZIPFILE)
+	-rm -rf ../windoze84-win-oldfloater
+	-mv ../windoze84/win/floater  ../windoze84-win-oldfloater
+	mkdir ../windoze84/win/floater
+	cp -p *.[ch] ../windoze84/win/floater
+	cp -p winMakefile.in ../windoze84/win/Makefile.in
+	mv ../windoze84/win/winMain.c ../windoze84/win/_winMain.c
+	mv ../windoze84/win/floater/winMain.c ../windoze84/win
+	cp -p Floaterlogo.gif ref.pdf BUGS CONFUSING README NEWS ../windoze84/win
+	cp -p floater.rc floater.ico ../windoze84/win/rc
+	csh -c "cd ../windoze84/win/floater; mkdir tclcode; cd tclcode; ln -s ../../../../floater/tclcode/floaterw.tcl floater.tcl; cd ..; tclsh ../../../floater/wtcl2c tclcode/floater.tcl floatcl.c; rm floatcl?.c autohelp?.c; mkdir bitmaps; cd bitmaps; cp ../../../../floater/bitmaps/* .; cd ../../../..; tar cvf - windoze84/win | gzip -9 > $(WINDOZE_ZIPFILE)" 
+
+windoze84full:
+	rm -f tclcode/floaterw.tcl
+	$(MAKE) tclcode/floaterw.tcl
+	-rm -f $(WINDOZE_ZIPFILE)
+	-rm -rf ../windoze84-win-oldfloater
+	-mv ../windoze84/win/floater  ../windoze84-win-oldfloater
+	mkdir ../windoze84/win/floater
+	cp -p *.[ch] ../windoze84/win/floater
+	cp -p ../WinLog ../windoze84/win
+	cp -p winMakefile.in ../windoze84/win/Makefile.in
+	mv ../windoze84/win/winMain.c ../windoze84/win/_winMain.c
+	mv ../windoze84/win/floater/winMain.c ../windoze84/win
+	cp -p Floaterlogo.gif ref.pdf BUGS CONFUSING README NEWS ../windoze84/win
+	cp -p floater.rc floater.ico ../windoze84/win/rc
+	csh -c "cd ../windoze84/win/floater && mkdir tclcode && cd tclcode && ln -s ../../../../floater/tclcode/floaterw.tcl floater.tcl && cd .. && tclsh ../../../floater/wtcl2c tclcode/floater.tcl floatcl.c && rm floatcl?.c autohelp?.c && mkdir bitmaps && cd bitmaps && cp ../../../../floater/bitmaps/* . && cd ../../../.. && tar cvf - windoze84 | gzip -9 > $(WINDOZE_ZIPFILE)" 
+
+windist: $(WINDOZE_DISTFILE)
+
+$(WINDOZE_DISTFILE): Floater.exe Floaterlogo.gif README CONFUSING NEWS BUGS
+	-rm -f $(WINDOZE_DISTFILE)
+	csh -c "mkdir $(TEMP_DIRNAME); mkdir $(TEMP_DIRNAME)/bin $(TEMP_DIRNAME)/Floaterdoc; cp Floater.exe Floaterlogo.gif $(TEMP_DIRNAME)/bin; cp README CONFUSING NEWS BUGS ref.pdf $(TEMP_DIRNAME)/Floaterdoc; cd $(TEMP_DIRNAME); zip -r $(WINDOZE_DISTFILE) bin Floaterdoc; cd ..; rm -rf $(TEMP_DIRNAME)"
