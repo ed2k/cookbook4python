@@ -133,7 +133,9 @@ class State:
       self.message_seq = 1
       self.rubber = sbridge.Rubber(sbridge.NORTH)
    def send_new_hand(self):
-      ''' play only get its own hand and plus dummy hand if first one is played'''
+      ''' play only get its own hand and plus dummy hand if first one is played
+      hname has to be something 6Jan08IMP1, last "1" after IMP is handid
+      '''
       i = str(self.hand_id)
       p = convert_play2str(self.play_status)
       b = str(self.bid_status)
@@ -143,7 +145,7 @@ class State:
          if  len(self.play_status) >= 1:
             h2 = str(o2f(self.deal.dummy))+' '+o2pbn_hand(self.deal.hands[self.deal.dummy])
             h += '|'+ h2
-         msg.append([seat, self.encode_message('new_hand',[i,'hname',h,b,p])])
+         msg.append([seat, self.encode_message('new_hand',[i,'6Jan08IMP'+i,h,b,p])])
       return msg
          
    def client_seated(self,seat,name):
@@ -291,7 +293,7 @@ class State:
       elif cmd == 'accepted_join':
          return 'Y3\\'+fromid+encode_args(['K']+seqs)
       elif cmd == 'new_hand':
-         return '*8\\'+fromid+encode_args(seqs+['','',''])
+         return '*8\\'+fromid+encode_args(seqs+['','0',''])
       elif cmd == 'announce_table':
          return packmsg('T')
       return ''

@@ -36,7 +36,8 @@ def table_handle(state,data):
       elif mname == 'S':
          username,seat,ip,port = args
          if state.client_seated(IDX[seat[0]], username):
-            rmsg.append('s'+line[1:])
+            # new player seated
+            rmsg += get_current_seated_msg(state)
             if state.deal is not None:# update game status.
                rmsg += state.send_new_hand()
       elif mname == 'C':
