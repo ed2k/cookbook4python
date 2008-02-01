@@ -41,7 +41,7 @@
 VERSION = 1.4.15 ;
 
 # directory with the source tree
-TOP = /local/scratch/floater-1.4.15 ;
+TOP = /x3/cookbook4python/floater ;
 
 # Default top-level directories in which to install architecture-
 # specific files (exec_prefix) and machine-independent files such as
@@ -64,11 +64,11 @@ FLOATER_LIBRARY		= $(prefix)/lib/floater$(VERSION) ;
 
 # XXX this should be cleared up as well....  where is it used, and is it still
 # supperted in that use even?
-FLOATER_SRC_DIR = /local/scratch/floater-1.4.15 ;
+FLOATER_SRC_DIR = /x3/cookbook4python/floater ;
 
 # other source directories
-artdir = /local/scratch/floater-1.4.15/art ;
-tcldir = /local/scratch/floater-1.4.15/tclcode ;
+artdir = /x3/cookbook4python/floater/art ;
+tcldir = /x3/cookbook4python/floater/tclcode ;
 
 
 # include paths and libraries passed in from autoconf

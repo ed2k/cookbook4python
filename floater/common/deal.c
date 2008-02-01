@@ -318,8 +318,48 @@ void print_hand(int *deck, int num, int dealer, int vul)
   }
 }
 
+
+int char2int_card(char c){
+    if((c - '2') < 10) return (int)(c-'2');
+    if( c == 'A')return 12;
+    if (c=='K') return 11;
+    if (c=='Q') return 10;
+    if (c=='J') return 9;
+    if (c=='T') return 8;
+}
+/*
+0 AT32.6.872.98765 
+ */
+void setup_bridge_deck(char *seed, int *deck){
+    
+    //    if (*(seed+1) != ' ')
+  //-yisu hajack the program
+  // don't understand the implementation that generate the deck from seed
+    int seat = *seed - '0';
+    int suit = 3;
+    int pos = 0;
+    seed += 2;
+    while (*seed != 0) {
+        if (*seed == '|'){
+            seat = *(seed+1) - '0';
+            suit = 3;
+            pos = 0;
+            seed += 3;
+        } else if (*seed == '.') {
+            suit -= 1;
+            seed ++;
+        }        
+        deck[seat*13+pos] = suit*13 + char2int_card(*seed) ;
+        seed++;
+        pos ++;
+    }
+    int i;
+    for(i=0;i<52;i++)printf("%d ",(deck[i] %13)+2);
+    printf("new deal\n");
+}
 void deal(int *deck, int verbose, int num, int dealer, int vul, int decksize)
 {
+    return;
   register int i, k, t;
   
   validassert();
@@ -344,7 +384,7 @@ void deal(int *deck, int verbose, int num, int dealer, int vul, int decksize)
 void sortdeal(int *deck, int decksize, int cardsperhand)
 {
   register int i, j, k, t;
-
+  return;
   for (i=0; i<decksize; i+=cardsperhand)
     for (j=0; j<cardsperhand - 1; j++)
       for (k=j; k<cardsperhand; k++)
@@ -423,8 +463,13 @@ char *getseed(void)
   return ret;
 }
 
+
+/*
+seed is somethin like 9\15\aiJfmB01x7CKykEtLawMswKYg4lqEHv1jm8Id5vLWxzFOoNZbvDQQG_
+ */
 void setseed(char *seed)
 {
+    return;
   char bits[RANDXSIZE * NUMGOODBITS];
   int i;
   int newind, newbitindex;

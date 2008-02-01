@@ -609,10 +609,13 @@ static void UIshowdeal(int pov, fl_bool dd, int dummycol,
       status2("Display handID=", displayhandID);
       status2("Display seed=", TclDo3("gset handseed(", displayhandID, ")"));
 #endif
-      setseed(TclDo3("gset handseed(", displayhandID, ")"));
-      deal(displaydeck, 0, 0, 0, 0, disnumplayers * cardsperhand);
-      if (displayinghearts) UIupdatepass(pass, pov);
-      sortdeal(displaydeck, disnumplayers * cardsperhand, cardsperhand);
+      //setseed(TclDo3("gset handseed(", displayhandID, ")"));
+      char *seed = TclDo3("gset handseed(", displayhandID, ")");
+      printf("uishowdeal %s\n",seed);
+      //deal(displaydeck, 0, 0, 0, 0, disnumplayers * cardsperhand);
+      if (displayinghearts) UIupdatepass(pass, pov);      
+      //sortdeal(displaydeck, disnumplayers * cardsperhand, cardsperhand);
+      setup_bridge_deck(seed, displaydeck);
     }
 
   nd = sd = ed = wd = dd;
