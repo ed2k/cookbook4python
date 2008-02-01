@@ -44,6 +44,7 @@ proc tryset {a b} {
 
 //like set, but for globals
 proc gset {a {b salami_on_rye}} {
+    #puts "gset $a = $b"
     if {[set x [string first "(" $a]] == -1} {
 	global $a
     } else {

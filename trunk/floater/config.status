@@ -331,7 +331,7 @@ Copyright (C) 2006 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/local/scratch/floater-1.4.15'
+ac_pwd='/x3/cookbook4python/floater'
 srcdir='.'
 INSTALL='/usr/bin/install -c'
 # If no file are specified by the user, then we need to provide default
@@ -534,8 +534,8 @@ s,@INSTALL_PROGRAM@,|#_!!_#|${INSTALL},g
 s,@INSTALL_SCRIPT@,|#_!!_#|${INSTALL},g
 s,@INSTALL_DATA@,|#_!!_#|${INSTALL} -m 644,g
 s,@WINDRES@,|#_!!_#|,g
-s,@GREP@,|#_!!_#|/usr/bin/grep,g
-s,@EGREP@,|#_!!_#|/usr/bin/grep -E,g
+s,@GREP@,|#_!!_#|/bin/grep,g
+s,@EGREP@,|#_!!_#|/bin/grep -E,g
 s,@EXTRA_LIBS@,|#_!!_#| -lnsl -ldl,g
 s,@enable_backend_curses@,|#_!!_#|yes,g
 s,@CURSES_INCLUDES@,|#_!!_#|,g
@@ -548,7 +548,7 @@ s,@TCL_LIB@,|#_!!_#|-ltcl8.4,g
 s,@TK_INCLUDES@,|#_!!_#|-I/usr/include,g
 s,@TK_LIB@,|#_!!_#|-ltk8.4,g
 s,@VERSION@,|#_!!_#|1.4.15,g
-s,@FLOATER_SRC_DIR@,|#_!!_#|/local/scratch/floater-1.4.15,g
+s,@FLOATER_SRC_DIR@,|#_!!_#|/x3/cookbook4python/floater,g
 s,@FLOATER_PLATFORM_OBJS@,|#_!!_#|,g
 s,@LIBOBJS@,|#_!!_#|,g
 s,@LTLIBOBJS@,|#_!!_#|,g

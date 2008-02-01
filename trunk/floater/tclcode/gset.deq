@@ -44,6 +44,7 @@ QTABQ global [string range $a 0 [incr x -1]]
 
 //like set, but for globals
 proc gset {a {b salami_on_rye}} {
+    #puts KWOTEgset $a = $bKWOTE
     if {[set x [string first KWOTE(KWOTE $a]] == -1} {
 QTABQ global $a
     } else {

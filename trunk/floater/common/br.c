@@ -998,43 +998,7 @@ static void decktohand(int *deck, int player, char *dest)
   *dest = '\0';
 }
 
-int char2int_card(char c){
-    if((c - '2') < 10) return (int)(c-'2');
-    if( c == 'A')return 12;
-    if (c=='K') return 11;
-    if (c=='Q') return 10;
-    if (c=='J') return 9;
-    if (c=='T') return 8;
-}
-/*
-0 AT32.6.872.98765 
- */
-void setup_bridge_deck(char *seed){
-    int seat = *seed - '0';
-    int suit = 3;
-    int pos = 0;
-    seed += 2;
-    while (*seed != 0) {
-        if (*seed == '|'){
-            seat = *(seed+1) - '0';
-            suit = 3;
-            pos = 0;
-            seed += 3;
-        } else if (*seed == '.') {
-            suit -= 1;
-            seed ++;
-        }        
-        curdeck[seat*13+pos] = suit*13 + char2int_card(*seed) ;
-        seed++;
-        pos ++;
-    }
-    int i;
-    for(i=0;i<52;i++)printf("%d ",(curdeck[i] %13)+2);
-    printf("new deal\n");
-}
-/*
-seed is somethin like 9\15\aiJfmB01x7CKykEtLawMswKYg4lqEHv1jm8Id5vLWxzFOoNZbvDQQG_
- */
+
 static void setupdeck(char *seed)
 {
   int i;
@@ -1043,14 +1007,11 @@ static void setupdeck(char *seed)
 
   printf("setupdeck seed=%s\n", seed);
 
-  if (*(seed+1) == ' ') setup_bridge_deck(seed); //-yisu hajack the program
-  // don't understand the implementation that generate the deck from seed
-  else {
-  setseed(seed);
-  deal(curdeck, 0, 0, 0, 0, decksize);
+  //setseed(seed);
+  //deal(curdeck, 0, 0, 0, 0, decksize);
+  setup_bridge_deck(seed, curdeck);
+  //sortdeal(curdeck, decksize, cardsperhand);
 
-  sortdeal(curdeck, decksize, cardsperhand);
-  }
   for (i = 0; i < scoringmethods[scoremethod].numplayers; i++) {
     decktohand(curdeck, i, initialcards[i]);
     if (playinghearts) strcpy(initialcards_beforepass[i], initialcards[i]);

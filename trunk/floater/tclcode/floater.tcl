@@ -1,8 +1,8 @@
-# 1 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/floater.deq"
 # 1 "<built-in>"
 # 1 "<command line>"
-# 1 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
-# 63 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/floater.deq"
+# 63 "/x3/cookbook4python/floater/tclcode/floater.deq"
 if {[info tclversion] < 8.0 || $tk_version < 8.0} {
     puts stderr "You have compiled Floater with Tcl [info tclversion]/Tk $tk_version."
     puts stderr "You must recompile with Tcl/Tk 8.0 or higher."
@@ -85,8 +85,8 @@ proc times {size} {
 }
 
 
-# 1 "/local/scratch/floater-1.4.15/tclcode/gset.deq" 1
-# 35 "/local/scratch/floater-1.4.15/tclcode/gset.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/gset.deq" 1
+# 35 "/x3/cookbook4python/floater/tclcode/gset.deq"
 proc tryset {a b} {
     if {[set x [string first "(" $a]] == -1} {
 	global $a
@@ -99,6 +99,7 @@ proc tryset {a b} {
 
 
 proc gset {a {b salami_on_rye}} {
+
     if {[set x [string first "(" $a]] == -1} {
 	global $a
     } else {
@@ -118,7 +119,7 @@ proc gunset {a} {
 
     unset $a
 }
-# 146 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 146 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after gset
 
 
@@ -126,13 +127,13 @@ line after gset
 
 gset floater_version {Floater 1.4.15}
 
-# 1 "/local/scratch/floater-1.4.15/tclcode/errorhandle.deq" 1
-# 34 "/local/scratch/floater-1.4.15/tclcode/errorhandle.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/errorhandle.deq" 1
+# 34 "/x3/cookbook4python/floater/tclcode/errorhandle.deq"
 proc bgerror {m} {catch {debugmsg $m}}
-# 154 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 154 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after errorhandle
-# 1 "/local/scratch/floater-1.4.15/tclcode/files.deq" 1
-# 38 "/local/scratch/floater-1.4.15/tclcode/files.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/files.deq" 1
+# 38 "/x3/cookbook4python/floater/tclcode/files.deq"
 proc lseenhand {root number scoring} {
     global seenhands maxseenhand 	Nseen$scoring Sseen$scoring Eseen$scoring Wseen$scoring
 
@@ -175,7 +176,7 @@ proc seen {root {silent 0}} {
     if {$youveseen && !$silent} {talkmsg "From set $root, you've seen: $t"}
     if {$silent} {return $t} {return $s}
 }
-# 91 "/local/scratch/floater-1.4.15/tclcode/files.deq"
+# 91 "/x3/cookbook4python/floater/tclcode/files.deq"
 set slash "/"
 
 
@@ -308,7 +309,7 @@ proc cleanseen {dir except1 except2} {
 	}
     }
 }
-# 231 "/local/scratch/floater-1.4.15/tclcode/files.deq"
+# 231 "/x3/cookbook4python/floater/tclcode/files.deq"
 proc validfile {filename} {
     global floaterdir slash
 
@@ -352,10 +353,10 @@ proc http_fetch_to_file {url finalname {tmpfile ""}} {
 	set token_to_cmd($token) "file rename \{$tmpfile\} \{$finalname\}"
     }
 }
-# 156 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 156 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after files
-# 1 "/local/scratch/floater-1.4.15/tclcode/connect.deq" 1
-# 34 "/local/scratch/floater-1.4.15/tclcode/connect.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/connect.deq" 1
+# 34 "/x3/cookbook4python/floater/tclcode/connect.deq"
 gset conn_number 0
 
 gset default_handshake "Floater 'shake"
@@ -495,7 +496,7 @@ proc FloaterCloseName {name} {
 	}
     }
 }
-# 224 "/local/scratch/floater-1.4.15/tclcode/connect.deq"
+# 224 "/x3/cookbook4python/floater/tclcode/connect.deq"
 proc bogusIP {s} {
     if {$s == "localhost"} { return 1 }
     if {$s == "localhost.localdomain"} { return 1 }
@@ -533,10 +534,10 @@ catch {
     }
 
 }
-# 158 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 158 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after connect
-# 1 "/local/scratch/floater-1.4.15/tclcode/mail.deq" 1
-# 43 "/local/scratch/floater-1.4.15/tclcode/mail.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/mail.deq" 1
+# 43 "/x3/cookbook4python/floater/tclcode/mail.deq"
 set to_be_emailed_n 0
 
 
@@ -595,10 +596,10 @@ proc pseudomail {what where} {
 	FloaterClose $conn
     } errorstring
 }
-# 160 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 160 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after mail
-# 1 "/local/scratch/floater-1.4.15/tclcode/seen.deq" 1
-# 34 "/local/scratch/floater-1.4.15/tclcode/seen.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/seen.deq" 1
+# 34 "/x3/cookbook4python/floater/tclcode/seen.deq"
 proc query_have_seen {name set} {
     set x "$name $set"
     global $x
@@ -665,16 +666,16 @@ proc what_to_send {} {
     set to_be_sent_n 0
     return $s
 }
-# 162 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 162 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after seen
-# 1 "/local/scratch/floater-1.4.15/tclcode/logo.deq" 1
-# 37 "/local/scratch/floater-1.4.15/tclcode/logo.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/logo.deq" 1
+# 37 "/x3/cookbook4python/floater/tclcode/logo.deq"
 global floater_version
 tryset about_text "version [lrange $floater_version 1 end]
 
 http:\/\/www.floater.org
 This is free software."
-# 50 "/local/scratch/floater-1.4.15/tclcode/logo.deq"
+# 50 "/x3/cookbook4python/floater/tclcode/logo.deq"
 proc about {{timeout 0}} {
     global logofilename about_text macintosh
 
@@ -713,12 +714,12 @@ proc about {{timeout 0}} {
 
     if {$timeout > 0} { after $timeout {catch {destroy .welcome}} }
 }
-# 164 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 164 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after logo
-# 1 "/local/scratch/floater-1.4.15/tclcode/texts.deq" 1
-# 34 "/local/scratch/floater-1.4.15/tclcode/texts.deq"
-# 1 "/local/scratch/floater-1.4.15/tclcode/the_texts.deq" 1
-# 38 "/local/scratch/floater-1.4.15/tclcode/the_texts.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/texts.deq" 1
+# 34 "/x3/cookbook4python/floater/tclcode/texts.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/the_texts.deq" 1
+# 38 "/x3/cookbook4python/floater/tclcode/the_texts.deq"
 gset Confusing {
 Floater relies on self-alerts. If playing formally, you are
 expected to explain your bidding and carding agreements as carefully
@@ -1566,7 +1567,7 @@ Public License instead of this License.
 
 
 gset help_texts {Copyright Confusing}
-# 35 "/local/scratch/floater-1.4.15/tclcode/texts.deq" 2
+# 35 "/x3/cookbook4python/floater/tclcode/texts.deq" 2
 proc display_text {name s} {
     global fixedfont
 
@@ -1593,7 +1594,7 @@ proc display_text {name s} {
     pack $f -side top -fill both -expand y
 
 }
-# 166 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 166 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 line after texts
 
 foreach x [array names tcl_platform] { lappend platform $tcl_platform($x) }
@@ -1601,7 +1602,7 @@ foreach x [array names tcl_platform] { lappend platform $tcl_platform($x) }
 gset floaterclock 0
 gset table_arrival_time 0
 gset snooze 0
-# 188 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 188 "/x3/cookbook4python/floater/tclcode/floater.deq"
 gset ntalklines 0
 
 gset dtalklines 0
@@ -1613,7 +1614,7 @@ gset talklineattop 0
 
 gset showerrors 1
 gset debugprinting 0
-# 262 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 262 "/x3/cookbook4python/floater/tclcode/floater.deq"
 proc talkmsg {s} {
     global debugtext debugprinting showerrors
 
@@ -1774,7 +1775,7 @@ proc updateallfonts {} {
 	updatefont $font
     }
 }
-# 431 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 431 "/x3/cookbook4python/floater/tclcode/floater.deq"
 set talkfontsize 8
 catch {
     if {$screenheight >= 600 || 	[regexp {.*x([0-9]+)} [wm geometry .] a wmheight] && 	$wmheight >= 500} { incr talkfontsize 1 }
@@ -1917,18 +1918,18 @@ set needAuctionUpdate 0
 
 gset showingauction 0
 
-# 1 "/local/scratch/floater-1.4.15/tclcode/options_common.deq" 1
-# 46 "/local/scratch/floater-1.4.15/tclcode/options_common.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/options_common.deq" 1
+# 46 "/x3/cookbook4python/floater/tclcode/options_common.deq"
 set beepAtMyTurn_ 0
 proc beepAtMyTurn {{toggle 0}} {
     global beepAtMyTurn_
 
     if $toggle {set beepAtMyTurn_ [expr !$beepAtMyTurn_]}
 }
-# 574 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 574 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 
-# 1 "/local/scratch/floater-1.4.15/tclcode/options_GUI.deq" 1
-# 46 "/local/scratch/floater-1.4.15/tclcode/options_GUI.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/options_GUI.deq" 1
+# 46 "/x3/cookbook4python/floater/tclcode/options_GUI.deq"
 set separateTalk_ [set talk_is_sep 0]
 proc separateTalk {{toggle 0}} {
     global talk_is_sep separateTalk_
@@ -2053,9 +2054,9 @@ if {$effectiveheight > 770} {
 
 global gui_compact_
 set gui_compact_ 1
-# 576 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
-# 1 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq" 1
-# 38 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 576 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
+# 1 "/x3/cookbook4python/floater/tclcode/matrix0.deq" 1
+# 38 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
 proc redrawmatrixcards {} {}
 
 proc togglepassedcard {suit card} {
@@ -2083,9 +2084,9 @@ proc tpcard {w} {
 	
     }
 }
-# 105 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 105 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
 proc suit {f cards suit} {
-# 119 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 119 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
     global buttoncardoptions buttonsuitoptions removecard togglepassedaction
 
     set buttons {}
@@ -2142,7 +2143,7 @@ proc hand {f s h d c} {
     suit $f $d d
     suit $f $c c
 }
-# 206 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 206 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
 proc fulldeal {s h d c LHOs LHOh LHOd LHOc 		Ps Ph Pd Pc RHOs RHOh RHOd RHOc} {
 
     global mframe
@@ -2212,7 +2213,7 @@ proc erasebidplay {who} {
 
 
 proc showplay {player suit card} {
-# 285 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 285 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
     global cardfont suitfont
 
     set path [matrix_widget].middle.box.$player
@@ -2239,11 +2240,11 @@ proc showplay {player suit card} {
 
 
 proc showbid {player level strain} {
-# 326 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 326 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
     drawbid [matrix_widget].middle.box.$player $level $strain
 
 }
-# 359 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 359 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
 proc suitcolor {suit} {
     if {$suit == "h"} {
         return red
@@ -2374,7 +2375,7 @@ proc copybids {new_toplevel} {
 
 
 proc setname {player compassdir name} {
-# 504 "/local/scratch/floater-1.4.15/tclcode/matrix0.deq"
+# 504 "/x3/cookbook4python/floater/tclcode/matrix0.deq"
     global namefont mframe playername position
     set playername($player) $name
     set position($player) $compassdir
@@ -2388,11 +2389,11 @@ proc setname {player compassdir name} {
     }
 
 }
-# 577 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
-# 1 "/local/scratch/floater-1.4.15/tclcode/matrix.deq" 1
-# 80 "/local/scratch/floater-1.4.15/tclcode/matrix.deq"
-# 1 "/local/scratch/floater-1.4.15/tclcode/matrixsize.deq" 1
-# 39 "/local/scratch/floater-1.4.15/tclcode/matrixsize.deq"
+# 577 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
+# 1 "/x3/cookbook4python/floater/tclcode/matrix.deq" 1
+# 80 "/x3/cookbook4python/floater/tclcode/matrix.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/matrixsize.deq" 1
+# 39 "/x3/cookbook4python/floater/tclcode/matrixsize.deq"
 proc smallmatrix {c b v {m 160}} {
     global handx handy canv namex namey suitgap ourcardgap theircardgap vgap 	pardheight matrixheight matrixwidth lhowidth rhowidth 	self_matrix_gap bottom_cutoff rhomaxx
 
@@ -2524,7 +2525,7 @@ proc mtest {{d {}}} {
     showplay rho h j
     sillynames
 }
-# 81 "/local/scratch/floater-1.4.15/tclcode/matrix.deq" 2
+# 81 "/x3/cookbook4python/floater/tclcode/matrix.deq" 2
 
 global matrix_showing
 
@@ -2749,7 +2750,7 @@ proc redrawmatrixcards {} {
 	}
     }
 }
-# 321 "/local/scratch/floater-1.4.15/tclcode/matrix.deq"
+# 321 "/x3/cookbook4python/floater/tclcode/matrix.deq"
 proc redohand {who suit card} {
     global curhandx curhandy hands handsx handsy
 
@@ -3022,9 +3023,9 @@ proc matrix_copycards {new_toplevel} {
 
     set toplevel $old_toplevel
 }
-# 578 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
-# 1 "/local/scratch/floater-1.4.15/tclcode/gui.deq" 1
-# 78 "/local/scratch/floater-1.4.15/tclcode/gui.deq"
+# 578 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
+# 1 "/x3/cookbook4python/floater/tclcode/gui.deq" 1
+# 78 "/x3/cookbook4python/floater/tclcode/gui.deq"
 global toplevel
 
 
@@ -3683,13 +3684,13 @@ proc gui_setWindowSize {} {
 
     wm minsize . 500 500
 }
-# 579 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 579 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 
 
 
 
 line 532
-# 669 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 669 "/x3/cookbook4python/floater/tclcode/floater.deq"
 if {$effectiveheight > 600} {
     global gui_compact_
     gui_setup .bigmain
@@ -3715,8 +3716,8 @@ gui_setWindowSize
 
 
 menu .menu -tearoff 0
-# 1 "/local/scratch/floater-1.4.15/tclcode/menu.deq" 1
-# 39 "/local/scratch/floater-1.4.15/tclcode/menu.deq"
+# 1 "/x3/cookbook4python/floater/tclcode/menu.deq" 1
+# 39 "/x3/cookbook4python/floater/tclcode/menu.deq"
    	
 
 
@@ -3778,7 +3779,7 @@ proc rcascade {label var {subcommands {}}} {
 
 set m [menu .menu.file -tearoff no]
 .menu add cascade -menu $m -label File -underline 0
-# 114 "/local/scratch/floater-1.4.15/tclcode/menu.deq"
+# 114 "/x3/cookbook4python/floater/tclcode/menu.deq"
 simple "Login..." login
 simple "Change Password..." password
 simple "Load CC..." ccload
@@ -4207,7 +4208,7 @@ proc activate_table_menus {b} {
 }
 
 activate_table_menus 0
-# 695 "/local/scratch/floater-1.4.15/tclcode/floater.deq" 2
+# 695 "/x3/cookbook4python/floater/tclcode/floater.deq" 2
 . configure -menu .menu
 
 
@@ -4254,9 +4255,9 @@ proc set_previous_trick {s {erase 1}} {
 
     if $erase {after 10000 "reset_previous_trick $previous_trick_index"}
 }
-# 865 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 865 "/x3/cookbook4python/floater/tclcode/floater.deq"
 line 1064
-# 945 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 945 "/x3/cookbook4python/floater/tclcode/floater.deq"
 proc turn_off_scrolllock {} {}
 
 
@@ -4321,7 +4322,7 @@ proc configall {w c} {
     eval "$w configure $c"
     foreach child [winfo children $w] {configall $child $c}
 }
-# 1022 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 1022 "/x3/cookbook4python/floater/tclcode/floater.deq"
 tryset tabletimeout 600
 
 
@@ -4543,7 +4544,7 @@ proc updateloc {} {
 }
 
 updateloc
-# 1253 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 1253 "/x3/cookbook4python/floater/tclcode/floater.deq"
 gset should_defer 0
 
 
@@ -4552,7 +4553,7 @@ proc command args {
 
     if $should_defer {deferpush "commandn $args"} else {eval "commandn $args"}
 }
-# 1272 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 1272 "/x3/cookbook4python/floater/tclcode/floater.deq"
 proc floaterreceive {msg conn} {
     global should_defer timeofmostrecent floaterclock
 
@@ -4579,7 +4580,7 @@ proc FloaterClose args {
     if $should_defer {deferpush "FloaterClosen $args"} 	else {eval "FloaterClosen $args"}
 
 }
-# 1308 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 1308 "/x3/cookbook4python/floater/tclcode/floater.deq"
 proc floatertimeout args {
     global should_defer
 
@@ -4633,7 +4634,7 @@ proc deferpop {} {
 }
 
 line 1548
-# 1369 "/local/scratch/floater-1.4.15/tclcode/floater.deq"
+# 1369 "/x3/cookbook4python/floater/tclcode/floater.deq"
 set executing_index 0
 
 proc Floater_execute {file} {
