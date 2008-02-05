@@ -2,9 +2,10 @@ from floater_client import *
 import random
 
 if __name__ == "__main__":
-   
+   website = '142.133.118.94:4080'
+   if len(sys.argv) > 1: website = sys.argv[1]
    import urllib,time
-   url = 'http://142.133.118.94:4080/postit.yaws?flproxyB='
+   url = 'http://'+website+'/postit.yaws?flproxyB='
    st = State()
    while True:
       # check message
