@@ -176,8 +176,9 @@ class State:
    def get_deal(self, handid, suit, bids, plays):
       seat = self.where_is_my_seat()
       assert seat is not None
-
       self.hand_id = int(handid)
+      assert seat == (self.hand_id %4)
+
       self.bid_status = BidStatus(bids)
       self.play_status = convert_str2play(plays)
       self.deal = sbridge.Deal((self.hand_id-1) % 4)
@@ -385,7 +386,7 @@ def decode_message(line):
 
     len_pfrom = int(f[1])
     len_pid = int(f[2])
-    # take out double back slash caused by erlang binary output
+    #avoid extra \\ inside message to be treated as seperator
     reline = '\\'.join(f[3:])
 
     pfrom = reline[:len_pfrom]

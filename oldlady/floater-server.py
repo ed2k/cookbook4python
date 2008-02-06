@@ -10,7 +10,7 @@ def get_current_seated_msg(state):
    return msg   
 
 def next_step(state):
-   print state.table_seated,state.deal,'\r',
+   print '\r',state.table_seated,state.deal,
    if state.all_seated() and state.deal is None:
       # deal new hand
       state.hand_id += 1
