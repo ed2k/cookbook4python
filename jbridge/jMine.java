@@ -17,7 +17,6 @@ public class jMine extends Panel {
       // Layout components
       add(mineCanvas, BorderLayout.CENTER);
       //        setSize(500, 300);
-
    }
 
 }//end of class 
@@ -31,32 +30,29 @@ class MineCanvas extends Canvas{
    int xGrid=16, yGrid=16;
 
    //represent table layout
-   char[][][] tdata;
+   String[][] tdata;
    int[][] table_layout = {{150,0},{300,100},{150,200},{0,100}};
    // bid layout
    int[] bidinput_layout = {450,150};
    String [][] bidinput_data;
    int[] bidhistory_layout = {450,50};
    int hand_id = 0;
+   int myseat = 0;
    String bidhistory = "";
    // trick layout
    int[] trick_layout = {150,100};
-   String[] trick_data = {"","","",""};
+   String trick_data = "";
    static String[] suit2str = {"S","H","D","C"};
    static String[] seat2str = {"N","E","S","W"};
    MineCanvas() {
-      tdata = new char[4][4][13];
-      for (int i = 0;i<4;i++){
-         for (int j = 0;j<4;j++){
-            for (int k = 0;k<13;k++){
-               tdata[i][j][k] = '0';
-            }
-         }
+      tdata = new String[4][4];
+      for (int i = 0;i<4;i++)for (int j = 0;j<4;j++){
+               tdata[i][j] = "";
       }
       bidinput_data = new String[8][4];
       for (int i = 0;i<7;i++){
          for (int j = 0;j<4;j++){
-            bidinput_data[i][j]=String.valueOf(i)+suit2str[j];
+            bidinput_data[i][j]=String.valueOf(i+1)+suit2str[j];
          }
       }
       bidinput_data[7][0] = "";
@@ -104,13 +100,11 @@ class MineCanvas extends Canvas{
       }
    }
    public void drawTrick(Graphics g){
-      for(int i=0;i<4;i++){
-         int x = trick_layout[0]+i*xGrid;
-         int y = trick_layout[1];
-         g.drawString(seat2str[i],x,y);
-         y += yGrid;
-         g.drawString(trick_data[i],x,y); 
-      }
+      int x = trick_layout[0];
+      int y = trick_layout[1];
+      //g.drawString(seat2str[i],x,y);
+      //y += yGrid;
+      g.drawString(trick_data,x,y); 
    }   
    public void drawBidInput(Graphics g){
       for(int i=0;i<8;i++){
@@ -122,15 +116,15 @@ class MineCanvas extends Canvas{
       }
    }
    public void drawTable(Graphics g){
-      for(int i=0;i<4;i++)for(int j=0;j<4;j++)for(int k=0;k<13;k++){
-         if (tdata[i][j][k] == '0') continue;
-         int sw=xGrid,sh=yGrid, sx=tdata[i][j][k]*sw;
-         int dx=table_layout[i][0]+k*sw;
-         int dy=table_layout[i][1]+j*sh;
-         //g.drawImage(imgButton,dx,dy,dx+sw,dy+sh,sx,0,sx+sw,sh,this);          
-         char [] c = {tdata[i][j][k]};
-         g.drawString(new String(c),dx,dy);
-      }
+      for(int i=0;i<4;i++)for(int j=0;j<4;j++)
+         for(int k=0;k<tdata[i][j].length();k++){
+            //int sw=xGrid,sh=yGrid, sx=tdata[i][j][k]*sw;
+            int dx=table_layout[i][0]+k*xGrid;
+            int dy=table_layout[i][1]+j*yGrid;
+            //g.drawImage(imgButton,dx,dy,dx+sw,dy+sh,sx,0,sx+sw,sh,this);
+            String c = tdata[i][j].substring(k,k+1);
+            g.drawString(c,dx,dy);
+         }
 
    }
 
@@ -149,23 +143,41 @@ class MineCanvas extends Canvas{
    class MouseEventHandler extends MouseAdapter {
       public void mouseClicked(MouseEvent evt){
          //System.out.print("button "+evt.getX()+","+evt.getY());
+         if((evt.getModifiers() & InputEvent.BUTTON1_MASK)
+            != InputEvent.BUTTON1_MASK) return;
          int x = evt.getX(); int y = evt.getY();
          int nx = table_layout[2][0];
          int ny = table_layout[2][1];
-         if ((x<nx) || (x>(nx+13*xGrid)))return;
-         if ((y<ny) || (y>(ny+4*yGrid)))return;
-         int pos = (x-nx)/xGrid; int suit = (y-ny)/yGrid;
-
-         if((evt.getModifiers() & InputEvent.BUTTON1_MASK)
-            == InputEvent.BUTTON1_MASK){
-            tdata[2][suit][pos] = 1;
-            repaint();
-         }          
+         
+         if ((x>nx) && (x<(nx+13*xGrid)) &&
+             (y>ny) && (y<(ny+4*yGrid))) {
+            int pos = (x-nx)/xGrid; int suit = (y-ny)/yGrid;            
+            if (pos < tdata[2][suit].length()){
+               String rank = tdata[2][suit].substring(pos,pos+1);
+               String trick = suit2str[suit]+rank;
+               System.out.println(trick);
+               //repaint();
+            }
+         } else {
+            nx = bidinput_layout[0];
+            ny = bidinput_layout[1];
+            int suit = (x-nx)/xGrid;
+            int rank = ((y-ny+yGrid)/yGrid)+1;     
+            if ((suit>=0) && (suit<=3) && (rank>=1) && (rank<=8)){
+               String bid = " p";
+               if (rank < 8){ 
+                  bid = String.valueOf(rank)+suit2str[suit];
+               } else if (suit == 2) bid = " x";
+               else if (suit == 3) bid = "xx";
+               System.out.println(bid);
+            }
+         }
       }
    }
    public void handleData(FloaterMessage msg){
       // ??? not working with substring(0,1) == "*"
-      if(msg.name.charAt(0) == '*'){
+      char msgname = msg.name.charAt(0);
+      if(msgname == '*'){
          hand_id = Integer.parseInt(msg.args[0]);
          String hands = msg.args[2];
          bidhistory = msg.args[3];
@@ -176,18 +188,25 @@ class MineCanvas extends Canvas{
          for(int i=0;i<hs.length;i++){
             System.out.println(hs[i]);
             int seat = Integer.parseInt(hs[i].substring(0,1));
+            if (i == 0) myseat = seat;
             String[] suits = hs[i].substring(2).split("\\.");
             for(int j=0;j<suits.length;j++){
+               StringBuffer sb = new StringBuffer();
                for(int k=0;k<suits[j].length();k++){
-                  tdata[i][j][k] = suits[j].charAt(k);
+                  sb.append(suits[j].charAt(k));
                }
+               int fix = (2+seat-myseat) %4;
+               tdata[fix][j] = sb.toString();
             }
          }
          repaint();
-      } else {
-         System.out.println("why i am here");
+      } else if (msgname == 'a'){
+         bidhistory = msg.args[1];
+         repaint();
+      } else if (msgname == 'p'){
+         //msg.args[1]
+         repaint();
       }
-
    }
 }//end of mineCanvas
 

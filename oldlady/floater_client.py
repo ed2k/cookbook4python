@@ -177,7 +177,6 @@ class State:
       seat = self.where_is_my_seat()
       assert seat is not None
       self.hand_id = int(handid)
-      assert seat == (self.hand_id %4)
 
       self.bid_status = BidStatus(bids)
       self.play_status = convert_str2play(plays)
