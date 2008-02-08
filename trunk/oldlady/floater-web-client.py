@@ -7,6 +7,7 @@ if __name__ == "__main__":
    import urllib,time
    url = 'http://'+website+'/postit.yaws?flproxyB='
    st = State()
+   st.clientname = 'mfrom'
    while True:
       # check message
       data = urllib.urlopen(url).read()
