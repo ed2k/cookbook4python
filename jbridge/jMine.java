@@ -31,7 +31,7 @@ class MineCanvas extends Canvas{
 
    //represent table layout
    String[][] tdata;
-   int[][] table_layout = {{150,0},{300,100},{150,200},{0,100}};
+   int[][] table_layout = {{150,30},{300,100},{150,200},{0,100}};
    // bid layout
    int[] bidinput_layout = {450,150};
    String [][] bidinput_data;
@@ -40,7 +40,7 @@ class MineCanvas extends Canvas{
    int myseat = 0;
    String bidhistory = "";
    // trick layout
-   int[] trick_layout = {150,100};
+   int[] trick_layout = {30,300};
    String trick_data = "";
    static String[] suit2str = {"S","H","D","C"};
    static String[] seat2str = {"N","E","S","W"};
@@ -78,7 +78,14 @@ class MineCanvas extends Canvas{
       FloaterMessage m = new FloaterMessage("request_seat",s);
       MessageClient.send(m.toString());
    }
-
+   public void sendBid(String bid){
+      String[] s= {String.valueOf(hand_id),bidhistory+bid};
+      MessageClient.send(new FloaterMessage("auction_status",s).toString());
+   }
+   public void sendPlay(String p){
+      String[] s= {String.valueOf(hand_id),trick_data+p};
+      MessageClient.send(new FloaterMessage("play",s).toString());
+   }  
    public void paint(Graphics g) {
       update(g);
    }
@@ -88,8 +95,8 @@ class MineCanvas extends Canvas{
          int y = bidhistory_layout[1];
          g.drawString(seat2str[i],x,y);
       }
-      int y = bidhistory_layout[1];
-      int pos = hand_id;
+      int y = bidhistory_layout[1]+yGrid;
+      int pos = (hand_id-1) % 4;
       for(int i=0;i<(bidhistory.length()/2);i++){
          if (pos > 3) {
             y += yGrid;
@@ -97,6 +104,7 @@ class MineCanvas extends Canvas{
          }
          int x = bidhistory_layout[0]+pos*xGrid;
          g.drawString(bidhistory.substring(2*i,2*i+2),x,y);
+         pos++;
       }
    }
    public void drawTrick(Graphics g){
@@ -156,6 +164,7 @@ class MineCanvas extends Canvas{
                String rank = tdata[2][suit].substring(pos,pos+1);
                String trick = suit2str[suit]+rank;
                System.out.println(trick);
+               sendPlay(trick.toLowerCase());
                //repaint();
             }
          } else {
@@ -170,6 +179,7 @@ class MineCanvas extends Canvas{
                } else if (suit == 2) bid = " x";
                else if (suit == 3) bid = "xx";
                System.out.println(bid);
+               sendBid(bid.toLowerCase());
             }
          }
       }
@@ -181,7 +191,7 @@ class MineCanvas extends Canvas{
          hand_id = Integer.parseInt(msg.args[0]);
          String hands = msg.args[2];
          bidhistory = msg.args[3];
-         String plays = msg.args[4];
+         trick_data = msg.args[4];
          System.out.println(hands);
          String[] hs = hands.split("\\|");
          System.out.println(hs.length);
@@ -256,9 +266,13 @@ class MessageClient extends TimerTask {
             if (data == -1)  break;
             else {
                if (data == 13){
+                  System.out.print("<xd>");
                   if(line.startsWith("nothing")) break; 
                   if(line == "") continue;
-                  if(line.startsWith("T4"))continue;
+                  if(line.startsWith("T4")){
+                     line = "";
+                     continue;
+                  }
                   System.out.println (line);
                   //inbox.add(new FloaterMessage(line));
                   FloaterMessage m = new FloaterMessage(line);
@@ -270,6 +284,8 @@ class MessageClient extends TimerTask {
                   System.out.println("");
                   owner.handleData(m);
                } else if (data != 10){
+                  System.out.print((char)data);
+                  //System.out.print("_");
                   line += (char)data;
                }
             }
