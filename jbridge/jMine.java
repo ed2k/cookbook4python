@@ -42,16 +42,16 @@ class MineCanvas extends Canvas{
    // trick layout
    int[] trick_layout = {30,300};
    String trick_data = "";
-   static String[] suit2str = {"S","H","D","C"};
+   static String[] suit2str = {"S","H","D","C","N"};
    static String[] seat2str = {"N","E","S","W"};
    MineCanvas() {
       tdata = new String[4][4];
       for (int i = 0;i<4;i++)for (int j = 0;j<4;j++){
                tdata[i][j] = "";
       }
-      bidinput_data = new String[8][4];
+      bidinput_data = new String[8][5];
       for (int i = 0;i<7;i++){
-         for (int j = 0;j<4;j++){
+         for (int j = 0;j<5;j++){
             bidinput_data[i][j]=String.valueOf(i+1)+suit2str[j];
          }
       }
@@ -59,6 +59,7 @@ class MineCanvas extends Canvas{
       bidinput_data[7][1] = "p";
       bidinput_data[7][2] = "x";
       bidinput_data[7][3] = "xx";      
+      bidinput_data[7][4] = ""; 
       xnum=30;ynum=16;
 //       MediaTracker tracker = new MediaTracker(this);
 //       imgButton =getToolkit().getImage("mButton.gif");
@@ -117,7 +118,7 @@ class MineCanvas extends Canvas{
    public void drawBidInput(Graphics g){
       for(int i=0;i<8;i++){
          int y = bidinput_layout[1]+i*yGrid;
-         for(int j=0;j<4;j++){
+         for(int j=0;j<5;j++){
             int x = bidinput_layout[0]+j*xGrid;
             g.drawString(bidinput_data[i][j],x,y);
          }
@@ -154,12 +155,10 @@ class MineCanvas extends Canvas{
          if((evt.getModifiers() & InputEvent.BUTTON1_MASK)
             != InputEvent.BUTTON1_MASK) return;
          int x = evt.getX(); int y = evt.getY();
-         int nx = table_layout[2][0];
-         int ny = table_layout[2][1];
          
-         if ((x>nx) && (x<(nx+13*xGrid)) &&
-             (y>ny) && (y<(ny+4*yGrid))) {
-            int pos = (x-nx)/xGrid; int suit = (y-ny)/yGrid;            
+         if (MyUtil.inRect(x,y,table_layout[2],13*xGrid,4*yGrid)) {
+            int pos = (x-table_layout[2][0])/xGrid; 
+            int suit = (y-table_layout[2][1])/yGrid;            
             if (pos < tdata[2][suit].length()){
                String rank = tdata[2][suit].substring(pos,pos+1);
                String trick = suit2str[suit]+rank;
@@ -167,20 +166,25 @@ class MineCanvas extends Canvas{
                sendPlay(trick.toLowerCase());
                //repaint();
             }
-         } else {
-            nx = bidinput_layout[0];
-            ny = bidinput_layout[1];
-            int suit = (x-nx)/xGrid;
-            int rank = ((y-ny+yGrid)/yGrid)+1;     
-            if ((suit>=0) && (suit<=3) && (rank>=1) && (rank<=8)){
-               String bid = " p";
-               if (rank < 8){ 
-                  bid = String.valueOf(rank)+suit2str[suit];
-               } else if (suit == 2) bid = " x";
-               else if (suit == 3) bid = "xx";
-               System.out.println(bid);
-               sendBid(bid.toLowerCase());
-            }
+         } else if (MyUtil.inRect(x,y,bidinput_layout,4*xGrid,8*yGrid)) {
+            int suit = (x-bidinput_layout[0])/xGrid;
+            int rank = ((y-bidinput_layout[1]+yGrid)/yGrid)+1;     
+            String bid = " p";
+            if (rank < 8){ 
+               bid = String.valueOf(rank)+suit2str[suit];
+            } else if (suit == 2) bid = " x";
+            else if (suit == 3) bid = "xx";
+            System.out.println(bid);
+            sendBid(bid.toLowerCase());
+         } else if (MyUtil.inRect(x,y,table_layout[0],13*xGrid,4*yGrid)){
+            System.out.println("in 0");
+            int pos = (x-table_layout[0][0])/xGrid; 
+            int suit = (y-table_layout[0][1])/yGrid;            
+            if (pos < tdata[0][suit].length()){
+               String rank = tdata[0][suit].substring(pos,pos+1);
+               String trick = suit2str[suit]+rank;
+               sendPlay(trick.toLowerCase());    
+            }       
          }
       }
    }
@@ -196,16 +200,16 @@ class MineCanvas extends Canvas{
          String[] hs = hands.split("\\|");
          System.out.println(hs.length);
          for(int i=0;i<hs.length;i++){
-            System.out.println(hs[i]);
+            //System.out.println(hs[i]);
             int seat = Integer.parseInt(hs[i].substring(0,1));
             if (i == 0) myseat = seat;
+            int fix = (2+seat-myseat) %4;
             String[] suits = hs[i].substring(2).split("\\.");
             for(int j=0;j<suits.length;j++){
                StringBuffer sb = new StringBuffer();
                for(int k=0;k<suits[j].length();k++){
                   sb.append(suits[j].charAt(k));
                }
-               int fix = (2+seat-myseat) %4;
                tdata[fix][j] = sb.toString();
             }
          }
@@ -214,7 +218,7 @@ class MineCanvas extends Canvas{
          bidhistory = msg.args[1];
          repaint();
       } else if (msgname == 'p'){
-         //msg.args[1]
+         trick_data = msg.args[1];
          repaint();
       }
    }
@@ -266,7 +270,7 @@ class MessageClient extends TimerTask {
             if (data == -1)  break;
             else {
                if (data == 13){
-                  System.out.print("<xd>");
+                  //System.out.print("<xd>");
                   if(line.startsWith("nothing")) break; 
                   if(line == "") continue;
                   if(line.startsWith("T4")){
@@ -284,7 +288,7 @@ class MessageClient extends TimerTask {
                   System.out.println("");
                   owner.handleData(m);
                } else if (data != 10){
-                  System.out.print((char)data);
+                  //System.out.print((char)data);
                   //System.out.print("_");
                   line += (char)data;
                }
@@ -385,4 +389,9 @@ class MyUtil {
    public static String join(String[] ss,String sep){
       return join(ss,0, ss.length,sep);
    }   
+   public static boolean inRect(int x, int y, int[] p0,int dx,int dy){
+      int x0 = p0[0];
+      int y0 = p0[1];
+      return (x>x0) && (x< (x0+dx)) && (y>y0) && (y< (y0+dy));
+   }
 }
