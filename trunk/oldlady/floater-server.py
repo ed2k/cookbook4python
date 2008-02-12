@@ -10,7 +10,7 @@ def get_current_seated_msg(state):
    return msg   
 
 def next_step(state):
-   print '\r',state.table_seated,state.deal,
+   print state.table_seated,state.deal
    if state.all_seated() and state.deal is None:
       # deal new hand
       state.hand_id += 1
@@ -86,6 +86,7 @@ if __name__ == "__main__":
    s.listen(5)
    timeout = 5
    st = State()
+   st.clientname = "tableserver"
    while True:
       infd = [s]+ st.clients_conn
       fds = select.select(infd,[],[],timeout)
