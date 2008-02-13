@@ -111,9 +111,18 @@ class MineCanvas extends Canvas{
    public void drawTrick(Graphics g){
       int x = trick_layout[0];
       int y = trick_layout[1];
+      int pos = 0;
       //g.drawString(seat2str[i],x,y);
-      //y += yGrid;
-      g.drawString(trick_data,x,y); 
+      for(int i=0;i<(trick_data.length()/2);i++){
+         if (pos > 3) {
+            y += yGrid;
+            x = trick_layout[0];
+            pos = 0;
+         } 
+         x += xGrid;
+         g.drawString(trick_data.substring(2*i,2*i+2),x,y); 
+         pos++;
+      }
    }   
    public void drawBidInput(Graphics g){
       for(int i=0;i<8;i++){
@@ -129,7 +138,7 @@ class MineCanvas extends Canvas{
          for(int k=0;k<tdata[i][j].length();k++){
             //int sw=xGrid,sh=yGrid, sx=tdata[i][j][k]*sw;
             int dx=table_layout[i][0]+k*xGrid;
-            int dy=table_layout[i][1]+j*yGrid;
+            int dy=table_layout[i][1]+yGrid+j*yGrid;
             //g.drawImage(imgButton,dx,dy,dx+sw,dy+sh,sx,0,sx+sw,sh,this);
             String c = tdata[i][j].substring(k,k+1);
             g.drawString(c,dx,dy);
