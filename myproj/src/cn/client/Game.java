@@ -121,28 +121,28 @@ public class Game {
 
 			// ask the current player his bid.
 			do {
-				try {
+
 					b = p.doBid(); 
 					bids.addBid(b);
 					ok = true;
-				}
-				catch(BadTypeException exp1){
-					cat.warn("[Game] BadTypeException caught: "+exp1);
-					// TODO: add a method to send an error message.
-					// loop until we get a correct bid
-					ok = false;
-				}
+
+//				catch(BadTypeException exp1){
+//					cat.warn("[Game] BadTypeException caught: "+exp1);
+//					// TODO: add a method to send an error message.
+//					// loop until we get a correct bid
+//					ok = false;
+//				}
 //				catch(ImpossibleActionException exp){
 //				cat.warn("[Game] ImpossibleActionException: "+exp);
 //				// TODO: add a method to send an error message.
 //				// loop until we get a correct bid
 //				ok = false;
 //				}
-				catch(Exception exp2){
-					// for instance a Missing Resource Exception 
-					cat.fatal("[Game] Fatal exception caught: "+exp2);
-					//System.exit(-1);
-				}
+//				catch(Exception exp2){
+//					// for instance a Missing Resource Exception 
+//					cat.fatal("[Game] Fatal exception caught: "+exp2);
+//					//System.exit(-1);
+//				}
 			} while (! ok);
 
 			// next player

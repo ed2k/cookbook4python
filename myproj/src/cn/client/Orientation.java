@@ -18,10 +18,10 @@ public class Orientation {
 	}
 
 	public int getOrientation() { return value; }
-	public boolean isPartner( int v ) throws BadTypeException {
+	public boolean isPartner( int v )  {
 		cat.debug("isPartner(): is "+v+" partner of "+value+" ?");
 		if ((v < NORTH) || (v > WEST)) 
-			throw new BadTypeException("Incorrect orientation value: "+v);
+			return false;
 		if ( ((value == NORTH) || (value == SOUTH)) && 
 				((v == NORTH) || (v == SOUTH)))
 			return true;
@@ -39,13 +39,9 @@ public class Orientation {
 	public boolean isPartner(Orientation o) {
 		cat.debug("> isPartner(): o="+o.toString());
 		boolean partner = false;
-		try {
+
 			partner = isPartner(o.getOrientation());
-		}
-		catch(BadTypeException exp){
-			cat.fatal("This should not happen: this orientation has an incorrect value: "+exp);
-			//System.exit(-1);
-		}
+
 		cat.debug("< isPartner(): "+partner);
 		return partner;
 	}
@@ -61,9 +57,9 @@ public class Orientation {
 		return partner;
 	}
 
-	public static int next(int value) throws BadTypeException {
+	public static int next(int value)  {
 		cat.debug("next(): value= "+value);
-		if ((value < NORTH) || (value > WEST)) throw new BadTypeException("Incorrect orientation value: "+value);
+		if ((value < NORTH) || (value > WEST)) return NORTH;
 		if (value == WEST) return NORTH;
 		return (value+1);
 	}
@@ -74,26 +70,23 @@ public class Orientation {
 	public Orientation next(){
 		cat.debug("> next(): val="+value);
 		Orientation o = null;
-		try {
+
 			int next_val = Orientation.next(value); 
 			o = new Orientation(next_val);
-		}
-		catch(BadTypeException exp){
-			cat.fatal("Should never occur: "+exp);
-			//System.exit(-1);
-		}
+
+
 		cat.debug("< next(): "+o.getOrientation());
 		return o;
 	} 
 
-	public static String show(International intl,int value) {
+	public static String show(int value) {
 		cat.debug("> show()");
 		String s = "";
 		switch(value){
-		case NORTH: s = intl.getString("NORTH"); break;
-		case SOUTH: s = intl.getString("SOUTH"); break;
-		case EAST: s = intl.getString("EAST"); break;
-		case WEST: s = intl.getString("WEST"); break;
+		case NORTH: s = "NORTH"; break;
+		case SOUTH: s = "SOUTH"; break;
+		case EAST: s = "EAST"; break;
+		case WEST: s = "WEST"; break;
 		default:
 			cat.error("Unexpected value for orientation: "+value);
 		throw new AssertionError();
@@ -102,8 +95,8 @@ public class Orientation {
 		return s;
 	}
 
-	public String show(International intl)  {
-		return show(intl,this.value);
+	public String show()  {
+		return show(this.value);
 	}
 
 	public String toString(){

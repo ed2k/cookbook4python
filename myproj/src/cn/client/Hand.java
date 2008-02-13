@@ -1,6 +1,5 @@
 package cn.client;
 
-import java.util.List;
 import java.util.Vector;
 import java.util.Iterator;
 import java.util.Collections;
@@ -24,6 +23,19 @@ public class Hand {
 		cards = new Vector(Hand.NUMBER);
 		playedCards = new boolean[Hand.NUMBER];
 		cat.debug("<Hand()");
+	}
+	/*
+	 * parse PBN format AKQ.JT.98.765432
+	 */
+	public Hand(String h){
+		this();
+		String[] suits = h.split("\\.");
+		for(int j=0;j<suits.length;j++){
+			for(int k=0;k<suits[j].length();k++){
+				Card c = new Card(4-j, Card.rank(suits[j].charAt(k)));
+				addCard(c);
+			}
+		}
 	}
 
 	public void resetHand(){
@@ -90,17 +102,17 @@ public class Hand {
 	 * @param intl language to use
 	 * @throws MissingResourceException if we cannot find the correct translation for the cards.
 	 */
-	public String showHand(International intl) {
+	public String showHand() {
 		cat.debug("> showHand()");
 		String display = "";
 
 		for (int i=Card.CLUBS; i<=Card.SPADES; i++){
 			Vector colour = selectColour(i);
 			Iterator j = colour.iterator();
-			display += Card.showCardColour(intl,i) + " ";
+			display += Card.showCardColour(i) + " ";
 			while (j.hasNext()){
 				Card c = (Card) j.next();
-				display += c.showCardValue(intl);
+				display += c.showCardValue();
 				display += " ";
 			}
 			display += "\n";
