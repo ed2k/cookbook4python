@@ -33,23 +33,23 @@ public class Bid {
 	public Bid(int b){
 		value = b;
 	}
-	public void setValue(int v) throws BadTypeException {
+	public void setValue(int v) {
 		if ((v != PASS) && (v != IGNORED) && ((v < MIN_BID) || (v >MAX_BID)))
-			throw new BadTypeException("Impossible bid value.");
+			return;
 		this.value = v;
 	}
 
-	public void setSuit(int s) throws BadTypeException {
+	public void setSuit(int s)  {
 		if ((s != IGNORED) && ((s < NOTRUMP) || (s > Card.SPADES)))
-			throw new BadTypeException("Impossible bid suit");
+			return;
 		if ((value != PASS) && (value != IGNORED) && (s == IGNORED))
-			throw new BadTypeException("When value is between "+MIN_BID+" and "+MAX_BID+", the suit cannot be Ignored. Reset the value first.");
+			return;
 		this.suit = s;
 	}
 
-	public void setInsult(int i) throws BadTypeException {
+	public void setInsult(int i)  {
 		if ((i != DOUBLE) && (i != REDOUBLE) && (i != IGNORED))
-			throw new BadTypeException("Impossible bid insult.");
+			return;
 		this.insult = i;
 	}
 
@@ -61,26 +61,26 @@ public class Bid {
 		return "value="+value+" suit="+suit+" insult="+insult+" ";
 	}
 
-	public static String show(International intl, int value, int suit, int insult) {
+	public static String show( int value, int suit, int insult) {
 		cat.debug("> Bid.show() val="+value+" suit="+suit+" insult="+insult);
-		if (value == PASS) return intl.getString("PASS");
+		if (value == PASS) return ("PASS");
 
 		String s = "";
 		if (value != IGNORED) s = s + Integer.toString(value);
 		if (suit != IGNORED){
-			if (suit == NOTRUMP) s = s+intl.getString("NOTRUMP_SHORT");	
-			else s = s + Card.showCardColour(intl,suit);
+			if (suit == NOTRUMP) s = s+("NOTRUMP_SHORT");	
+			else s = s + Card.showCardColour(suit);
 		}
 		if (insult != IGNORED){
-			if (insult == DOUBLE) s = s + intl.getString("DOUBLE");
-			if (insult == REDOUBLE) s = s + intl.getString("REDOUBLE");
+			if (insult == DOUBLE) s = s + ("DOUBLE");
+			if (insult == REDOUBLE) s = s + ("REDOUBLE");
 		}
 		cat.debug("< Bid.show(): "+s);
 		return s;
 	}
 
-	public String show(International intl) {
-		return Bid.show(intl,this.value,this.suit,this.insult);
+	public String show() {
+		return Bid.show(this.value,this.suit,this.insult);
 	}
 	public boolean is_pass(){
 		return value == PASS;

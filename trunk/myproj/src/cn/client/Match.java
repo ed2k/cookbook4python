@@ -85,14 +85,10 @@ public class Match {
 	public void nextGame() {
 		cat.debug("> nextGame()");
 
-		try {
 			vuln.setVulnerability(vuln.next());
 			dealer = dealer.next();
-		}
-		catch(BadTypeException exp){
-			cat.fatal("Unexpected exception caught: "+exp);
-			//System.exit(-1);
-		}
+
+
 		cat.debug("< nextGame(): vuln="+vuln+" dealer="+dealer);
 	}
 }

@@ -31,20 +31,14 @@ public class Dealer {
      * Call this only once, to instantiate the bridge cards.
      */
     private void initDeck(){
-	cat.debug("> initDeck()");
-	try {
-	    for (int i=Card.CLUBS;i<=Card.SPADES;i++){
-		for (int j=1;j<=13;j++){
-		    Card c = new Card(j,i);
-		    deck.add(c);
+    	cat.debug("> initDeck()");
+    	for (int i=Card.CLUBS;i<=Card.SPADES;i++){
+			for (int j=1;j<=13;j++){
+				Card c = new Card(j,i);
+				deck.add(c);
+			}
 		}
-	    }
-	}
-	catch(BadTypeException exp){
-	    cat.fatal("Unexpected exception thrown: "+exp.toString());
-	    //System.exit(0);
-	}
-	cat.debug("< initDeck()");
+    	cat.debug("< initDeck()");
     }
 
     /**

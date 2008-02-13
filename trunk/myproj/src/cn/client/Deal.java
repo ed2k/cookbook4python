@@ -227,7 +227,7 @@ public class Deal {
 		Bid b, bidToPlay;
 		bidToPlay = new Bid();
 
-		try {
+
 			while ((i >= 0) && (found == false)){
 				cat.debug("i="+i);
 				b = (Bid) bids.get(i);
@@ -252,11 +252,7 @@ public class Deal {
 				cat.debug("< getBidToPlay(): Nobody has made a bid yet: null.");
 				return null;
 			}
-		}
-		catch(BadTypeException exp){
-			cat.fatal("Unexpected exception caught: "+exp.toString());
-			//System.exit(-1);
-		}
+
 
 		cat.debug("< getBidToPlay(): bidToPlay="+bidToPlay.toString());
 		return bidToPlay; //TO CHANGE

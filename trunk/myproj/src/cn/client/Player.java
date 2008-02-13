@@ -93,8 +93,9 @@ public class Player {
 	 * @throws BadTypeException if the player specifies an incorrect value for the bid
 	 * @throws MissingResourceException if we cannot print out the correct strings in the given language
 	 */
-	public  Bid doBid() 
-	throws BadTypeException{ return null;}
+	public  Bid doBid() {
+		return null;
+	}
 
 	/**
 	 * @return the card the player plays.

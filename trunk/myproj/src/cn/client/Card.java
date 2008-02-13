@@ -11,7 +11,7 @@ import cn.client.Category;
  */
 public class Card implements Comparable{
 	static Category cat = Category.getInstance("");
-
+	static String[] SUIT2STR = {"C","D","H","S","N"}; 
 	/**
 	 * The various bridge colours. They are set in the bridge order.
 	 */
@@ -37,7 +37,6 @@ public class Card implements Comparable{
 	private int value = 1;
 	private int colour = CLUBS;
 
-	// TODO: add image file for each card
 
 	/**
 	 * Creates a card.
@@ -45,14 +44,13 @@ public class Card implements Comparable{
 	 * @param colour the suit of the card.
 	 * @throws BadTypeException if you set wrong input values.
 	 */ 
-	public Card(int value, int colour) 
-	throws BadTypeException {
+	public Card(int value, int colour) {
 		cat.debug("> Card(): value = " + value + " colour = "+ colour);
 
 		if ((value < MIN_VALUE) || (value > MAX_VALUE))
-			throw new BadTypeException("Unknown card value");
+			return;
 		if ((colour < CLUBS) || (colour > SPADES))
-			throw new BadTypeException("Unknown card colour");
+			return;
 		this.value = value;
 		this.colour = colour;
 		cat.debug("< Card()");
@@ -86,11 +84,19 @@ public class Card implements Comparable{
 		if (value == Card.ACE) return 4;
 		return 0;
 	}
-
+	public static int rank(char pbn){
+		char c = pbn;
+		if (c=='A') return ACE;
+		if (c=='K') return KING;
+		if (c=='Q') return QUEEN;
+		if (c=='J') return JACK;
+		if (c=='T') return 10;
+		return (c - '0');
+	}
 	/*
 	 * @return number of the card (in letters).
 	 */
-	public static String showCardValue(International intl, int value) {
+	public static String showCardValue(int value) {
 		cat.debug("> showCardValue(): value = "+ value);
 		String s = "";
 		if ( value < 11) {
@@ -99,13 +105,13 @@ public class Card implements Comparable{
 		}
 
 		if (value == Card.ACE)
-			s = intl.getString("ACE_SHORT");
+			s = "ACE_SHORT";
 		if (value == Card.JACK)
-			s = intl.getString("JACK_SHORT");
+			s = "JACK_SHORT";
 		if (value == Card.QUEEN)
-			s = intl.getString("QUEEN_SHORT");
+			s = ("QUEEN_SHORT");
 		if (value == Card.KING)
-			s = intl.getString("KING_SHORT");
+			s = ("KING_SHORT");
 
 		if (! s.equals(""))
 			cat.debug("< showCardValue(): value = "+value+" string= "+s);
@@ -114,29 +120,29 @@ public class Card implements Comparable{
 		return s;
 	}
 
-	public String showCardValue(International intl)  {
-		return showCardValue(intl,this.value);
+	public String showCardValue()  {
+		return showCardValue(this.value);
 	}
 
 	/**
 	 * @return colour of the card, in a short string. (abreviated). Depends on your country.
 	 */
-	public static String showCardColour(International intl, int colour) {
+	public static String showCardColour(int colour) {
 		cat.debug("> showCardColour(): colour = "+colour);
 		String s = "";
 
 		switch(colour){
 		case CLUBS:
-			s = intl.getString("CLUBS_SHORT");
+			s = ("CLUBS_SHORT");
 			break;
 		case DIAMOND:
-			s = intl.getString("DIAMOND_SHORT");
+			s = ("DIAMOND_SHORT");
 			break;
 		case HEART:
-			s = intl.getString("HEART_SHORT");
+			s = ("HEART_SHORT");
 			break;
 		case SPADES:
-			s = intl.getString("SPADES_SHORT");
+			s = ("SPADES_SHORT");
 			break;
 		default:
 			cat.error("Unknown tag");
@@ -147,8 +153,8 @@ public class Card implements Comparable{
 		return s;
 	}
 
-	public String showCardColour(International intl)  {
-		return showCardColour(intl,this.colour);
+	public String showCardColour()  {
+		return showCardColour(this.colour);
 	}
 
 	/**
