@@ -5,6 +5,7 @@ import java.io.*;
 import java.net.*; 
 import java.text.DateFormat;
 import java.lang.*;
+import cn.client.*;
 
 
 //Panel to hold buttons leds and mine field
@@ -109,20 +110,26 @@ class MineCanvas extends Canvas{
       }
    }
    public void drawTrick(Graphics g){
-      int x = trick_layout[0];
+
+		int dealer = hand_id % 4;
+		Deal deal = new Deal(new Orientation(dealer));
+		for(int i=0;i<bidhistory.length()/2;i++){
+			Bid bid = new Bid(bidhistory.substring(2*i,2*i+2));
+			deal.bid(bid);
+		}
+		int dummyseat = (2+deal.dummy.getOrientation()-myseat)%4;
+		deal.hands[myseat] = new Hand(tdata[2]);
+		deal.hands[deal.dummy.getOrientation()] = new Hand(tdata[dummyseat]);
+
+      int x = trick_layout[0]+dealer*xGrid;
       int y = trick_layout[1];
-      int pos = 0;
-      //g.drawString(seat2str[i],x,y);
-      for(int i=0;i<(trick_data.length()/2);i++){
-         if (pos > 3) {
-            y += yGrid;
-            x = trick_layout[0];
-            pos = 0;
-         } 
-         x += xGrid;
-         g.drawString(trick_data.substring(2*i,2*i+2),x,y); 
-         pos++;
-      }
+		for(int i=0;i<trick_data.length()/2;i++){
+			String card = trick_data.substring(2*i,2*i+2);
+                        g.drawString(trick_data.substring(2*i,2*i+2),x,y); 
+			deal.play_card(new Card(card));
+			if(deal.currenTrickCompleted())y+= yGrid;
+			x = trick_layout[0]+deal.player.getOrientation()*xGrid;
+		}
    }   
    public void drawBidInput(Graphics g){
       for(int i=0;i<8;i++){
@@ -151,7 +158,7 @@ class MineCanvas extends Canvas{
       drawBidInput(g);
       drawTable(g);
       drawBidHistory(g);
-      drawTrick(g);
+      if (trick_data.length()>0)drawTrick(g);
    }
    
    public Dimension getPreferredSize() {
@@ -382,25 +389,4 @@ class FloaterMessage {
       return packmsg(name, args);
    }
 }
-class MyUtil {
-   public static String join(String[] strings,int start, int end, String separator) {
-      StringBuffer buf = new StringBuffer();
-      for (int i=start;i<end-1;i++){
-         buf.append(strings[i]);
-         buf.append(separator);
-      }
-      buf.append(strings[end-1]);
-      return buf.toString();
-   }
-   public static String join(String[] ss,int start,String sep){
-      return join(ss,start, ss.length,sep);
-   }
-   public static String join(String[] ss,String sep){
-      return join(ss,0, ss.length,sep);
-   }   
-   public static boolean inRect(int x, int y, int[] p0,int dx,int dy){
-      int x0 = p0[0];
-      int y0 = p0[1];
-      return (x>x0) && (x< (x0+dx)) && (y>y0) && (y< (y0+dy));
-   }
-}
+
