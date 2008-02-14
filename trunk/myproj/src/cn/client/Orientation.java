@@ -12,9 +12,7 @@ public class Orientation {
 	private int value = NORTH;
 
 	public Orientation( int value) {
-		cat.debug("> Orientation(): value = "+value);
 		this.value = value %4;
-		cat.debug("< Orientation()");
 	}
 
 	public int getOrientation() { return value; }

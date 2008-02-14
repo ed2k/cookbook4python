@@ -27,17 +27,16 @@ public class Hand {
 	/*
 	 * parse PBN format AKQ.JT.98.765432
 	 */
-	public Hand(String h){
+	public Hand(String[] suits) {
+		// TODO Auto-generated constructor stub
 		this();
-		String[] suits = h.split("\\.");
 		for(int j=0;j<suits.length;j++){
 			for(int k=0;k<suits[j].length();k++){
 				Card c = new Card(4-j, Card.rank(suits[j].charAt(k)));
 				addCard(c);
 			}
-		}
+		}		
 	}
-
 	public void resetHand(){
 		cat.debug("> resetHand()");
 		cards.clear();
