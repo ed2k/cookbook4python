@@ -30,7 +30,7 @@ public class Bid {
 		suit = IGNORED;
 		insult = IGNORED;
 	}
-	Bid(String b){
+   public Bid(String b){
 		this();
 		String bid = b.toLowerCase();
 		char first = b.charAt(0);

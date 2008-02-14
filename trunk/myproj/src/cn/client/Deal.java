@@ -35,18 +35,18 @@ public class Deal {
 	 */
 	Orientation dealer;
 	Vector bids;
-	Orientation player;
+	public Orientation player;
 	Bid contract;
 	int passes;
 	Orientation contractor;
 	Orientation doubler;
 	Orientation redoubler;
 	Orientation declarer;
-	Orientation dummy;
+   public Orientation dummy;
 	Trick trick;
 	boolean opening_lead;
 	int tricks_taken[];
-	Hand hands[];
+	public Hand hands[];
 
 	public Deal(Orientation dealer){
 		cat.debug("> BidStage(): dealer="+dealer.toString());

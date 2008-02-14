@@ -15,5 +15,10 @@ public class MyUtil {
 	}
 	public static String join(String[] ss,String sep){
 		return join(ss,0, ss.length,sep);
-	}   
+	}  
+   public static boolean inRect(int x, int y, int[] p0,int dx,int dy){
+      int x0 = p0[0];
+      int y0 = p0[1];
+      return (x>x0) && (x< (x0+dx)) && (y>y0) && (y< (y0+dy));
+   } 
 }
