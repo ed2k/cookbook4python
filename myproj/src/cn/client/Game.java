@@ -105,7 +105,7 @@ public class Game {
 			boolean ok = false;
 
 			// get the current player.
-			switch(current.getOrientation()){
+			switch(current.idx()){
 			case Orientation.NORTH: p = currentMatch.getNorth();  break;
 			case Orientation.EAST: p = currentMatch.getEast(); break;
 			case Orientation.SOUTH: p = currentMatch.getSouth(); break;
@@ -162,7 +162,7 @@ public class Game {
 
 	public String toString(){
 		String s = currentMatch.toString();
-		if (leader != null) s += " leader="+leader.getOrientation();
+		if (leader != null) s += " leader="+leader.idx();
 		cat.debug(s);
 		return s;
 	}

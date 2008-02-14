@@ -48,6 +48,7 @@ public class Trick {
 		this.player = player;
 		this.trump = trump;
 		leader = player;
+		winner = player;
 	}
 
 	public void setStart(Orientation s) { player =s ; }
@@ -57,16 +58,16 @@ public class Trick {
 	 * return if the trick requires more plays
 	 */
 	public boolean play_card(Card card){
-		cards[player.getOrientation()] = card;
-		Card win = cards[winner.getOrientation()];
-		if(lead == null){
-			lead = card;
-			winner = player;
-		} else if(Card.compare(card,win,trump) > 0){
+		cards[player.idx()] = card;
+		//Card win = cards[winner.idx()];
+		//no need to remember lead(the first card)
+		//we always compare to the winner's card
+		Card lead = cards[winner.idx()];			
+		if(Card.compare(card,lead,trump) > 0){		
 			winner = player;
 		}
 		player = player.next();
-		return cards[player.getOrientation()] == null;
+		return cards[player.idx()] == null;
 	}
 	/**
 	 * This checks that the card can be played. If so, the card is marked played and added to the lift.
@@ -160,7 +161,7 @@ public class Trick {
 
 	public boolean completed() {
 		// TODO Auto-generated method stub
-		return cards[player.getOrientation()] != null;
+		return cards[player.idx()] != null;
 	}
 
 }

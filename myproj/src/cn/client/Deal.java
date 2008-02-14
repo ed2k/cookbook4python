@@ -45,7 +45,7 @@ public class Deal {
    public Orientation dummy;
 	Trick trick;
 	boolean opening_lead;
-	int tricks_taken[];
+	int tricks_taken[];//count how many trick each team win
 	public Hand hands[];
 
 	public Deal(Orientation dealer){
@@ -56,6 +56,7 @@ public class Deal {
 		bids = new Vector();
 		player = dealer; // dealer has not made his bid yet.
 		trick = null;
+		tricks_taken = new int[2];
 	}
 	public boolean bid(Bid bid){
 		if(bid.is_pass())passes ++;
@@ -86,7 +87,7 @@ public class Deal {
 		Iterator i = bids.iterator();
 		while(i.hasNext()){
 			Bid b = (Bid)i.next();
-			if(p.team()==contractor.team()){
+			if(p.team().idx()==contractor.team().idx()){
 				if(b.getSuit()==contract.getSuit())	return p;
 			}
 			p = p.next();
@@ -106,18 +107,18 @@ public class Deal {
 	public boolean legal_card(Card card){
 		if (trick.lead == null) return true;
 		if (trick.lead.getColour()==card.getColour()) return true;
-		Vector v = hands[player.getOrientation()].selectColour(card.getColour());
+		Vector v = hands[player.idx()].selectColour(card.getColour());
 		if (v.isEmpty())return true;
 		return false;
 	}
 	public void play_card(Card card){
-		hands[player.getOrientation()].playCard(card);
+		if(hands[player.idx()]!=null)hands[player.idx()].playCard(card);
 		trick.play_card(card);
 		player = player.next();
 		opening_lead = true;
 	}
 	public void next_trick(){
-		tricks_taken[trick.winner.team().getOrientation()] += 1;
+		tricks_taken[trick.winner.team().idx()] += 1;
 		if (tricks_taken[0]+tricks_taken[1] < 13){
 			player = trick.winner;
 			trick = new Trick(trick.winner,contract);
