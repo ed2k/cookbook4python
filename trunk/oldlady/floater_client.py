@@ -240,6 +240,7 @@ class State:
       # first lead is over, everybody else see the dummy's hand
       
       for c in self.play_status:
+         #print 'play',deal.player,f2o_card(c)
          deal.play_card(f2o_card(c))
          if deal.trick.cards[deal.player] is not None:
             ai.trick_complete()
