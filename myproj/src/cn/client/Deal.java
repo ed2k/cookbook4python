@@ -33,9 +33,9 @@ public class Deal {
 	/**
 	 * The dealer is the first one to make a bid.
 	 */
-	private Orientation dealer;
-	private Vector bids;
-	private Orientation player;
+	Orientation dealer;
+	Vector bids;
+	Orientation player;
 	Bid contract;
 	int passes;
 	Orientation contractor;
@@ -55,7 +55,7 @@ public class Deal {
 		player = dealer;
 		bids = new Vector();
 		player = dealer; // dealer has not made his bid yet.
-		cat.debug("< BidStage()");
+		trick = null;
 	}
 	public boolean bid(Bid bid){
 		if(bid.is_pass())passes ++;
@@ -86,8 +86,10 @@ public class Deal {
 		Iterator i = bids.iterator();
 		while(i.hasNext()){
 			Bid b = (Bid)i.next();
-			if(p.team()!=contractor.team())continue;
-			return p;
+			if(p.team()==contractor.team()){
+				if(b.getSuit()==contract.getSuit())	return p;
+			}
+			p = p.next();
 		}
 		return null;
 	}
@@ -228,30 +230,30 @@ public class Deal {
 		bidToPlay = new Bid();
 
 
-			while ((i >= 0) && (found == false)){
-				cat.debug("i="+i);
-				b = (Bid) bids.get(i);
-				if ((b.getValue() != Bid.IGNORED) &&
-						(b.getValue() != Bid.PASS)) {
-					cat.debug("Found the bid we're going to play");
-					bidToPlay.setValue(b.getValue());
-					bidToPlay.setSuit(b.getSuit());
-					if (bidToPlay.getInsult()==Bid.IGNORED) bidToPlay.setInsult(b.getInsult());
-					found = true;
-				} else {
-					if (b.getInsult() != Bid.IGNORED) {
-						cat.debug("Recording the insult...");
-						bidToPlay.setInsult(b.getInsult());
-					}
+		while ((i >= 0) && (found == false)){
+			cat.debug("i="+i);
+			b = (Bid) bids.get(i);
+			if ((b.getValue() != Bid.IGNORED) &&
+					(b.getValue() != Bid.PASS)) {
+				cat.debug("Found the bid we're going to play");
+				bidToPlay.setValue(b.getValue());
+				bidToPlay.setSuit(b.getSuit());
+				if (bidToPlay.getInsult()==Bid.IGNORED) bidToPlay.setInsult(b.getInsult());
+				found = true;
+			} else {
+				if (b.getInsult() != Bid.IGNORED) {
+					cat.debug("Recording the insult...");
+					bidToPlay.setInsult(b.getInsult());
 				}
-				i--;
-			} // end of while
-			if ((bidToPlay.getValue() == Bid.IGNORED) && 
-					(bidToPlay.getSuit() == Bid.IGNORED) &&
-					(bidToPlay.getInsult() == Bid.IGNORED)) {
-				cat.debug("< getBidToPlay(): Nobody has made a bid yet: null.");
-				return null;
 			}
+			i--;
+		} // end of while
+		if ((bidToPlay.getValue() == Bid.IGNORED) && 
+				(bidToPlay.getSuit() == Bid.IGNORED) &&
+				(bidToPlay.getInsult() == Bid.IGNORED)) {
+			cat.debug("< getBidToPlay(): Nobody has made a bid yet: null.");
+			return null;
+		}
 
 
 		cat.debug("< getBidToPlay(): bidToPlay="+bidToPlay.toString());
@@ -322,5 +324,9 @@ public class Deal {
 		}
 		cat.debug("< toString()");
 		return "Dealer = "+dealer.toString()+ " bids="+bids;
+	}
+	public boolean currenTrickCompleted() {
+		// TODO Auto-generated method stub
+		return trick.completed();
 	}
 }

@@ -30,6 +30,19 @@ public class Bid {
 		suit = IGNORED;
 		insult = IGNORED;
 	}
+	Bid(String b){
+		this();
+		String bid = b.toLowerCase();
+		char first = b.charAt(0);
+		String second = b.substring(1,2);
+		if (bid.startsWith(" p")) value = PASS;
+		else if (bid.startsWith(" x")) insult = DOUBLE;
+		else if (bid.startsWith("xx")) insult = REDOUBLE;
+		else {
+			value = first - '0';
+			suit = Card.str2suit(second);
+		}
+	}
 	public Bid(int b){
 		value = b;
 	}

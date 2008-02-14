@@ -1,11 +1,7 @@
 package cn.client;
 
-import java.util.Iterator;
-import java.util.Vector;
-
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.*;
-
 //import com.google.gwt.user.client.ui.ClickListener;
 //import com.google.gwt.user.client.ui.Label;
 //import com.google.gwt.user.client.ui.RootPanel;
@@ -52,7 +48,8 @@ public class bridge implements EntryPoint {
 class Panels extends Composite{
 	DockPanel dock ;
 	Match currentMatch = null;
-
+	TabPanel tabs;
+	Grid playGrid;
 	HTML debug= new HTML("");
 	HorizontalSplitPanel hSplit;
 	VerticalPanel[] dockHand;
@@ -66,9 +63,6 @@ class Panels extends Composite{
 	String [][] tdata;
 	//MessageClient message_client;
 	public void test(){
-		String[] s = {"AKQJT98765432","","AQ","T987654"};
-		tdata[2] = s;
-		tdata[1] = s;
 		show_4hands();
 	}
 	public void debug(String s){
@@ -84,8 +78,14 @@ class Panels extends Composite{
 			tdata[i][j] = "";
 		}
 
-		HTML contents = new HTML("N  E  S  W  ");
-		ScrollPanel scroller = new ScrollPanel(contents);
+		String seat ="NESW";
+		playGrid = new Grid(14,4);
+			for (int c = 0; c < 4; ++c) {
+				HTML b = new HTML(seat.substring(c,c+1));
+				playGrid.setWidget(0, c, b);
+			}
+		ScrollPanel scroller = new ScrollPanel(playGrid);
+		scroller.setPixelSize(125,125);
 		//scroller.setStyleName("ks-layouts-Scroller");
 
 		DockPanel dock = new DockPanel();
@@ -112,16 +112,32 @@ class Panels extends Composite{
 		dock.setCellHorizontalAlignment(dockHand[0], DockPanel.ALIGN_CENTER);
 		dock.setCellHorizontalAlignment(dockHand[2], DockPanel.ALIGN_CENTER);
 
-
 		VerticalPanel vp = new VerticalPanel();
 
-		Grid grid = new Grid(4, 4);
-		for (int r = 0; r < 4; ++r) {
-			for (int c = 0; c < 4; ++c) {
-				//grid.setWidget(r, c, images.gwtLogo().createImage());
-				grid.setWidget(r, c, new Button(""));
-			}
-		}
+		vp.add(dock);
+		tabs = new TabPanel();
+		showBidInputPanel();
+		//tabs.add(grid, "Bids");
+		tabs.add(vp, "Table");
+		//tabs.add(grid, "play");
+		tabs.setWidth("100%");
+		tabs.selectTab(1);
+
+		hSplit = new HorizontalSplitPanel();
+		hSplit.setLeftWidget(tabs);
+		//hSplit.setRightWidget(debug);
+		initWidget(hSplit);
+		hSplit.setSize("100%", "650px");
+
+		//message_client = new MessageClient(this);
+		//message_client.scheduleRepeating(1000);
+		String[] s = {"N"};
+		FloaterMessage m = new FloaterMessage("request_seat",s);
+		MessageClient.send(m.toString(),this);		
+	}
+
+	void showBidInputPanel(){
+		VerticalPanel vp = new VerticalPanel();
 		ClickListener bidclick = new ClickListener() {
 			public void onClick(Widget sender) {
 				Button b = (Button)sender;
@@ -145,32 +161,30 @@ class Panels extends Composite{
 				grid2.setWidget(r, c, b);
 				b.addClickListener(bidclick);
 			}
-		}    
-		vp.add(dock);vp.add(grid1);
+		}    	
+		vp.add(grid1);
 		vp.add(grid2);
-		TabPanel tabs = new TabPanel();
-		tabs.add(grid, "Bids");
-		tabs.add(vp, "Table");
-		//tabs.add(grid, "play");
-		tabs.setWidth("100%");
-		tabs.selectTab(1);
-
-		hSplit = new HorizontalSplitPanel();
-		hSplit.setLeftWidget(tabs);
-		//hSplit.setRightWidget(debug);
-		initWidget(hSplit);
-		hSplit.setSize("100%", "450px");
-
-		show_4hands();		
-		//message_client = new MessageClient(this);
-		//message_client.scheduleRepeating(1000);
-		String[] s = {"N"};
-		FloaterMessage m = new FloaterMessage("request_seat",s);
-		MessageClient.send(m.toString(),this);		
+		tabs.add(vp,"Bids");
 	}
+	public void showMyHand(){
+		for (int i=0;i<4;i++)for(int j=0;j<4;j++){
+			if (i==2)continue;
+			dockHand[i].remove(hpSuit[i][j]);			
+		}
+		for(int j=0;j<4;j++){
+			String suit = tdata[2][j];
+			dockHand[2].remove(hpSuit[2][j]);
+			hpSuit[2][j] = new HorizontalPanel();
+			dockHand[2].add(hpSuit[2][j]);
+			hpSuit[2][j].add(new HTML(Card.SUIT2STR[3-j]));
+			if(suit == "")continue;
+			for (int k=0;k<suit.length();k++){
+				Button b = new Button(suit.substring(k,k+1));
+				hpSuit[2][j].add(b);
+			}
+		}
 
-
-
+	}
 	public void show_4hands(){
 		ClickListener cardClick = new ClickListener() {
 			public void onClick(Widget sender) {
@@ -180,6 +194,7 @@ class Panels extends Composite{
 				sendPlay(card.toLowerCase());
 			}
 		};		
+
 		for (int i=0;i<4;i++)for(int j=0;j<4;j++){
 			String suit = tdata[i][j];
 			dockHand[i].remove(hpSuit[i][j]);
@@ -192,7 +207,28 @@ class Panels extends Composite{
 				hpSuit[i][j].add(b);
 			}
 		}
-
+		if (trick_data.length()>0)showTrickPlayed();
+	}
+	void showTrickPlayed(){
+		int dealer = hand_id % 4;
+		Deal deal = new Deal(new Orientation(dealer));
+		for(int i=0;i<bidhistory.length()/2;i++){
+			Bid bid = new Bid(bidhistory.substring(2*i,2*i+2));
+			deal.bid(bid);
+		}
+		int dummyseat = (2+deal.dummy.getOrientation()-myseat)%4;
+		deal.hands[myseat] = new Hand(tdata[2]);
+		deal.hands[deal.dummy.getOrientation()] = new Hand(tdata[dummyseat]);
+		int row = 1;
+		int col = dealer;
+		for(int i=0;i<trick_data.length()/2;i++){
+			String card = trick_data.substring(2*i,2*i+2);
+			playGrid.setWidget(row, col, new HTML(card));
+			deal.play_card(new Card(card));
+			if(deal.currenTrickCompleted())row++;
+			col = deal.player.getOrientation();
+		}
+				
 	}
 	public void handleData(FloaterMessage msg){
 		// ??? not working with substring(0,1) == "*"

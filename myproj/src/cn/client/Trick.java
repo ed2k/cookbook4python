@@ -34,8 +34,8 @@ public class Trick {
 	/**
 	 * This represents the orientation of the first player initiating the lift 
 	 */
-	private Orientation player;
-	private Card cards[];
+	Orientation player;
+	Card cards[];
 	Bid trump;
 	Orientation winner;
 	Card lead;
@@ -53,6 +53,9 @@ public class Trick {
 	public void setStart(Orientation s) { player =s ; }
 	public Orientation getStart(){ return player; }
 	public Card[] getCards() { return cards; }
+	/*
+	 * return if the trick requires more plays
+	 */
 	public boolean play_card(Card card){
 		cards[player.getOrientation()] = card;
 		Card win = cards[winner.getOrientation()];
@@ -153,6 +156,11 @@ public class Trick {
 			else s = s + cards[i].toString();
 		}
 		return s;
+	}
+
+	public boolean completed() {
+		// TODO Auto-generated method stub
+		return cards[player.getOrientation()] != null;
 	}
 
 }

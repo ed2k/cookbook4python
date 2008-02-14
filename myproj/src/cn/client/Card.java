@@ -53,7 +53,12 @@ public class Card implements Comparable{
 			return;
 		this.value = value;
 		this.colour = colour;
-		cat.debug("< Card()");
+	}
+
+	public Card(String card) {
+		// TODO Auto-generated constructor stub
+		value = Card.rank(card.charAt(1));
+		colour = Card.str2suit(card.substring(0,1));
 	}
 
 	public int getValue() { return value; }
@@ -185,6 +190,15 @@ public class Card implements Comparable{
 		case DIAMOND: return "D";
 		}
 		return Integer.toString(suit);
+	}
+	public static int str2suit(String s){
+		char suit = s.toLowerCase().charAt(0);
+		if (suit=='s')return 3;
+		if (suit=='h')return 2;
+		if (suit=='d')return 1;
+		if (suit=='c')return 0;
+		if (suit=='n')return 4;
+		return -1;
 	}
 	public boolean equals(Object obj){
 		cat.debug("Card.equals()");
