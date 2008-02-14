@@ -2,7 +2,7 @@ package cn.client;
 
 import cn.client.Category;
 
-public class Orientation {
+public class Orientation implements Comparable{
 	static Category cat = Category.getInstance("");
 	public static final int NORTH = 0;
 	public static final int EAST = 1;
@@ -15,7 +15,7 @@ public class Orientation {
 		this.value = value %4;
 	}
 
-	public int getOrientation() { return value; }
+	public int idx() { return value; }
 	public boolean isPartner( int v )  {
 		cat.debug("isPartner(): is "+v+" partner of "+value+" ?");
 		if ((v < NORTH) || (v > WEST)) 
@@ -38,7 +38,7 @@ public class Orientation {
 		cat.debug("> isPartner(): o="+o.toString());
 		boolean partner = false;
 
-			partner = isPartner(o.getOrientation());
+			partner = isPartner(o.idx());
 
 		cat.debug("< isPartner(): "+partner);
 		return partner;
@@ -73,7 +73,7 @@ public class Orientation {
 			o = new Orientation(next_val);
 
 
-		cat.debug("< next(): "+o.getOrientation());
+		cat.debug("< next(): "+o.idx());
 		return o;
 	} 
 
@@ -102,5 +102,11 @@ public class Orientation {
 	}
 	public Orientation team(){
 		return new Orientation(value %2);
+	}
+
+	public int compareTo(Object arg0) {
+		// TODO Auto-generated method stub
+		Orientation tgt = (Orientation) arg0;
+		return tgt.value-value;
 	}
 }

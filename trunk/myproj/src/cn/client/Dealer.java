@@ -105,7 +105,7 @@ public class Dealer {
 		}
 	
 		try {
-		    int orientation = Orientation.next(dealer.getOrientation());
+		    int orientation = Orientation.next(dealer.idx());
 		    cat.debug("Dealing the cards starting with "+orientation);
 	
 		    for (int i=0; i< deck.size();  i++){

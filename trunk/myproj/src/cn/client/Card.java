@@ -55,8 +55,9 @@ public class Card implements Comparable{
 		this.colour = colour;
 	}
 
-	public Card(String card) {
+	public Card(String c) {
 		// TODO Auto-generated constructor stub
+		String card = c.toUpperCase();
 		value = Card.rank(card.charAt(1));
 		colour = Card.str2suit(card.substring(0,1));
 	}
@@ -97,6 +98,18 @@ public class Card implements Comparable{
 		if (c=='J') return JACK;
 		if (c=='T') return 10;
 		return (c - '0');
+	}
+	public static int ridx(String pbn){
+		int r = Card.rank(pbn.toUpperCase().charAt(0));
+		if (r==ACE)return 14;
+		return r;
+	}
+	public int ridx(){
+		if (value==ACE)return 14;
+		return value;
+	}
+	public int sidx(){
+		return 3-colour;
 	}
 	/*
 	 * @return number of the card (in letters).
@@ -211,7 +224,7 @@ public class Card implements Comparable{
 	}
 	public int compareTo(Object obj){
 		Card c = (Card)obj;
-		if (colour != c.getColour()) return c.getColour()-colour;
+		if (colour != c.getColour()) return colour-c.getColour();
 		return Card.compare(this, c, new Bid(Bid.NOTRUMP));
 	}
 	public static int rank_diff(Card a, Card b){
@@ -227,9 +240,8 @@ public class Card implements Comparable{
 	// 0 includes case that a, b has different suit.
 	public static int compare(Card a, Card b, Bid trump){
 		if (a.getColour()==b.getColour()) return Card.rank_diff(a,b);
-		if (a.getColour()==trump.getValue()){
-			return 1; 
-		}
+		if (a.getColour()==trump.getSuit())return 1;
+		if (b.getColour()==trump.getSuit())return -1;		
 		return 0;
 	}
 }
