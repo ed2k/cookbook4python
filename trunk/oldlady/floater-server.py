@@ -77,7 +77,16 @@ def send_messages(state,mm):
       else:
          if m != '*alive*' and m[0] != 'T': print 's',m
          for conn in state.clients_conn: conn.send(m+'\r\n')
-   
+
+TODO = """  work on a server that take care of table manager and 3 player
+ a client can use request/response mode to play bridge, instead of polling data.
+ use cases, request/response from client/server
+ 1. seated at North/hand id, client cards, hand id
+ 2. hand id, bid/hand id bid history, ...
+ 3. hand id, pass/hand id bid history, leading play, dummy (assume client is not leader)
+ 4. hand id, play/hand id, play history
+ 5. hand id, play/hand id, play history, new hand, score ...
+"""
 if __name__ == "__main__":
    
    import socket, select  
