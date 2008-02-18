@@ -1,5 +1,7 @@
 package cn.client;
 
+import java.util.Vector;
+
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.*;
 //import com.google.gwt.user.client.ui.ClickListener;
@@ -47,9 +49,9 @@ public class bridge implements EntryPoint {
  */
 class Panels extends Composite{
 	DockPanel dock ;
-	Match currentMatch = null;
+	Deal deal;
 	TabPanel tabs;
-	Grid playGrid;
+	Grid playGrid; int playHistoryRow;
 	HTML debug= new HTML("");
 	HorizontalSplitPanel hSplit;
 	VerticalPanel[] dockHand;
@@ -74,10 +76,7 @@ class Panels extends Composite{
 	}
 	public Panels() {	
 		tdata = new String[4][4];
-		for (int i = 0;i<4;i++)for (int j = 0;j<4;j++){
-			tdata[i][j] = "";
-		}
-		playGrid = new Grid(13,4);
+		playGrid = new Grid(13,4); playHistoryRow = 0;
 		ScrollPanel scroller = new ScrollPanel(playGrid);
 		scroller.setPixelSize(125,125);
 		//scroller.setStyleName("ks-layouts-Scroller");
@@ -188,7 +187,15 @@ class Panels extends Composite{
 	public void show_4hands(){
 		ClickListener cardClick = new ClickListener() {
 			public void onClick(Widget sender) {
+				// check if in the right suit
 				CardButton b = (CardButton)sender;
+				//check if it is my turn
+				if (b.seat != adjustSeat(deal.player.idx()))return;
+				Card c = deal.trick.lead; 
+				if (c != null){
+					Vector remain = deal.hands[deal.player.idx()].selectColour(c.sidx());
+					if(!remain.isEmpty() && (b.suit != 3- c.sidx()))return ;
+				}
 				String card = Card.SUIT2STR[3-b.suit]+b.getText();
 				debug("-"+card+"-");
 				sendPlay(card.toLowerCase());
@@ -202,45 +209,50 @@ class Panels extends Composite{
 			if(suit == "")continue;
 			for (int k=0;k<suit.length();k++){
 				String card = suit.substring(k,k+1);
-				Button b = new CardButton(j,card,cardClick);
+				Button b = new CardButton(i,j,card,cardClick);
 				hpSuit[i][j].setWidget(0,15-Card.ridx(card),b);
 				//hpSuit[i].setWidget(j,k+1,b);
 			}
 		}
 		if (trick_data.length()>0)showTrickPlayed();
 	}
-	void showTrickPlayed(){
-		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
-		int dealer = (hand_id-1) % 4;
-		Deal deal = new Deal(new Orientation(dealer));
+	void trackBidHistory(){
 		for(int i=0;i<bidhistory.length()/2;i++){
 			Bid bid = new Bid(bidhistory.substring(2*i,2*i+2));
 			deal.bid(bid);
-		}
-		int dummyseat = adjustSeat(deal.dummy.idx());
+		}		
+	}
+	void trackPlayHistory(){
+		
+	}
+	void showTrickPlayed(){
+		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
+		int dummyseat = adjustSeat(deal.dummy.idx());		
 		deal.hands[myseat] = new Hand(tdata[2]);
 		deal.hands[deal.dummy.idx()] = new Hand(tdata[dummyseat]);
-		int dummy = deal.dummy.idx();
-		int row = 0;
-		int col = deal.player.idx();
+
 		for(int i=0;i<trick_data.length()/2;i++){
 			String card = trick_data.substring(2*i,2*i+2);
-			playGrid.setWidget(row, col, new HTML(card));
-			int p = deal.player.idx();
-			Card c = new Card(card);
-			if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,15-c.ridx()); 
-			else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,15-c.ridx());
-			deal.play_card(c);
-			if(deal.currenTrickCompleted()){
-				deal.next_trick();
-				row++;
-			}
-			col = deal.player.idx();
+			showTrickPlayed(card);
 		}				
 	}
-	void removeCardFromTable(int card){
-	
+	void showTrickPlayed(String card){
+		int dummyseat = adjustSeat(deal.dummy.idx());
+		int dummy = deal.dummy.idx();		
+		int p = deal.player.idx();
+		Card c = new Card(card);
+		//remove card from table
+		if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,15-c.ridx()); 
+		else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,15-c.ridx());
+		// record in the history
+		deal.play_card(c);
+		playGrid.setWidget(playHistoryRow, p, new HTML(card));
+		if(deal.currenTrickCompleted()){
+			deal.next_trick();
+			playHistoryRow++;
+		}
 	}
+
 	int adjustSeat(int seat){return (2+seat-myseat)%4;}
 	public void handleData(FloaterMessage msg){
 		// ??? not working with substring(0,1) == "*"
@@ -249,8 +261,11 @@ class Panels extends Composite{
 			hand_id = Integer.parseInt(msg.args[0]);
 			String hands = msg.args[2];
 			bidhistory = msg.args[3];
+			for (int i = 0;i<4;i++)for (int j = 0;j<4;j++)tdata[i][j] = "";
 			trick_data = msg.args[4];
 			debug("handlData: "+hands);
+			deal = new Deal(new Orientation((hand_id-1) % 4));
+			
 			String[] hs = hands.split("\\|");
 			for(int i=0;i<hs.length;i++){
 				System.out.println(hs[i]);
@@ -259,19 +274,26 @@ class Panels extends Composite{
 				int fix = adjustSeat(seat);
 				//Hand h = new Hand(hs[i].substring(2));
 				tdata[fix] = hs[i].substring(2).split("\\.");
-				show_4hands();
 			}
+			//TODO, handle I am dummy case
+			trackBidHistory();
+			show_4hands();			
 		} else if (msgname == 'a'){
 			bidhistory = msg.args[1];
 			debug(bidhistory);
 		} else if (msgname == 'p'){
 			trick_data = msg.args[1];
 			debug(trick_data);
-			showTrickPlayed();
+			int len = trick_data.length();
+			String card = trick_data.substring(len-2,len);
+			showTrickPlayed(card);			
 		}
 	}	
 	
 	public void sendBid(String b){
+		//check if it is my turn first
+		if (((hand_id-1+myseat+bidhistory.length()/2)%4) != 0) return;	
+		//if (bidhistory.length()>=6 && bid)
 		char c = b.charAt(0);
 		String bid = b.toLowerCase();
 		if (c=='P')bid = " p";
@@ -395,9 +417,18 @@ class FloaterMessage {
 }
 
 class CardButton extends Button{
+	int seat;
 	int suit;
-	CardButton(int suit, String label,  ClickListener listener){
+	CardButton(int seat,int suit, String label,  ClickListener listener){
 		super(label, listener);
 		this.suit = suit;
+		this.seat = seat;
+	}
+}
+class PlayHistory extends Grid{
+	int currentRow;
+	PlayHistory(int r, int c){
+		super(r,c);
+		currentRow = 0;
 	}
 }

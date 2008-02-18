@@ -49,21 +49,28 @@ public class Trick {
 		this.trump = trump;
 		leader = player;
 		winner = player;
+		lead = null;
 	}
 
 	public void setStart(Orientation s) { player =s ; }
 	public Orientation getStart(){ return player; }
 	public Card[] getCards() { return cards; }
+	public int countPlayed() {
+		int cnt = 0;
+		for (int i=0;i<4;i++ ){
+			if(cards[0]!=null) cnt++;
+		}
+		return cnt;
+	}
 	/*
 	 * return if the trick requires more plays
 	 */
 	public boolean play_card(Card card){
+		if (lead == null) lead = card;
 		cards[player.idx()] = card;
-		//Card win = cards[winner.idx()];
-		//no need to remember lead(the first card)
 		//we always compare to the winner's card
-		Card lead = cards[winner.idx()];			
-		if(Card.compare(card,lead,trump) > 0){		
+		Card win = cards[winner.idx()];			
+		if(Card.compare(card,win,trump) > 0){		
 			winner = player;
 		}
 		player = player.next();

@@ -87,12 +87,16 @@ public class Hand {
 	 * that has already been played.
 	 */
 	public void playCard(Card c)  {
-		cat.debug("> playCard(): card="+c.toString());
 		int index = cards.indexOf(c);
-		if (index == -1) return;
-		if (playedCards[index]==true) return;
+		if (index == -1) {
+			cat.debug("hand playCard: index -1 card="+c.toString());			
+			return;
+		}
+		if (playedCards[index]==true) {
+			cat.debug("hand playCard already played "+c.toString());
+			return;
+		}
 		playedCards[index]=true;
-		cat.debug("< playCard()");
 	}
 
 	/**
