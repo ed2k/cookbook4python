@@ -343,7 +343,7 @@ class Deal:
         Play a card in the current trick.
         """        
         if self.hands[self.player] != None:
-            print 'try to remove',self.player,card
+            #print 'try to remove',self.player,card
             self.hands[self.player].remove (card)
             
         self.trick.play_card (card)
