@@ -1,0 +1,31 @@
+from floater_client import *
+import random
+
+website = 'localhost:10101'
+url = 'http://'+website+'/postit.yaws?flproxyB='
+
+if __name__ == "__main__":
+
+   if len(sys.argv) > 1: website = sys.argv[1]
+   import urllib,time
+
+   st = State()
+   st.clientname = 'mfrom'
+   st.table_seated[0] = st.clientname
+   st.hand_id = 9
+   message = st.encode_message('request_seat',[0])
+   while True:
+      print 's>',message
+      data = urllib.urlopen(url+urllib.quote(message+'\r\n')).read()
+      # check message
+      if data.find("Internal error") >= 0:
+         print [data]
+         time.sleep(1)
+         continue
+      #data = data[:-4]
+      if data != 'nothing': print 'r',[data]
+
+      handleData(st,data)
+      print st.hand_id, st.where_is_my_seat()
+      message = handle_auction(st)   
+      time.sleep(1+random.random())
