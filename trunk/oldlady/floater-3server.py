@@ -1,30 +1,54 @@
 from floater_client import *
+from sAi import *
+from sbridge import *
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import urllib
 
+MANAGERNAME = "tableserver"
 st = State()
-st.clientname = "tableserver"
+st.clientname = MANAGERNAME
+ais = [ComputerPlayer(seat) for seat in PLAYERS]
+# working as a live table, don't use st.deal as it is used to save original cards
 
+
+def nextStep(action, state, comps):
+    rmsg = []
+    if action == 'confirm_deal':
+        state.hand_id += 1
+        state.bid_status = BidStatus('')
+        state.play_status = []
+        state.deal = state.rubber.next_deal()
+        for ai in ais: ai.new_deal(state.deal)
+        for ai in ais: print_hand(ai.deal.hands[ai.seat])
+        rmsg.append(state.send_new_hand()[NORTH])
+
+    return rmsg
+    
 class MyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         start = len('/postit.yaws?flproxyB=')
         data = urllib.unquote(self.path[start:])
         print 'r',[data]
-        messages = table_handle(st,data)
-        send_messages(self.wfile,messages)   
+        while data != '\r\n':
+            messages = table_handle(st,data)
+            selfdata = []
+            print 'messages',messages
+            if messages is None:
+                break; # why??? fixme
+            for m in messages:
+                if m is None: continue
+                if len(m) == 2: # single client message
+                    print 'p2p',m[0],m[1]
+                    self.wfile.write(m[1]+'\r\n')
+                    selfdata.append(m[1])
+                else:
+                    print 's>',m
+                    self.wfile.write(m+'\r\n')
+                    selfdata.append(m)
+            data = '\r\n'.join(selfdata)+'\r\n'
         #self.wfile.write("nothing\r\n\r\n")
 
-def get_current_seated_msg(state):
-   msg = []
-   for seat in xrange(4):
-      name = state.table_seated[seat]
-      if name == '': continue
-      m = state.encode_message('seated',[name,name_dict[seat],'ip','port'])
-      msg.append(m)
-   return msg   
-
-   
 def table_handle(state,data):
    rmsg = []
    for line in data.split('\r\n')[:-1]:
@@ -33,47 +57,94 @@ def table_handle(state,data):
       args = message[3:]
       if mname == 'S':
          username,seat,ip,port = args
-         if state.deal is None:
-             state.hand_id += 1
-             state.deal = state.rubber.next_deal()            
-         #if state.client_seated(IDX[seat[0]], username):
-         #rmsg += get_current_seated_msg(state)
+         if state.deal is None: return nextStep('confirm_deal', state, ais)
          # assume client always north
-         rmsg += [state.send_new_hand()[0]]
+         rmsg.append(state.send_new_hand()[NORTH])
       elif mname == 'a':
-         print args
+         print 'bids',args
+         # reused as table manager deal recorder
+         tbdeal = ais[NORTH].deal
+         if mfrom != MANAGERNAME and tbdeal.trick is not None: return rmsg
+         if mfrom != MANAGERNAME and tbdeal.player != NORTH: return rmsg
+         #TODO check if it is the right bidder, and follow rule
          state.bid_status = BidStatus(args[1])
-         #TODO check if it is the right bidder
-         state.deal.bid(f2o_bid(state.bid_status[-1]))
-         rmsg.append(line)
+         bid = f2o_bid(state.bid_status[-1])
+         for ai in ais: ai.bid_made(bid)
+         state.deal.bid(bid)
+         
          print [state.bid_status.data]
-         if state.bid_status.data == ' p'*4:
-            print 'all pass'
-            state.deal = None
-            state.bid_status = BidStatus('')
+
+         if tbdeal.contract is not None and tbdeal.contract.is_pass():
+             rmsg += nextStep('confirm_deal', state, ais)
+         elif tbdeal.trick is None:
+             if tbdeal.player == NORTH: continue
+             bid = ais[tbdeal.player].bid ()
+             state.bid_status.data += o2f_bid(bid)
+             rmsg.append(state.encode_message('auction_status',[str(state.hand_id),str(state.bid_status)]))
+         else: # only lead play is possible here
+             # what if NORTH is dummy
+             if tbdeal.player == NORTH and tbdeal.dummy != NORTH: continue
+             if tbdeal.player == SOUTH and tbdeal.dummy == SOUTH: continue
+             card = ais[tbdeal.player].play_self ()
+             a = o2f_card(card)
+             print tbdeal.player,'lead play',card
+             for ai in ais: print ai.seat,ai.deal.player,
+             state.play_status += [a]
+             rmsg.append(state.encode_message('play',[str(state.hand_id), convert_play2str(state.play_status)]))
       elif mname == 'p':
-         state.play_status = convert_str2play(args[1])
-         rmsg.append(line)
-         if len(state.play_status) == 1:
-            rmsg += state.send_new_hand()
-         if len(state.play_status) == 52:
-            state.deal = None
-            state.play_status = []
-            state.bid_status = BidStatus('')
-      return rmsg
+          tbdeal = ais[NORTH].deal
+          dummy = tbdeal.dummy
+          if tbdeal.trick is None: continue
+          if mfrom != MANAGERNAME:
+              if dummy == SOUTH:
+                  if tbdeal.player == WEST or tbdeal.player == EAST: continue
+              elif tbdeal.player != NORTH: continue
+          # todo, consider NORTH is dummy to exchange with SOUTH
+          print 'played',args[1]
+          state.play_status = convert_str2play(args[1])
 
-def send_messages(conn,mm):
-   if mm is None: return
-   print mm
-   for m in mm:
-      if m is None: continue
-      if len(m) == 2: # single client message
-         print 'p2p',m[0],m[1]
-         conn.write(m[1]+'\r\n')
-      else:
-         print 's',m
-         conn.write(m+'\r\n')
+          if len(state.play_status) == 1:
+              rmsg.append( state.send_new_hand()[NORTH])
+              for ai in ais:
+                  ai.deal.hands[dummy] = state.deal.hands[dummy][:]
+          elif len(state.play_status) == 52:
+              return nextStep('confirm_deal', state, ais)
 
+          card = f2o_card(state.play_status[-1])
+          player = tbdeal.player
+          # record play, if player is AI dont record twice
+          for ai in ais: print ai.seat,ai.deal.player,
+          if player == NORTH and dummy != NORTH:
+              for ai in ais: ai.deal.play_card(card)
+          elif player != dummy:
+              for ai in ais:
+                  print 'ai',ai.seat,
+                  if ai.seat != player:
+                      ai.deal.play_card(card)              
+          else:
+              for ai in ais:
+                  if ai.seat != tbdeal.declarer:
+                      ai.deal.play_card(card)
+          if tbdeal.trickCompleted():
+              for ai in ais:
+                  ai.trick_complete()                      
+          # what if NORTH is dummy
+          if dummy == SOUTH and tbdeal.player == NORTH: continue
+          if dummy == SOUTH and tbdeal.player == SOUTH: continue
+          if tbdeal.player == NORTH and dummy != NORTH: continue
+          if tbdeal.player != dummy:
+              card = ais[tbdeal.player].play_self ()
+          else:
+              card = ais[tbdeal.declarer].play_dummy()
+          a = o2f_card(card)
+          print 'playing',card
+          state.play_status += [a]
+          rmsg.append(state.encode_message('play',[str(state.hand_id), convert_play2str(state.play_status)]))
+          
+   return rmsg
+
+
+        
 TODO = """  work on a server that take care of table manager and 3 player
  a client can use request/response mode to play bridge, instead of polling data.
  use cases, request/response from client/server
