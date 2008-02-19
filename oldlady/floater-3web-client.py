@@ -1,7 +1,7 @@
 from floater_client import *
 import random
 
-website = 'localhost:10101'
+website = '127.0.0.1:10101'
 url = 'http://'+website+'/postit.yaws?flproxyB='
 
 if __name__ == "__main__":
@@ -14,9 +14,10 @@ if __name__ == "__main__":
    st.table_seated[0] = st.clientname
    st.hand_id = 9
    message = st.encode_message('request_seat',[0])
-   while True:
+   while True:      
       print 's>',message
-      data = urllib.urlopen(url+urllib.quote(message+'\r\n')).read()
+
+      data = urllib.urlopen(url+urllib.quote(message+'\r\n'),proxies={}).read()
       # check message
       if data.find("Internal error") >= 0:
          print [data]
@@ -26,6 +27,6 @@ if __name__ == "__main__":
       if data != 'nothing': print 'r',[data]
 
       handleData(st,data)
-      print st.hand_id, st.where_is_my_seat()
+
       message = handle_auction(st)   
       time.sleep(1+random.random())

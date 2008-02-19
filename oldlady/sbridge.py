@@ -234,10 +234,6 @@ class Deal:
         self.opening_lead = False
         self.tricks_taken = [0, 0]
 
-        #self.model = gtk.ListStore (gobject.TYPE_PYOBJECT,
-        #                            gobject.TYPE_PYOBJECT,
-        #                            gobject.TYPE_PYOBJECT,
-        #                            gobject.TYPE_PYOBJECT)
         self.model = gtk_ListStore()
         if dealer != WEST:
             self.iter = self.model.append ()
@@ -343,7 +339,7 @@ class Deal:
         Play a card in the current trick.
         """        
         if self.hands[self.player] != None:
-            #print 'try to remove',self.player,card
+            print 'try to remove',self.player,card
             self.hands[self.player].remove (card)
             
         self.trick.play_card (card)
@@ -355,6 +351,8 @@ class Deal:
         # as ai.play_self() called play_card at so many place
         self.curcard = card
 
+    def trickCompleted(self):
+        return  self.trick.cards[self.player] is not None
     def next_trick (self):
         """
         Advance to the next trick, if there is one.
@@ -367,7 +365,7 @@ class Deal:
         else:
             self.trick = None
 
-
+    
 class Rubber:
     """
     Keeps dealing hands until one team wins two games; then tallies up points

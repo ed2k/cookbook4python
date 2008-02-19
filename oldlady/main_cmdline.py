@@ -83,12 +83,12 @@ class App:
 
         self.show_all_cards = False
 
-        self.ais = [sAi.ComputerPlayer (seat) for seat in sbridge.PLAYERS[sbridge.WEST:sbridge.SOUTH+1]]
+        self.ais = [sAi.ComputerPlayer (seat) for seat in sbridge.PLAYERS]
         self.start_next_rubber ()
 
 
     def distribute_deal(self):
-        # todo clone deal to show AI only its own hand
+        # clone deal to show AI only its own hand
         for ai in self.ais:
             ai.new_deal (self.deal)
             
@@ -115,7 +115,7 @@ class App:
         Start playing for a new rubber.
         """
 
-        self.rubber = sbridge.Rubber (sbridge.SOUTH)
+        self.rubber = sbridge.Rubber (sbridge.NORTH)
         self.start_next_deal ()
 
     def populate_legal_bids (self):
@@ -159,6 +159,7 @@ class App:
                 return
             elif self.deal.trick is None:
                 bid = self.ais[self.deal.player].bid ()
+                print bid,
                 for ai in self.ais:
                     ai.bid_made (bid)
                 self.deal.bid (bid)
