@@ -102,6 +102,7 @@ def table_handle(state,data):
               if dummy == SOUTH:
                   if tbdeal.player == WEST or tbdeal.player == EAST: continue
               elif tbdeal.player != NORTH: continue
+              print dummy, 'is dummy, NORTH turn',tbdeal.player
           # todo, consider NORTH is dummy to exchange with SOUTH
           state.play_status = convert_str2play(args[1])
 
@@ -118,10 +119,12 @@ def table_handle(state,data):
           if tbdeal.trickCompleted():
               for ai in ais:
                   ai.trick_complete()                      
+          print 'whose turn',tbdeal.player
           # what if NORTH is dummy
           if dummy == SOUTH and tbdeal.player == NORTH: continue
           if dummy == SOUTH and tbdeal.player == SOUTH: continue
           if tbdeal.player == NORTH and dummy != NORTH: continue
+
           if tbdeal.player != dummy:
               card = ais[tbdeal.player].play_self ()
           else:

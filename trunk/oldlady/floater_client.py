@@ -308,7 +308,8 @@ def handle_auction(state):
    if auc.data == ' p'*4: return None
    if len(auc) > 3 and auc[-3:] == [' p']*3:
       a = state.handle_auction()
-      assert a is not None
+      # not my turn yet
+      if a is None: return None
       state.play_status += [a]
       a = convert_play2str(state.play_status)
       return state.encode_message('play',[str(state.hand_id), a])
