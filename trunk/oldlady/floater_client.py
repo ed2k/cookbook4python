@@ -26,9 +26,11 @@ def pbn2f_card(c):
    ''' cdhs -> 0-3 * 13 + rank'''
    return KIDX[c[0].lower()]*13+PBN_HIDX[c[1].lower()]
 def o2pbn_hand(hand):
+   '''-> SHDC '''
    h = ['','','','']
    for c in hand:
       h[c.suit] += '23456789TJQKA'[c.rank-2]
+   h.reverse()
    return '.'.join(h)
 def o2f_bid(b):
    if b.is_pass(): return ' p'
@@ -302,12 +304,11 @@ class State:
   
 def handle_auction(state):
    auc = state.bid_status
-   if auc is None: return None
+   #if auc is None: return None
    if auc.data == ' p'*4: return None
    if len(auc) > 3 and auc[-3:] == [' p']*3:
       a = state.handle_auction()
-      if a is None: return None
-      print 'card to play',a
+      assert a is not None
       state.play_status += [a]
       a = convert_play2str(state.play_status)
       return state.encode_message('play',[str(state.hand_id), a])

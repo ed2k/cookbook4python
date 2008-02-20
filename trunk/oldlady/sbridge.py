@@ -226,7 +226,6 @@ class Deal:
         self.contractor = None
         self.doubler = None
         self.redoubler = None
-        self.curcard = None # -yisu
 
         self.declarer = None
         self.dummy = None
@@ -339,7 +338,8 @@ class Deal:
         Play a card in the current trick.
         """        
         if self.hands[self.player] != None:
-            print 'try to remove',self.player,card
+            #print 'try to remove', self.player,card
+            #print_hand(self.hands[self.player])
             self.hands[self.player].remove (card)
             
         self.trick.play_card (card)
@@ -347,9 +347,6 @@ class Deal:
         
         self.player = (self.player + 1) % 4
         self.opening_lead = True
-        #-yisu a hack to save which is played for query
-        # as ai.play_self() called play_card at so many place
-        self.curcard = card
 
     def trickCompleted(self):
         return  self.trick.cards[self.player] is not None
@@ -560,7 +557,7 @@ def print_hand(hand):
    for c in hand:
       suits[c.suit].append('0123456789TJQKA'[c.rank])
    r = []
-   for i in PLAYERS:
+   for i in SUITS:
        r.append(''.join(suits[i]))
    r.reverse()
    print r

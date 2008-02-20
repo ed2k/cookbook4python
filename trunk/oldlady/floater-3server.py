@@ -22,7 +22,10 @@ def nextStep(action, state, comps):
         for ai in ais: ai.new_deal(state.deal)
         for ai in ais: print_hand(ai.deal.hands[ai.seat])
         rmsg.append(state.send_new_hand()[NORTH])
-
+        if state.deal.dealer != NORTH: 
+            bid = ais[state.deal.player].bid()
+            state.bid_status.data += o2f_bid(bid)
+            rmsg.append(state.encode_message('auction_status',[str(state.hand_id),str(state.bid_status)]))
     return rmsg
     
 class MyHandler(BaseHTTPRequestHandler):
@@ -100,7 +103,6 @@ def table_handle(state,data):
                   if tbdeal.player == WEST or tbdeal.player == EAST: continue
               elif tbdeal.player != NORTH: continue
           # todo, consider NORTH is dummy to exchange with SOUTH
-          print 'played',args[1]
           state.play_status = convert_str2play(args[1])
 
           if len(state.play_status) == 1:
@@ -112,19 +114,7 @@ def table_handle(state,data):
 
           card = f2o_card(state.play_status[-1])
           player = tbdeal.player
-          # record play, if player is AI dont record twice
-          for ai in ais: print ai.seat,ai.deal.player,
-          if player == NORTH and dummy != NORTH:
-              for ai in ais: ai.deal.play_card(card)
-          elif player != dummy:
-              for ai in ais:
-                  print 'ai',ai.seat,
-                  if ai.seat != player:
-                      ai.deal.play_card(card)              
-          else:
-              for ai in ais:
-                  if ai.seat != tbdeal.declarer:
-                      ai.deal.play_card(card)
+          for ai in ais: ai.deal.play_card(card)
           if tbdeal.trickCompleted():
               for ai in ais:
                   ai.trick_complete()                      
