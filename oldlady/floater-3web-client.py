@@ -16,8 +16,14 @@ if __name__ == "__main__":
    message = st.encode_message('request_seat',[0])
    while True:      
       print 's>',message
-
-      data = urllib.urlopen(url+urllib.quote(message+'\r\n'),proxies={}).read()
+      #if message is None:
+      #   message = st.encode_message('request_seat',[0])
+      try:
+         data = urllib.urlopen(url+urllib.quote(message+'\r\n'),proxies={}).read()
+      except IOError:
+         # next turn could also be mine if I win in the last trick
+         message = st.encode_message('request_seat',[0])
+         continue
       # check message
       if data.find("Internal error") >= 0:
          print [data]
@@ -28,5 +34,6 @@ if __name__ == "__main__":
 
       handleData(st,data)
 
-      message = handle_auction(st)   
+      message = handle_auction(st)
+
       time.sleep(random.random())
