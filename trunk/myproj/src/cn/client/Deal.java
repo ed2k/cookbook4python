@@ -42,14 +42,13 @@ public class Deal {
 	Orientation doubler;
 	Orientation redoubler;
 	Orientation declarer;
-   public Orientation dummy;
+	public Orientation dummy;
 	Trick trick;
-	boolean opening_lead;
+	//boolean opening_lead;
 	int tricks_taken[];//count how many trick each team win
 	public Hand hands[];
 
 	public Deal(Orientation dealer){
-		cat.debug("> BidStage(): dealer="+dealer.toString());
 		hands = new Hand[4];
 		this.dealer = dealer;
 		player = dealer;
@@ -57,6 +56,9 @@ public class Deal {
 		player = dealer; // dealer has not made his bid yet.
 		trick = null;
 		tricks_taken = new int[2];
+	}
+	void addHand(int seat, Hand h){
+		hands[seat] = h;
 	}
 	public boolean bid(Bid bid){
 		if(bid.is_pass())passes ++;
@@ -112,10 +114,13 @@ public class Deal {
 		return false;
 	}
 	public void play_card(Card card){
-		if(hands[player.idx()]!=null)hands[player.idx()].playCard(card);
+		if(hands[player.idx()]!=null){
+			//cat.debug("Deal: to remove"+card.toString());
+			hands[player.idx()].playCard(card);
+		}
 		trick.play_card(card);
 		player = player.next();
-		opening_lead = true;
+		//opening_lead = true;
 	}
 	public void next_trick(){
 		tricks_taken[trick.winner.team().idx()] += 1;
@@ -136,12 +141,10 @@ public class Deal {
 	public Orientation getNextOrientation() { return player; }
 
 	public void addBid(Bid b)  {
-		cat.debug("> addBid(): b="+b);
 		if (checkBid(b)){
 			bids.add(b);	
 			player = player.next();
 		}
-		cat.debug("< addBid()");
 	}
 
 	public boolean checkBid(Bid b)  {
@@ -193,8 +196,6 @@ public class Deal {
 	 * @return true if the bid stage is finished (people have passed)
 	 */
 	public boolean isFinished(){
-		cat.debug("> isFinished()");
-
 		// everybody must get a chance to bid before the stage is finished.
 		int len = bids.size();
 		if (len < 4) {
@@ -316,14 +317,11 @@ public class Deal {
 	}
 
 	public String toString(){
-		cat.debug("> toString()");
-
 		// dumping the bid
 		for (Iterator i= bids.iterator(); i.hasNext() ; ) {
 			Bid b = (Bid) i.next();
 			cat.debug("bid= "+b.toString());
 		}
-		cat.debug("< toString()");
 		return "Dealer = "+dealer.toString()+ " bids="+bids;
 	}
 	public boolean currenTrickCompleted() {

@@ -19,10 +19,8 @@ public class Hand {
 	private static final int NUMBER = 13;
 
 	public Hand(){
-		cat.debug(">Hand()");
 		cards = new Vector(Hand.NUMBER);
 		playedCards = new boolean[Hand.NUMBER];
-		cat.debug("<Hand()");
 	}
 	/*
 	 * parse PBN format AKQ.JT.98.765432
@@ -32,17 +30,15 @@ public class Hand {
 		this();
 		for(int j=0;j<suits.length;j++){
 			for(int k=0;k<suits[j].length();k++){
-				Card c = new Card(4-j, Card.rank(suits[j].charAt(k)));
+				Card c = new Card(Card.rank(suits[j].charAt(k)),3-j);
 				addCard(c);
 			}
 		}		
 	}
 	public void resetHand(){
-		cat.debug("> resetHand()");
 		cards.clear();
 		for (int i=0;i<Hand.NUMBER;i++)
 			playedCards[i] = false;
-		cat.debug("< resetHand()");
 	}
 
 	/**
@@ -52,19 +48,22 @@ public class Hand {
 	 * @throws ImpossibleActionException if you're trying to add a card that already exists (cheater !)
 	 */
 	public void addCard(Card c)  {
-		cat.debug("> Hand.addCard(): card is "+c.toString());
-		if (cards.size()>= Hand.NUMBER) return;
-		if (cards.indexOf(c) != -1) return;
+		if (cards.size()>= Hand.NUMBER){
+			cat.error("Card: addCard over 13 "+c.toString());
+			return;
+		}
+		if (cards.indexOf(c) != -1){
+			cat.error("Card: card already in my hand "+c.toString());
+			return;
+		}
 		cards.add(c);
 		playedCards[cards.indexOf((Object)c)]=false;
-		cat.debug("< Hand.addCard()");
 	}
 
 	/**
 	 * @return all cards not played of a given colour. If not cards, then an empty Vector is returned.
 	 */
 	public Vector selectColour(int colour){
-		cat.debug("> selectColour(): colour="+colour);
 		Vector v = new Vector(Hand.NUMBER);
 		for (int i=0; i< cards.size() ; i++) {
 			if (playedCards[i] == false){
@@ -75,7 +74,6 @@ public class Hand {
 				}
 			}
 		}
-		cat.debug("< selectColour()");
 		Collections.sort(v);
 		return v;
 	}
@@ -106,7 +104,6 @@ public class Hand {
 	 * @throws MissingResourceException if we cannot find the correct translation for the cards.
 	 */
 	public String showHand() {
-		cat.debug("> showHand()");
 		String display = "";
 
 		for (int i=Card.CLUBS; i<=Card.SPADES; i++){

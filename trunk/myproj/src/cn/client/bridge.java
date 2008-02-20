@@ -129,13 +129,12 @@ class Panels extends Composite{
 		//hSplit.setRightWidget(debug);
 		initWidget(hSplit);
 		hSplit.setSize("100%", "650px");
-		final Panels owner = this;
-	    Timer t = new Timer() {
-	        public void run() {
-	    		MessageClient.send("",owner);	
-	        }
-	      };
-	    t.scheduleRepeating(1000);
+//	    Timer t = new Timer() {
+//	        public void run() {
+//	    		MessageClient.send("",owner);	
+//	        }
+//	      };
+//	    t.scheduleRepeating(1000);
 		String[] s = {"N"};
 		FloaterMessage m = new FloaterMessage("request_seat",s);
 		MessageClient.send(m.toString(),this);		
@@ -171,34 +170,29 @@ class Panels extends Composite{
 		vp.add(grid2);
 		tabs.add(vp,"Bids");
 	}
-	public void showMyHand(){
 
-		for(int j=0;j<4;j++){
-			String suit = tdata[2][j];
-			hpSuit[2][j].setWidget(0,0, new HTML(Card.SUIT2STR[3-j]));
-			if(suit == "")continue;
-			for (int k=0;k<suit.length();k++){
-				Button b = new Button(suit.substring(k,k+1));
-				hpSuit[2][j].setWidget(0,k+1,b);
-			}
-		}
-
-	}
 	public void show_4hands(){
 		ClickListener cardClick = new ClickListener() {
 			public void onClick(Widget sender) {
 				// check if in the right suit
 				CardButton b = (CardButton)sender;
 				//check if it is my turn
-				if (b.seat != adjustSeat(deal.player.idx()))return;
+				if (b.seat != adjustSeat(deal.player.idx())){
+					debug("not your turn");
+					return;
+				}
 				Card c = deal.trick.lead; 
 				if (c != null){
-					Vector remain = deal.hands[deal.player.idx()].selectColour(c.sidx());
-					if(!remain.isEmpty() && (b.suit != 3- c.sidx()))return ;
+					Vector remain = deal.hands[deal.player.idx()].selectColour(c.getColour());
+					if(!remain.isEmpty() && (b.suit != c.getColour())){
+						debug("not the right suit");
+						return ;
+					}
 				}
-				String card = Card.SUIT2STR[3-b.suit]+b.getText();
+				String card = Card.SUIT2STR[b.suit]+b.getText();
 				debug("-"+card+"-");
 				sendPlay(card.toLowerCase());
+				//showTrickPlayed(card);
 			}
 		};		
 		for (int i=0;i<4;i++)for(int j=0;j<4;j++)
@@ -209,41 +203,46 @@ class Panels extends Composite{
 			if(suit == "")continue;
 			for (int k=0;k<suit.length();k++){
 				String card = suit.substring(k,k+1);
-				Button b = new CardButton(i,j,card,cardClick);
-				hpSuit[i][j].setWidget(0,15-Card.ridx(card),b);
+				Button b = new CardButton(i,3-j,card,cardClick);
+				hpSuit[i][j].setWidget(0,hpsuitRankIDX(Card.ridx(card)),b);
 				//hpSuit[i].setWidget(j,k+1,b);
 			}
 		}
-		if (trick_data.length()>0)showTrickPlayed();
+		//if (trick_data.length()>0)showTrickPlayed();
 	}
 	void trackBidHistory(){
+	    int pos = (hand_id-1) % 4;
+	    int row = 0;
+	    for(int i=0;i<pos;i++){
+	    	playGrid.setWidget(0, i, new HTML("--"));
+	    }
 		for(int i=0;i<bidhistory.length()/2;i++){
-			Bid bid = new Bid(bidhistory.substring(2*i,2*i+2));
+			String b = bidhistory.substring(2*i,2*i+2);
+			Bid bid = new Bid(b);
 			deal.bid(bid);
+			playGrid.setWidget(row, pos, new HTML(b));
+			pos++;
+			if (pos > 3){
+				pos = 0;
+				row++;
+			}		
+			playGrid.setWidget(row, pos, new HTML("?"));			
 		}		
 	}
-	void trackPlayHistory(){
-		
-	}
-	void showTrickPlayed(){
-		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
-		int dummyseat = adjustSeat(deal.dummy.idx());		
-		deal.hands[myseat] = new Hand(tdata[2]);
-		deal.hands[deal.dummy.idx()] = new Hand(tdata[dummyseat]);
 
-		for(int i=0;i<trick_data.length()/2;i++){
-			String card = trick_data.substring(2*i,2*i+2);
-			showTrickPlayed(card);
-		}				
-	}
+	/*
+	 * return where to display a card
+	 */
+	int hpsuitRankIDX(int rank){ return 15-rank;}
+	
 	void showTrickPlayed(String card){
 		int dummyseat = adjustSeat(deal.dummy.idx());
 		int dummy = deal.dummy.idx();		
 		int p = deal.player.idx();
 		Card c = new Card(card);
 		//remove card from table
-		if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,15-c.ridx()); 
-		else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,15-c.ridx());
+		if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx())); 
+		else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx()));
 		// record in the history
 		deal.play_card(c);
 		playGrid.setWidget(playHistoryRow, p, new HTML(card));
@@ -251,6 +250,7 @@ class Panels extends Composite{
 			deal.next_trick();
 			playHistoryRow++;
 		}
+		playGrid.setWidget(playHistoryRow, deal.player.idx(), new HTML("?"));
 	}
 
 	int adjustSeat(int seat){return (2+seat-myseat)%4;}
@@ -261,35 +261,54 @@ class Panels extends Composite{
 			hand_id = Integer.parseInt(msg.args[0]);
 			String hands = msg.args[2];
 			bidhistory = msg.args[3];
-			for (int i = 0;i<4;i++)for (int j = 0;j<4;j++)tdata[i][j] = "";
 			trick_data = msg.args[4];
 			debug("handlData: "+hands);
-			deal = new Deal(new Orientation((hand_id-1) % 4));
-			
+			for (int i = 0;i<4;i++)for (int j = 0;j<4;j++)tdata[i][j] = "";			
 			String[] hs = hands.split("\\|");
 			for(int i=0;i<hs.length;i++){
 				System.out.println(hs[i]);
 				int seat = Integer.parseInt(hs[i].substring(0,1));
 				if (i == 0) myseat = seat;
 				int fix = adjustSeat(seat);
-				//Hand h = new Hand(hs[i].substring(2));
-				tdata[fix] = hs[i].substring(2).split("\\.");
+				String[] tmp = hs[i].substring(2).split("\\.");
+				for(int j=0;j<tmp.length;j++)
+					//if (tmp[j])
+					tdata[fix][j]=tmp[j]; 
 			}
 			//TODO, handle I am dummy case
-			trackBidHistory();
-			show_4hands();			
+			process();		
 		} else if (msgname == 'a'){
 			bidhistory = msg.args[1];
 			debug(bidhistory);
+			process();
 		} else if (msgname == 'p'){
 			trick_data = msg.args[1];
 			debug(trick_data);
-			int len = trick_data.length();
-			String card = trick_data.substring(len-2,len);
-			showTrickPlayed(card);			
+			process();
 		}
 	}	
 	
+	private void process() {
+		// TODO Auto-generated method stub
+		deal = new Deal(new Orientation((hand_id-1) % 4));
+		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
+		
+		trackBidHistory();
+		show_4hands();
+
+		if (deal.trick == null) return;
+		playHistoryRow = 0;
+		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
+		int dummyseat = adjustSeat(deal.dummy.idx());		
+		deal.hands[myseat] = new Hand(tdata[2]);
+		deal.hands[deal.dummy.idx()] = new Hand(tdata[dummyseat]);
+
+		for(int i=0;i<trick_data.length()/2;i++){
+			String card = trick_data.substring(2*i,2*i+2);
+			showTrickPlayed(card);
+		}				
+		
+	}
 	public void sendBid(String b){
 		//check if it is my turn first
 		if (((hand_id-1+myseat+bidhistory.length()/2)%4) != 0) return;	
@@ -310,7 +329,8 @@ class Panels extends Composite{
 }
 
 class MessageClient implements ResponseTextHandler {
-	static String website = "http://127.0.0.1:4080/postit.yaws?flproxyB=";
+	//static String website = "http://127.0.0.1:10101/postit.yaws?flproxyB=";
+	static String website = "http://142.133.118.126:10101/postit.yaws?flproxyB=";
 	Object owner;
 	String to_send = "";
 	MessageClient(Object caller){

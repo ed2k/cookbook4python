@@ -16,7 +16,7 @@ public class Bid {
 	public static final int REDOUBLE = 40; /* surcontre */
 
 	public static final int IGNORED = -1;
-	public static final int NOTRUMP = 0;
+	public static final int NOTRUMP = 4;
 	private static final int MAX_BID = 7;
 	private static final int MIN_BID = 1;
 	/* use Card.CLUBS, Card.HEART etc for the others */
@@ -53,10 +53,12 @@ public class Bid {
 	}
 
 	public void setSuit(int s)  {
-		if ((s != IGNORED) && ((s < NOTRUMP) || (s > Card.SPADES)))
+		if ((s != IGNORED) && ((s < 0) || (s > Card.SPADES))){
 			return;
-		if ((value != PASS) && (value != IGNORED) && (s == IGNORED))
+		}
+		if ((value != PASS) && (value != IGNORED) && (s == IGNORED)){		
 			return;
+		}
 		this.suit = s;
 	}
 

@@ -17,8 +17,7 @@ public class Orientation implements Comparable{
 
 	public int idx() { return value; }
 	public boolean isPartner( int v )  {
-		cat.debug("isPartner(): is "+v+" partner of "+value+" ?");
-		if ((v < NORTH) || (v > WEST)) 
+		if ((v < 0) || (v > 3)) 
 			return false;
 		if ( ((value == NORTH) || (value == SOUTH)) && 
 				((v == NORTH) || (v == SOUTH)))
@@ -35,45 +34,30 @@ public class Orientation implements Comparable{
 	 * @return true if the orientation represented by o is a partner with this object's orientation.
 	 */
 	public boolean isPartner(Orientation o) {
-		cat.debug("> isPartner(): o="+o.toString());
 		boolean partner = false;
-
-			partner = isPartner(o.idx());
-
-		cat.debug("< isPartner(): "+partner);
+		partner = isPartner(o.idx());
 		return partner;
 	}
 
 	public Orientation getPartner() {
-		cat.debug("> getPartner(): "+value);
 		Orientation partner = null;
 		if (value==NORTH) partner =new Orientation(Orientation.SOUTH);
 		if (value==SOUTH) partner = new Orientation(Orientation.NORTH);
 		if (value==WEST) partner = new Orientation(Orientation.EAST);
 		if (value==EAST) partner = new Orientation(Orientation.WEST);
-		cat.debug("< getPartner(): "+partner.toString());
 		return partner;
 	}
 
 	public static int next(int value)  {
-		cat.debug("next(): value= "+value);
-		if ((value < NORTH) || (value > WEST)) return NORTH;
-		if (value == WEST) return NORTH;
-		return (value+1);
+		return (value+1)%4;
 	}
 
 	/**
 	 * @return the next orientation value. Does not modify the current object.
 	 */
 	public Orientation next(){
-		cat.debug("> next(): val="+value);
-		Orientation o = null;
-
-			int next_val = Orientation.next(value); 
-			o = new Orientation(next_val);
-
-
-		cat.debug("< next(): "+o.idx());
+		int next_val = Orientation.next(value); 
+		Orientation o = new Orientation(next_val);
 		return o;
 	} 
 

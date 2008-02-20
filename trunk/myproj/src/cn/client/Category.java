@@ -6,18 +6,21 @@ public class Category {
 		return _obj;
 	}
 	public void debug(String s){
-		
+		output(s);				
 	}
 	public void fatal(String s){
-		
+		output(s);				
 	}
 	public void error(String s){
-		
+		output(s);				
 	}
 	public void info(String s){
-		
+		output(s);		
 	}
 	public void warn(String s){
-		
+		output(s);
+	}
+	void output(String s){
+		System.out.println(s);
 	}
 }
