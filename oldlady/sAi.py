@@ -89,10 +89,9 @@ class ComputerPlayer:
         track of what cards have been played or anything.
         """
 
-        self.play_from_hand (self.seat)
+        return self.play_from_hand (self.seat)
         # normally player just play its own card
         # so we return what card played to table manager
-        return self.deal.curcard
 
     def play_dummy (self):
         """
@@ -102,8 +101,7 @@ class ComputerPlayer:
         no differently than playing its own.
         """
         assert self.seat == self.deal.declarer
-        self.play_from_hand (self.deal.dummy)
-        return self.deal.curcard
+        return self.play_from_hand (self.deal.dummy)
 
     def play_from_hand (self, player):
         """
@@ -121,7 +119,7 @@ class ComputerPlayer:
         if trick.leader == player:
             # Lead the highest-ranked card in the hand.
             hand.sort (by_rank, None, True)
-            self.deal.play_card (hand[0])
+            return hand[0]
 
         elif sbridge.team (trick.winner) == sbridge.team (player):
             # Dump the lowest-ranked card, non-trump if possible.
@@ -131,7 +129,7 @@ class ComputerPlayer:
             if len (candidates) == 0:
                 candidates = hand
             candidates.sort (by_rank)
-            self.deal.play_card (candidates[0])
+            return candidates[0]
 
         else:
             # Try to take the trick with the lowest-ranked card possible.
@@ -145,7 +143,7 @@ class ComputerPlayer:
                 if len (candidates) == 0:
                     candidates = in_suit
                 candidates.sort (by_rank)
-                self.deal.play_card (candidates[0])
+                return candidates[0]
             elif len (trumps) > 0:
                 candidates = []
                 if trick.cards[trick.winner].suit == self.deal.contract.denom:
@@ -153,10 +151,10 @@ class ComputerPlayer:
                 if len (candidates) == 0:
                     candidates = trumps
                 candidates.sort (by_rank)
-                self.deal.play_card (candidates[0])
+                return candidates[0]
             else:
                 garbage.sort (by_rank)
-                self.deal.play_card (garbage[0])
+                return garbage[0]
 
 def by_rank (x, y):
     """

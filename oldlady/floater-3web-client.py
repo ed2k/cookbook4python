@@ -29,4 +29,4 @@ if __name__ == "__main__":
       handleData(st,data)
 
       message = handle_auction(st)   
-      time.sleep(1+random.random())
+      time.sleep(random.random())

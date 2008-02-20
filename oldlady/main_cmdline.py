@@ -179,15 +179,13 @@ class App:
                     card = self.ais[self.deal.player].play_self ()
                     # notify other players
                     for ai in self.ais:
-                        if ai.seat != self.deal.player:
-                            ai.deal.play_card(card)
+                        ai.deal.play_card(card)
                     self.deal.play_card(card)
                 else:
                     card = self.ais[self.deal.declarer].play_dummy ()
                     # notify other players
                     for ai in self.ais:
-                        if ai.seat != self.deal.declarer:
-                            ai.deal.play_card(card)
+                        ai.deal.play_card(card)
                     self.deal.play_card(card)
     ##########################################################################
     #
@@ -397,5 +395,5 @@ if __name__ == "__main__":
     import time
     while True:
         app.tableau_button_release_event_cb (None, None)
-        time.sleep(1)
+        time.sleep(0.1)
         
