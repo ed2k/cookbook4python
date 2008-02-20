@@ -15,15 +15,15 @@ public class Card implements Comparable{
 	/**
 	 * The various bridge colours. They are set in the bridge order.
 	 */
-	public static final int CLUBS = 1;
-	public static final int DIAMOND = 2;
-	public static final int HEART = 3;
-	public static final int SPADES = 4;
+	public static final int CLUBS = 0;
+	public static final int DIAMOND = 1;
+	public static final int HEART = 2;
+	public static final int SPADES = 3;
 
 	/**
 	 * The various card numbers. The 1 is the ace. But it's the highest card in HonourValue
 	 */
-	public static final int ACE = 1;
+	public static final int ACE = 14;
 	public static final int KING = 13;
 	public static final int QUEEN = 12;
 	public static final int JACK = 11;
@@ -32,7 +32,7 @@ public class Card implements Comparable{
 	 * Provided for help within this class
 	 */
 	private static final int MIN_VALUE = 1;
-	private static final int MAX_VALUE = 13;
+	private static final int MAX_VALUE = 14;
 
 	private int value = 1;
 	private int colour = CLUBS;
@@ -45,13 +45,16 @@ public class Card implements Comparable{
 	 * @throws BadTypeException if you set wrong input values.
 	 */ 
 	public Card(int value, int colour) {
-		cat.debug("> Card(): value = " + value + " colour = "+ colour);
-
-		if ((value < MIN_VALUE) || (value > MAX_VALUE))
+		if ((value < MIN_VALUE) || (value > MAX_VALUE)){
+			cat.error("Card: value not in 1-14 "+value);
 			return;
-		if ((colour < CLUBS) || (colour > SPADES))
+		}
+		if ((colour < CLUBS) || (colour > SPADES)){
+			cat.error("Card: suit not in 0-3 "+colour);
 			return;
+		}
 		this.value = value;
+		if (value == 1)this.value = ACE;
 		this.colour = colour;
 	}
 
@@ -104,24 +107,28 @@ public class Card implements Comparable{
 		if (r==ACE)return 14;
 		return r;
 	}
+	/*
+	 * return 2-14 == 23-KA index
+	 */
 	public int ridx(){
 		if (value==ACE)return 14;
 		return value;
 	}
+	/*
+	 * return 0-3 == SHDC index
+	 */
 	public int sidx(){
-		return 3-colour;
+		return 3-(colour);
 	}
 	/*
 	 * @return number of the card (in letters).
 	 */
 	public static String showCardValue(int value) {
-		cat.debug("> showCardValue(): value = "+ value);
 		String s = "";
 		if ( value < 11) {
 			Integer i = new Integer(value);
 			s = i.toString();
 		}
-
 		if (value == Card.ACE)
 			s = "ACE_SHORT";
 		if (value == Card.JACK)
@@ -146,7 +153,6 @@ public class Card implements Comparable{
 	 * @return colour of the card, in a short string. (abreviated). Depends on your country.
 	 */
 	public static String showCardColour(int colour) {
-		cat.debug("> showCardColour(): colour = "+colour);
 		String s = "";
 
 		switch(colour){
@@ -167,7 +173,7 @@ public class Card implements Comparable{
 		break;
 		}
 
-		cat.debug("< showCardColour(): colour = "+ colour+ " string= "+s);
+		//cat.debug("< showCardColour(): colour = "+ colour+ " string= "+s);
 		return s;
 	}
 
@@ -214,7 +220,7 @@ public class Card implements Comparable{
 		return -1;
 	}
 	public boolean equals(Object obj){
-		cat.debug("Card.equals()");
+		//cat.debug("Card.equals()");
 		if (obj instanceof Card) {
 			Card c = (Card) obj;
 			if ((c.getColour()==colour) && (c.getValue()==value))

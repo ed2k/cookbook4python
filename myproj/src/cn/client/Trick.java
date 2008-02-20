@@ -42,9 +42,7 @@ public class Trick {
 	Orientation leader;
 
 	public Trick(Orientation player, Bid trump) {
-		cat.debug("> Trick()");
 		cards = new Card[NUMBER_OF_CARDS];
-		cat.debug("< Trick()");
 		this.player = player;
 		this.trump = trump;
 		leader = player;

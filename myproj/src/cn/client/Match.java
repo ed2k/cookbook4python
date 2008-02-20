@@ -83,12 +83,12 @@ public class Match {
 	public Orientation getDealer() { return dealer; }
 
 	public void nextGame() {
-		cat.debug("> nextGame()");
+		//cat.debug("> nextGame()");
 
-			vuln.setVulnerability(vuln.next());
-			dealer = dealer.next();
+		vuln.setVulnerability(vuln.next());
+		dealer = dealer.next();
 
 
-		cat.debug("< nextGame(): vuln="+vuln+" dealer="+dealer);
+		//cat.debug("< nextGame(): vuln="+vuln+" dealer="+dealer);
 	}
 }
