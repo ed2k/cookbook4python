@@ -25,7 +25,7 @@ public class jMine extends Panel {
 class MineCanvas extends Canvas{
    int width, height;
    int status = 0;
-//    Image imgButton;
+   //    Image imgButton;
     
    int xnum=10, ynum=10;
    int xGrid=16, yGrid=16;
@@ -45,10 +45,11 @@ class MineCanvas extends Canvas{
    String trick_data = "";
    static String[] suit2str = {"S","H","D","C","N"};
    static String[] seat2str = {"N","E","S","W"};
+   MessageClient mc;
    MineCanvas() {
       tdata = new String[4][4];
       for (int i = 0;i<4;i++)for (int j = 0;j<4;j++){
-               tdata[i][j] = "";
+         tdata[i][j] = "";
       }
       bidinput_data = new String[8][5];
       for (int i = 0;i<7;i++){
@@ -62,31 +63,32 @@ class MineCanvas extends Canvas{
       bidinput_data[7][3] = "xx";      
       bidinput_data[7][4] = ""; 
       xnum=30;ynum=16;
-//       MediaTracker tracker = new MediaTracker(this);
-//       imgButton =getToolkit().getImage("mButton.gif");
-//       try {
-//          tracker.addImage(imgButton, 0);
-//          tracker.waitForAll();
-//       } catch (Exception e) {
-//          e.printStackTrace();
-//       }
+      //       MediaTracker tracker = new MediaTracker(this);
+      //       imgButton =getToolkit().getImage("mButton.gif");
+      //       try {
+      //          tracker.addImage(imgButton, 0);
+      //          tracker.waitForAll();
+      //       } catch (Exception e) {
+      //          e.printStackTrace();
+      //       }
       width = xGrid*xnum;
       height = xGrid*ynum + 32; // + panel height
       addMouseListener(new MouseEventHandler());
       //addMouseMotionListener(new MouseMotionEventHandler());
-      Timer t = new Timer();
-      t.schedule(new MessageClient(this),1000);
+      //Timer t = new Timer();
+      //t.schedule(new MessageClient(this),1000);
+      mc = new MessageClient(this);
       String[] s = {"N"};
       FloaterMessage m = new FloaterMessage("request_seat",s);
-      MessageClient.send(m.toString());
+      mc.send(m.toString());
    }
    public void sendBid(String bid){
       String[] s= {String.valueOf(hand_id),bidhistory+bid};
-      MessageClient.send(new FloaterMessage("auction_status",s).toString());
+      mc.send(new FloaterMessage("auction_status",s).toString());
    }
    public void sendPlay(String p){
       String[] s= {String.valueOf(hand_id),trick_data+p};
-      MessageClient.send(new FloaterMessage("play",s).toString());
+      mc.send(new FloaterMessage("play",s).toString());
    }  
    public void paint(Graphics g) {
       update(g);
@@ -111,25 +113,29 @@ class MineCanvas extends Canvas{
    }
    public void drawTrick(Graphics g){
 
-		int dealer = hand_id % 4;
-		Deal deal = new Deal(new Orientation(dealer));
-		for(int i=0;i<bidhistory.length()/2;i++){
-			Bid bid = new Bid(bidhistory.substring(2*i,2*i+2));
-			deal.bid(bid);
-		}
-		int dummyseat = (2+deal.dummy.getOrientation()-myseat)%4;
-		deal.hands[myseat] = new Hand(tdata[2]);
-		deal.hands[deal.dummy.getOrientation()] = new Hand(tdata[dummyseat]);
+      int dealer = hand_id % 4;
+      Deal deal = new Deal(new Orientation(dealer));
+      for(int i=0;i<bidhistory.length()/2;i++){
+         Bid bid = new Bid(bidhistory.substring(2*i,2*i+2));
+         deal.bid(bid);
+      }
+      int dummyseat = (2+deal.dummy.idx()-myseat)%4;
+      deal.hands[myseat] = new Hand(tdata[2]);
+      deal.hands[deal.dummy.idx()] = new Hand(tdata[dummyseat]);
 
-      int x = trick_layout[0]+dealer*xGrid;
+      int x = trick_layout[0]+deal.player.idx()*xGrid;
       int y = trick_layout[1];
-		for(int i=0;i<trick_data.length()/2;i++){
-			String card = trick_data.substring(2*i,2*i+2);
-                        g.drawString(trick_data.substring(2*i,2*i+2),x,y); 
-			deal.play_card(new Card(card));
-			if(deal.currenTrickCompleted())y+= yGrid;
-			x = trick_layout[0]+deal.player.getOrientation()*xGrid;
-		}
+      for(int i=0;i<trick_data.length()/2;i++){
+         String card = trick_data.substring(2*i,2*i+2);
+         g.drawString(card,x,y); 
+         deal.play_card(new Card(card));
+         if(deal.currenTrickCompleted()){
+            deal.next_trick();
+            y+= yGrid;
+         }
+         x = trick_layout[0]+deal.player.idx()*xGrid;
+      }
+      //g.drawString("?",x,y);
    }   
    public void drawBidInput(Graphics g){
       for(int i=0;i<8;i++){
@@ -240,36 +246,66 @@ class MineCanvas extends Canvas{
    }
 }//end of mineCanvas
 
-class MessageClient extends TimerTask {
-   Vector inbox;
-   static String website = "http://127.0.0.1:8080/postit.yaws?flproxyB=";
-   MineCanvas owner;
-   MessageClient(MineCanvas caller){
-      owner = caller;
-   }
-   public static void send(String m){
-      try{
-         System.out.println(m);
-         String u = website+URLEncoder.encode(m+"\r\n");
-         URL url = new URL(u);
+class HTTPRequest {
+   public static String get(String website){
+      StringBuffer buf = new StringBuffer();
+      try {
+         URL url = new URL(website);
          InputStream in = url.openStream();
          // Create a buffered input stream for efficency
          BufferedInputStream bufIn = new BufferedInputStream(in);
          // Repeat until end of file
-         String line = "";
+
          for (;;) {
             int data = bufIn.read();
             // Check for EOF
             if (data == -1)  break;
             else {
-               System.out.print((char)data);
+               buf.append((char)data);
             }
          }
       }catch (MalformedURLException mue) {
          System.err.println ("Invalid URL");
       } catch (IOException ioe) {
          System.err.println ("I/O Error - " + ioe);
+      }      
+      return buf.toString();
+   }
+}
+class MessageClient extends TimerTask {
+   Vector inbox;
+   static String website = "http://127.0.0.1:10101/postit.yaws?flproxyB=";
+   MineCanvas owner;
+   MessageClient(MineCanvas caller){
+      owner = caller;
+   }
+   public void send(String tosend){
+      String u = "";
+      try {
+         u = website+URLEncoder.encode(tosend+"\r\n","utf-8");
+      } catch (Exception e){e.printStackTrace();}
+      System.out.println(">"+u);
+      String responseText = HTTPRequest.get(u);
+
+      String[] lines = responseText.split("\\r\\n");
+      //p.debug(responseText);
+      for (int k=0;k<lines.length;k++) {
+         String line = lines[k];	
+         if(line.startsWith("nothing")) break; 
+         if(line == "") continue;	
+         if(line.startsWith("T4"))	continue;
+         //p.debug(line);	
+         System.out.println (line);
+
+         FloaterMessage m = new FloaterMessage(line);
+         System.out.print(m.name+":");
+         if(m.args != null)
+            for(int i=0;i<m.args.length;i++)
+               System.out.print(m.args[i]+"|");
+         System.out.println("");
+         owner.handleData(m);
       }
+
    }
 
    public void run(){
@@ -310,7 +346,7 @@ class MessageClient extends TimerTask {
                }
             }
          }
-      }catch (MalformedURLException mue) {
+      } catch (MalformedURLException mue) {
          System.err.println ("Invalid URL");
       } catch (IOException ioe) {
          System.err.println ("I/O Error - " + ioe);
