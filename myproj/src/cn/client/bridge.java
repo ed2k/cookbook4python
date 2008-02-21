@@ -28,8 +28,6 @@ public class bridge implements EntryPoint {
 		Button button = new Button("test");
 		button.addClickListener(new ClickListener() {
 			public void onClick(Widget sender) {
-				MessageClient.send("", panel);
-				//panel.test();
 			}
 		});
 		Button bClear = new Button("clear");
@@ -51,7 +49,7 @@ class Panels extends Composite{
 	DockPanel dock ;
 	Deal deal;
 	TabPanel tabs;
-	Grid playGrid; int playHistoryRow;
+	Grid playGrid,bidGrid; int playHistoryRow;
 	HTML debug= new HTML("");
 	HorizontalSplitPanel hSplit;
 	VerticalPanel[] dockHand;
@@ -76,18 +74,18 @@ class Panels extends Composite{
 	}
 	public Panels() {	
 		tdata = new String[4][4];
+		bidGrid = new Grid(2,4);
 		playGrid = new Grid(13,4); playHistoryRow = 0;
+		playGrid.setWidth("95px");
 		ScrollPanel scroller = new ScrollPanel(playGrid);
+		scroller.setStyleName("ks-layouts-Scroller");
 		scroller.setPixelSize(125,125);
-		//scroller.setStyleName("ks-layouts-Scroller");
-
+		
 		DockPanel dock = new DockPanel();
 		dockHand = new VerticalPanel[4];
 		hpSuit = new Grid[4][4];
-		
-		//dockLHO.add(new HTML("West"));
 //		dockMe.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
-//		dockRHO.setHorizontalAlignment(VerticalPanel.ALIGN_LEFT);
+
 		for (int i =0;i<4;i++){
 			dockHand[i] = new VerticalPanel();
 			for(int j=0;j<4;j++){
@@ -105,7 +103,10 @@ class Panels extends Composite{
 		VerticalPanel cvp = new VerticalPanel();
 		Grid g = new Grid(1,4);
 		g.setWidth("95px");
-		for(int i=0;i<4;i++)g.setWidget(0, i, new HTML(seat.substring(i,i+1)));
+		for(int i=0;i<4;i++){
+			g.setText(0, i, seat.substring(i,i+1));
+			bidGrid.setText(0,i,seat.substring(i,i+1));
+		}
 		cvp.add(g);
 		cvp.add(scroller);
 		dock.add(cvp, DockPanel.CENTER);
@@ -114,8 +115,8 @@ class Panels extends Composite{
 		dock.setCellHorizontalAlignment(dockHand[2], DockPanel.ALIGN_CENTER);
 
 		VerticalPanel vp = new VerticalPanel();
-
 		vp.add(dock);
+		
 		tabs = new TabPanel();
 		showBidInputPanel();
 		//tabs.add(grid, "Bids");
@@ -126,7 +127,6 @@ class Panels extends Composite{
 
 		hSplit = new HorizontalSplitPanel();
 		hSplit.setLeftWidget(tabs);
-		//hSplit.setRightWidget(debug);
 		initWidget(hSplit);
 		hSplit.setSize("100%", "650px");
 //	    Timer t = new Timer() {
@@ -165,7 +165,8 @@ class Panels extends Composite{
 				grid2.setWidget(r, c, b);
 				b.addClickListener(bidclick);
 			}
-		}    	
+		}   
+		vp.add(bidGrid);
 		vp.add(grid1);
 		vp.add(grid2);
 		tabs.add(vp,"Bids");
@@ -213,18 +214,22 @@ class Panels extends Composite{
 	void trackBidHistory(){
 	    int pos = (hand_id-1) % 4;
 	    int row = 0;
+	    bidGrid.resizeRows(1); //clear history
+	    bidGrid.resizeRows(2);
 	    for(int i=0;i<pos;i++){
-	    	playGrid.setWidget(0, i, new HTML("--"));
+	    	playGrid.setText(0, i, "--");
 	    }
 		for(int i=0;i<bidhistory.length()/2;i++){
 			String b = bidhistory.substring(2*i,2*i+2);
 			Bid bid = new Bid(b);
 			deal.bid(bid);
-			playGrid.setWidget(row, pos, new HTML(b));
+			playGrid.setText(row, pos, b);
+			bidGrid.setText(1+row, pos, b);
 			pos++;
 			if (pos > 3){
 				pos = 0;
 				row++;
+				bidGrid.resizeRows(2+row);
 			}		
 			playGrid.setWidget(row, pos, new HTML("?"));			
 		}		
@@ -250,7 +255,8 @@ class Panels extends Composite{
 			deal.next_trick();
 			playHistoryRow++;
 		}
-		playGrid.setWidget(playHistoryRow, deal.player.idx(), new HTML("?"));
+		if (playHistoryRow < 13)
+			playGrid.setWidget(playHistoryRow, deal.player.idx(), new HTML("?"));
 	}
 
 	int adjustSeat(int seat){return (2+seat-myseat)%4;}
@@ -318,12 +324,15 @@ class Panels extends Composite{
 		if (c=='P')bid = " p";
 		else if (c=='R')bid = "xx";
 		else if (c=='D')bid = " x";
-		String[] s= {String.valueOf(hand_id),bidhistory+bid};
+		bidhistory += bid;
+		String[] s= {String.valueOf(hand_id),bidhistory};
 		MessageClient.send(new FloaterMessage("auction_status",s).toString(), this);
 	}
 	void sendPlay(String p) {
 		// TODO Auto-generated method stub
-		String[] s= {String.valueOf(hand_id),trick_data+p};
+		trick_data += p;
+		String[] s= {String.valueOf(hand_id),trick_data};
+		showTrickPlayed(p);
 		MessageClient.send(new FloaterMessage("play",s).toString(), this);		
 	}
 }
@@ -367,74 +376,6 @@ class MessageClient implements ResponseTextHandler {
 	}
 }
 
-class FloaterMessage {
-	String name = "";
-	String mfrom = "mfrom";
-	String mid ="33";
-	String[] args;
-	static String[] seat2str = {"N","E","S","W"};
-	FloaterMessage(String cmd, String[] seqs){
-		if(cmd == "request_seat"){
-			name = "S";
-			args = new String[4];
-			args[0] = mfrom;
-			args[1] = seqs[0];
-			args[2] = "hostname";
-			args[3] = "port";
-		} else if (cmd == "auction_status"){
-			name = "a";
-			args = seqs;
-		} else if (cmd == "play"){
-			name = "p";
-			args = seqs;
-		}
-	}
-	FloaterMessage(String line){
-		name = "";
-		if(line.startsWith("Floater '")){ 
-			name = "Floater '";
-			return;
-		} 
-		name = line.substring(0,1);
-		String fsep = "\\\\";
-		String[] f = line.split(fsep);
-		int num_of_args = Integer.parseInt(f[0].substring(1));
-		int len_pfrom = Integer.parseInt(f[1]);
-		int len_pid = Integer.parseInt(f[2]);
-		String reline = MyUtil.join(f,3,"\\");
-		mfrom = reline.substring(0,len_pfrom);
-		String tmp = reline.substring(len_pfrom);
-		mid = tmp.substring(0,len_pid);
-
-		if (num_of_args == 0) return;
-		tmp = tmp.substring(len_pid);
-		f = tmp.split(fsep);
-
-		int[] len_args = new int[num_of_args];
-		for(int i=0;i<num_of_args;i++)len_args[i] = Integer.parseInt(f[i]);
-
-		args = new String[num_of_args];
-		tmp = MyUtil.join(f, num_of_args,"\\");
-		for(int i=0;i<num_of_args;i++){
-			args[i] = tmp.substring(0,len_args[i]);
-			tmp = tmp.substring(len_args[i]);
-		}
-	}
-	public String encode_args(String[] seqs){
-		String[] len_seqs = new String[seqs.length];
-		for(int i=0;i<seqs.length;i++){
-			len_seqs[i] = String.valueOf(seqs[i].length());
-		}
-		return MyUtil.join(len_seqs,"\\")+"\\"+MyUtil.join(seqs,"");
-	}
-	public String packmsg(String op, String[] args){
-		String[] s = {mfrom,mid};
-		return op+String.valueOf(args.length)+"\\"+encode_args(s)+encode_args(args);
-	}
-	public String toString(){
-		return packmsg(name, args);
-	}
-}
 
 class CardButton extends Button{
 	int seat;
