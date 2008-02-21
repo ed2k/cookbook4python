@@ -49,7 +49,8 @@ class Panels extends Composite{
 	DockPanel dock ;
 	Deal deal;
 	TabPanel tabs;
-	Grid playGrid,bidGrid; int playHistoryRow;
+	Grid playGrid,bidGrid, cardCounter; 
+	int playHistoryRow;
 	HTML debug= new HTML("");
 	HorizontalSplitPanel hSplit;
 	VerticalPanel[] dockHand;
@@ -84,10 +85,15 @@ class Panels extends Composite{
 		DockPanel dock = new DockPanel();
 		dockHand = new VerticalPanel[4];
 		hpSuit = new Grid[4][4];
-//		dockMe.setHorizontalAlignment(VerticalPanel.ALIGN_CENTER);
-
 		for (int i =0;i<4;i++){
 			dockHand[i] = new VerticalPanel();
+			if (i==1){
+				dockHand[i].add(new HTML("> ")); //cosmetic
+				dockHand[i].add(new HTML("East"));
+			} else if (i==3) {
+				dockHand[i].add(new HTML("< "));
+				dockHand[i].add(new HTML("West"));
+			}
 			for(int j=0;j<4;j++){
 				hpSuit[i][j] = new Grid(1,14);
 				hpSuit[i][j].setCellSpacing(0);
@@ -113,13 +119,20 @@ class Panels extends Composite{
 		dock.setHorizontalAlignment(DockPanel.ALIGN_CENTER);
 		dock.setCellHorizontalAlignment(dockHand[0], DockPanel.ALIGN_CENTER);
 		dock.setCellHorizontalAlignment(dockHand[2], DockPanel.ALIGN_CENTER);
+		
+		cardCounter = new Grid(4,14);
+		for(int j=0;j<4;j++)cardCounter.setText(j,0, Card.SUIT2STR[3-j]);
+		for (int i=1;i<14;i++)for(int j=0;j<4;j++) {
+			cardCounter.setWidget(j,i, new Button(Card.rank2str(hpsuitRankIDX(i))));
+		}
 
 		VerticalPanel vp = new VerticalPanel();
 		vp.add(dock);
+		vp.add(cardCounter);
 		
 		tabs = new TabPanel();
-		showBidInputPanel();
-		//tabs.add(grid, "Bids");
+		//Biding input layout is in a seperate funciton
+		showBidInputPanel(); 
 		tabs.add(vp, "Table");
 		//tabs.add(grid, "play");
 		tabs.setWidth("100%");
@@ -248,6 +261,7 @@ class Panels extends Composite{
 		//remove card from table
 		if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx())); 
 		else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx()));
+		cardCounter.getWidget(c.sidx(), hpsuitRankIDX(c.ridx())).addStyleDependentName("played");
 		// record in the history
 		deal.play_card(c);
 		playGrid.setWidget(playHistoryRow, p, new HTML(card));
@@ -261,6 +275,7 @@ class Panels extends Composite{
 
 	int adjustSeat(int seat){return (2+seat-myseat)%4;}
 	public void handleData(FloaterMessage msg){
+		//TODO, update graphic once all date has been processed
 		// ??? not working with substring(0,1) == "*"
 		char msgname = msg.name.charAt(0);
 		if(msgname == '*'){
@@ -281,7 +296,7 @@ class Panels extends Composite{
 					//if (tmp[j])
 					tdata[fix][j]=tmp[j]; 
 			}
-			//TODO, handle I am dummy case
+			clearCardCounter();
 			process();		
 		} else if (msgname == 'a'){
 			bidhistory = msg.args[1];
@@ -294,6 +309,11 @@ class Panels extends Composite{
 		}
 	}	
 	
+	private void clearCardCounter() {
+		// TODO Auto-generated method stub
+		for(int i=0;i<4;i++)for(int j=1;j<14;j++)
+			cardCounter.getWidget(i, j).removeStyleDependentName("played");
+	}
 	private void process() {
 		// TODO Auto-generated method stub
 		deal = new Deal(new Orientation((hand_id-1) % 4));
@@ -384,12 +404,5 @@ class CardButton extends Button{
 		super(label, listener);
 		this.suit = suit;
 		this.seat = seat;
-	}
-}
-class PlayHistory extends Grid{
-	int currentRow;
-	PlayHistory(int r, int c){
-		super(r,c);
-		currentRow = 0;
 	}
 }
