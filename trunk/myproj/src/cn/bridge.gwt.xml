@@ -1,0 +1,6 @@
+<module>
+	<inherits name='com.google.gwt.user.User'/>
+	<inherits name="com.google.gwt.http.HTTP"/>
+        <entry-point class='cn.client.bridge'/>
+	<stylesheet src='bridge.css'/>
+</module>
