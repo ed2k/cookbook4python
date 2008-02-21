@@ -18,10 +18,11 @@ if __name__ == "__main__":
       print 's>',message
       #if message is None:
       #   message = st.encode_message('request_seat',[0])
+      # todo if NORTH is dummy play for SOUTH
       try:
          data = urllib.urlopen(url+urllib.quote(message+'\r\n'),proxies={}).read()
       except IOError:
-         # next turn could also be mine if I win in the last trick
+         # next turn could also be me if I win in the last trick
          message = st.encode_message('request_seat',[0])
          continue
       # check message
@@ -33,7 +34,6 @@ if __name__ == "__main__":
       if data != 'nothing': print 'r',[data]
 
       handleData(st,data)
-
       message = handle_auction(st)
-
+      #break
       time.sleep(random.random())

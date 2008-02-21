@@ -85,9 +85,9 @@ def table_handle(state,data):
              state.bid_status.data += o2f_bid(bid)
              rmsg.append(state.encode_message('auction_status',[str(state.hand_id),str(state.bid_status)]))
          else: # only lead play is possible here
-             # what if NORTH is dummy
-             if tbdeal.player == NORTH and tbdeal.dummy != NORTH: continue
-             if tbdeal.player == SOUTH and tbdeal.dummy == SOUTH: continue
+             # if NORTH is dummy, user takes control of SOUTH 
+             if tbdeal.player == NORTH : continue
+
              card = ais[tbdeal.player].play_self ()
              a = o2f_card(card)
              print tbdeal.player,'lead play',card
@@ -99,7 +99,7 @@ def table_handle(state,data):
           dummy = tbdeal.dummy
           if tbdeal.trick is None: continue
           if mfrom != MANAGERNAME:
-              if dummy == SOUTH:
+              if dummy == SOUTH or dummy == NORTH:
                   if tbdeal.player == WEST or tbdeal.player == EAST: continue
               elif tbdeal.player != NORTH: continue
               print dummy, 'is dummy, NORTH turn',tbdeal.player

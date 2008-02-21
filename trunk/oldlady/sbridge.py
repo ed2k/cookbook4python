@@ -22,24 +22,72 @@ import random
 
 def _(A): return A
 
-class gtk_ListStore:
-    data = []
-    def append(self):
-        self.data.append({})
-        return len(self.data)-1
-    def set(self, row, a, b):
-        self.data[row][a] = b
-        #print row,':',a,b
-    def foreach(self, func, a):
-        for idx in xrange(len(self.data)):
-            if func(self, None, idx, None): return
-    def get_value(self, idx, a):
-        if idx <0 or idx >= len(self.data):return None
-        if a not in self.data[idx]: return None
-        #print 'get',idx, a, self.data[idx][a]
-        return self.data[idx][a]
-    
+
+class BidGrid:
+    ''' n row 4 colum table to record bid N->W 0-3'''
+    col = 0
+    dealer = 0
+    row = 0
+    data = None
+    def __init__(self, dealer):
+        self.data = []
+        self.dealer = dealer
+        self.data.append([x+10 for x in xrange(dealer)])
+        #print self.data
+        self.col = dealer
+    def next(self):
+        self.col+=1
+        if self.col>3:
+            self.col = 0
+            self.row += 1
+    def prev(self):
+        self.col-=1
+        if self.col < 0:
+             self.col = 3
+             self.row -= 1
+    def end(self):
+        self.row = len(self.data)-1
+        if self.data[self.row] == []: self.row -= 1
+        self.col = len(self.data[self.row])-1
         
+    def append(self, bid):
+        print bid, self.row,self.col
+        self.data[self.row].append(bid)
+        self.col+=1
+        if self.col>3:
+            self.col = 0
+            self.data.append([])
+            self.row += 1
+    def begin(self):
+        self.col = self.dealer
+        self.row = 0
+    def getDeclarer(self):
+        contract, contractor = self.getContract()
+        print 'contract',contract, contractor
+        self.begin()
+        bid = self.getBid()
+        while team(self.col) != team(contractor) or bid is None or bid.denom != contract.denom:
+            self.next()
+            bid = self.getBid()
+        return self.col
+
+    def getContract(self):
+        print 'getcontract',str(self)
+        self.end()
+        for i in xrange(3):
+            if not self.getBid().is_pass(): return None
+            self.prev()
+        return (self.getBid(), self.col)
+    def getBid(self):
+        print 'getbid',self.row,self.col
+        return self.data[self.row][self.col]
+
+    def __str__(self):
+        s = []
+        for y in xrange(len(self.data)):
+            s.append(' '.join([str(x) for x in self.data[y]]))
+        return '\r\n'.join(s)
+                
 
 RANKS = range (2, 15)
 TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE = RANKS
@@ -127,11 +175,11 @@ class Bid:
 
     def __str__ (self):
         if self.is_pass ():
-            return "Pass"
+            return "Pass"[:2]
         elif self.is_double ():
-            return "Double"
+            return "Double"[:2]
         elif self.is_redouble ():
-            return "Redouble"
+            return "Redouble"[:2]
         else:
             return str (self.level) + denomination_to_string (self.denom)
 
@@ -233,11 +281,7 @@ class Deal:
         self.opening_lead = False
         self.tricks_taken = [0, 0]
 
-        self.model = gtk_ListStore()
-        if dealer != WEST:
-            self.iter = self.model.append ()
-        else:
-            self.iter = None
+        self.model = BidGrid(self.dealer)
 
     def legal_bids (self):
         """
@@ -288,11 +332,7 @@ class Deal:
             self.doubler = None
             self.redoubler = None
 
-        if self.player == WEST:
-            self.iter = self.model.append ()
-            # new round in a graphic sense
-
-        self.model.set (self.iter, self.player, bid)
+        self.model.append(bid)
         self.player = (self.player + 1) % 4
 
         if self.passes < 3 or (self.passes == 3 and self.contract is None):
@@ -308,21 +348,12 @@ class Deal:
         Transition from the bidding phase of the deal to the trick-taking
         phase.
         """
-
-        def find_declarer (model, path, iter, data):
-            for player in PLAYERS:
-                bid = model.get_value (iter, player)
-                if team (player) == team (self.contractor) and bid is not None and bid.denom == self.contract.denom:
-                    self.declarer = player
-                    return True
-            return False
-
         if self.contract is not None:
-            self.model.foreach (find_declarer, None)
+            self.declarer = self.model.getDeclarer()
             self.dummy = partner (self.declarer)
             self.player = (self.declarer + 1) % 4
             self.trick = Trick (self.player, self.contract.denom)
-            print 'dealer','NESW'[self.dealer],'player','NESW'[self.player], 'dummy','NESW'[self.dummy],'declarer','NESW'[self.declarer]
+            print 'dealer',self.dealer,'player',self.player, 'dummy',self.dummy,'declarer',self.declarer,'contract',self.contract
         else:
             self.contract = Bid (PASS)
 
