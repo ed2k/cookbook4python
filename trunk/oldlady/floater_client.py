@@ -374,7 +374,8 @@ def handleData(state, data):
          state.get_deal(message[3],message[5],message[6],message[7])
       elif message[0] == 'a':
          # assume hand_id is the same
-         state.bid_status = BidStatus(message[4])
+         m = message[4].replace('+',' ')
+         state.bid_status = BidStatus(m)
          #rmsg.append(handle_auction(state))
       elif message[0] == 'p':
          state.play_status = convert_str2play(message[4])
