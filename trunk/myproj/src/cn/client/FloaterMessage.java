@@ -2,12 +2,12 @@ package cn.client;
 import cn.client.*;
 
 public class FloaterMessage {
-	String name = "";
-	String mfrom = "mfrom";
-	String mid ="33";
-	String[] args;
-	static String[] seat2str = {"N","E","S","W"};
-	FloaterMessage(String cmd, String[] seqs){
+	public String name = "";
+	public String mfrom = "mfrom";
+	public String mid ="33";
+	public String[] args;
+	public static String[] seat2str = {"N","E","S","W"};
+	public FloaterMessage(String cmd, String[] seqs){
 		if(cmd == "request_seat"){
 			name = "S";
 			args = new String[4];
@@ -23,7 +23,7 @@ public class FloaterMessage {
 			args = seqs;
 		}
 	}
-	FloaterMessage(String line){
+	public FloaterMessage(String line){
 		name = "";
 		if(line.startsWith("Floater '")){ 
 			name = "Floater '";
