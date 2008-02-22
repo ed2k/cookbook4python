@@ -1,4 +1,5 @@
 package cn.client;
+import cn.client.*;
 
 public class FloaterMessage {
 	String name = "";

@@ -70,7 +70,7 @@ def table_handle(state,data):
          if mfrom != MANAGERNAME and tbdeal.trick is not None: return rmsg
          if mfrom != MANAGERNAME and tbdeal.player != NORTH: return rmsg
          #TODO check if it is the right bidder, and follow rule
-         state.bid_status = BidStatus(args[1])
+         state.bid_status = BidStatus(args[1].replace('+',' '))
          bid = f2o_bid(state.bid_status[-1])
          for ai in ais: ai.bid_made(bid)
          state.deal.bid(bid)
