@@ -1,0 +1,12 @@
+#summary One-sentence summary of this page.
+#labels Featured,yahoo,bridge,card,counter
+
+= Introduction =
+
+Card counter for yahoo bridge.
+
+
+= Details =
+
+ * java robot screen capture
+ * image comparison to find card played
