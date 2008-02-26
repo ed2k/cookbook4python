@@ -162,8 +162,11 @@ class Card:
 
     def __cmp__ (self, other):
         return self.suit.__cmp__ (other.suit) or self.rank.__cmp__ (other.rank)
+    def hcp(self):
+        if self.rank > 10: return self.rank-10
+        return 0
 
-
+KIDX = {'c':0,'d':1,'h':2,'s':3,'n':4}
 class Bid:
     """
     A bid made during the opening phase of a deal.
@@ -211,7 +214,11 @@ class Bid:
 
         return self.level == REDOUBLE
 
-
+    def suit_type(self):
+        if self.denom == DIAMONDS or self.denom == CLUBS: return 'minor'
+        elif self.denom == SPADES or self.denom == HEARTS: return 'major'
+        return ''
+    
 class Trick:
     """
     A single trick during a deal.
@@ -578,9 +585,6 @@ class Rubber:
 
         return scoring
 
-class HandEvaluation:
-    def __init__(self, hand):
-        self.hand = hand
 
 
 def print_hand(hand):

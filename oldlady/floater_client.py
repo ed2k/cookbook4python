@@ -257,6 +257,7 @@ class State:
       if deal.player == ai.seat: card = ai.play_self()
       del ai
       return o2f_card(card)
+   
    def where_is_my_seat(self):
       try:
          return self.table_seated.index(self.clientname)
