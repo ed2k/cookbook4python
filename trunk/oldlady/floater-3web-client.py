@@ -35,5 +35,6 @@ if __name__ == "__main__":
 
       handleData(st,data)
       message = handle_auction(st)
-      #break
+      if message.find(' pxp p')>0: 
+         break
       time.sleep(random.random())
