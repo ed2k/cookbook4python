@@ -79,7 +79,7 @@ class BidGrid:
             self.prev()
         return (self.getBid(), self.col)
     def getBid(self):
-        print 'getbid',self.row,self.col
+        #print 'getbid',self.row,self.col
         return self.data[self.row][self.col]
 
     def __str__(self):
