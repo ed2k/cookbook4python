@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02111-1301, USA.
 
+# 4 robots play in terminal env.
 # basic program flow
 # 1. App() initialize all visiual components (optional)
 # 2. player take seat, sAi.ComputerPlayer(seat)
@@ -98,6 +99,18 @@ class App:
         """
 
         self.deal = self.rubber.next_deal ()
+        # for debuging biding, use the same deal
+        import floater_client
+        pbn = "K8652.976.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.KQ2.AQ97.42"
+        hands = pbn.split()
+        for p in sbridge.PLAYERS:
+            h = []
+            suits = hands[p].split('.')
+            for s in sbridge.SUITS:
+                for c in suits[3-s]:
+                    card = sbridge.Card(s,floater_client.PBN_HIDX[c.lower()]+2)
+                    h.append(card)
+            self.deal.hands[p] = h 
         self.distribute_deal()
 
         self.messages = []
@@ -151,7 +164,6 @@ class App:
         player's turn again.  If the human is dummy, he will still need
         to confirm each trick.
         """
-        print 'play_for_ais'
         while True:
             if self.deal.contract is not None and self.deal.contract.is_pass ():
                 self.messages = [_("Deal abandoned; all players passed")]
@@ -194,7 +206,6 @@ class App:
     ##########################################################################
 
     def tableau_button_release_event_cb (self, tableau, event):
-        print 'action', self.action
         if self.action == PLAY_CARD:
             if self.deal.trick is not None:
                 card = self.hand_renderers[self.deal.player].card_at (event.x, event.y)

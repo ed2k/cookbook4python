@@ -214,20 +214,12 @@ class State:
 
    def handle_auction(self):
       ''' try use oldlady engine '''
-      dealer = f2o((self.hand_id-1) % 4)
+      dealer = self.deal.dealer
 
-      ai = sAi.ComputerPlayer(dealer)
-
-      ai.seat = f2o(self.own_seat())
+      ai = sAi.ComputerPlayer(f2o(self.own_seat()))
       print 'dealer','NESW'[dealer],'my seat','NESW'[ai.seat]
-
-      deal = sbridge.Deal(dealer)
-      for p in sbridge.PLAYERS:
-         if self.deal.hands[p] is None:
-            deal.hands[p] = None
-         else: deal.hands[p] = self.deal.hands[p][:]
-
-      ai.deal = deal
+         
+      ai.new_deal(self.deal)
       print 'myhand',
       for c in ai.deal.hands[ai.seat]: print c,
       print
@@ -237,7 +229,7 @@ class State:
       if ai.deal.trick is None:
          bid = ai.bid()
          return o2f_bid(bid)
-
+      deal = ai.deal
       if ai.seat == deal.dummy: return None
       # first lead is over, everybody else see the dummy's hand
       

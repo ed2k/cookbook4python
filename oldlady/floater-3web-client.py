@@ -15,7 +15,7 @@ if __name__ == "__main__":
    st.hand_id = 9
    message = st.encode_message('request_seat',[0])
    while True:      
-      print 's>',message
+      #print 's>',message
       #if message is None:
       #   message = st.encode_message('request_seat',[0])
       # todo if NORTH is dummy play for SOUTH
@@ -31,7 +31,9 @@ if __name__ == "__main__":
          time.sleep(1)
          continue
       #data = data[:-4]
-      if data != 'nothing': print 'r',[data]
+      if data != 'nothing':
+         pass
+         #print 'r',[data]
 
       handleData(st,data)
       message = handle_auction(st)
