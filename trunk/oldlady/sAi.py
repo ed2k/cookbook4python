@@ -30,17 +30,12 @@ class ComputerPlayer:
 
     Currently, the AI is dumb as rocks, but it'll at least play by the rules.
     """
-
+    bidState = None
     def __init__ (self, seat):
         self.seat = seat
         self.rubber = None
         self.deal = None
-        self.handsEval = []
-        for p in PLAYERS:
-            self.handsEval.append(HandEvaluation())
-                                  
         self.history = []
-        self.bidState = ''
     def new_deal (self, deal):
         """
         Reset the computer player's state for a new deal.
@@ -53,20 +48,18 @@ class ComputerPlayer:
         #self.deal = deal
         self.deal = sbridge.Deal(deal.dealer)
         for p in sbridge.PLAYERS:
-            if self.seat == p:
-                self.deal.hands[p] = deal.hands[self.seat][:]
+            if deal.hands[p] is not None:
+                self.deal.hands[p] = deal.hands[p][:]
             else:
                 self.deal.hands[p] = None
-            self.handsEval[p] = HandsEvaluation()
-        
-            
+        self.bidState = AIBidStatus(self)
         self.history = []
 
     def bid_made (self, bid):
         """
         Called after each bid is placed.
         """
-        self.evaluateBid(bid)
+        self.bidState.evaluateBid(bid)
         self.deal.bid(bid)
         self.history.insert (0, bid)
         
@@ -88,8 +81,8 @@ class ComputerPlayer:
         an actual, usable bidding strategy....
         """
         bid = sayc.choose_bid (self.deal.hands[self.seat], self.history)
-        print 'prolog:',bid
-        print evaluate_deal(self)
+        print 'prolog:',self.seat,bid
+        self.bidState.evaluate_deal()
         return bid
         
     
@@ -171,21 +164,7 @@ class ComputerPlayer:
     def partner(self): return partner(self.seat)
     def lho(self): return seat_next(self.seat)
     def rho(self): return seat_prev(self.seat)
-    def opening(self):
-        if self.history == []: return None
-        player = self.deal.dealer
-        bids = self.history[:]
-        bids.reverse()
-        for bid in bids:
-            if not bid.is_pass():
-                return (player, bid)
-            player = seat_next(player)
-        return None
-    def evaluateBid(self, bid):
-        openbid = self.opening()
-        if openbid is None:
-            for rule in sayc_opening:
-                if str(bid) == rule[0]: print rule[1]
+
 
 def by_rank (x, y):
     """
@@ -202,30 +181,6 @@ def hand2suits(hand):
       suits[idx].append(c.rank)
    return suits
 
-def evaluate_deal(ai):
-   #hand, in suit order
-   #print hcp, shape, estimate partner and opponents
-   deal = ai.deal
-   hand = deal.hands[ai.seat]
-
-   #mysuits = hand2suits(hand)
-   if deal.trick is None:
-      #print
-      # print_suits(mysuits)
-      print 'HCP', hcp(hand)
-      openbid =  ai.opening()
-      bid = 'pass'
-      if openbid is None: bid = OneHand(hand).opening()
-      elif openbid[0]== partner(ai.seat):
-          bid = OneHand(hand).response1(openbid[1])
-      print 'ai bid',bid
-      return
-   #dummyhand = o2f_hand(deal.hands[deal.dummy])
-   #dummysuits = hand2suits(dummyhand)
-   #print 'dummy'
-   #print_suits(dummysuits)
-   #print
-   #print_suits(mysuits)
 
 def hcp(hand):
    h = 0
@@ -234,13 +189,19 @@ def hcp(hand):
    return h
 def shape(hand): return 0
 
-sayc_opening= [['1n','hcp in 16..18, shape == balanced'],
+sayc_opening= [['1n','hcp in 16..18, shape_type is balanced'],
     ['1s','hcp in 13..21, s > h, s >= 5'],
     ['1h','hcp in 13..21, h >= 5,h >= s'],
     ['1d','hcp in 13..21, s < 5,h < 5,d >= 3, d > c'],
     ['1c','hcp in 13..21, s < 5,h < 5,c >= 3, c >= d'],
     [' p','catchall']
     ]
+sayc_opening2=[[' x','hcp >= 16'],
+               [' x','hcp >= 12, suit < 4, unbid_major >= 4'],
+               ['+1','hcp in 9..16, newsuit0 >= 5'],
+               ['+2','hcp in 11..16, newsuit0 >= 5'],
+               ['jump', 'hcp in 6..10, newsuit >= 6']
+               ]
 ''' short means the length of shortest suit, long means the lenght of longest suit
       suit the one in opening bid
       newsuit0 means if bid only in same level (c -> dhs, d -> hs)
@@ -253,16 +214,32 @@ sayc_response1= [['+1','opening_suit_type is major, hcp in 6..10, suit >= 3'],
                  ['1s','opening is 1c, hcp in 6..18, s >= 4'],
                  ['1h','opening is 1d, hcp in 6..18, h >= 4'],
                  ['1s','opening is 1d, hcp in 6..18, s >= 4'],
-                 ['1n','opening_suit_type is minor, hcp in 6..10'],
+                 ['1n','hcp in 6..10'],
                  ['2n','opening_suit_type is minor, hcp in 13..15, shape_type is balanced'],
-                 ['3n','opening_suit_type is minor, hcp in 16..18, shape_type is balanced'],                 
+                 ['3n','opening_suit_type is minor, hcp in 16..18, shape_type is balanced'],
+                 ['1s','opening is 1h, hcp in 6..18, s >= 4'],
+                 ['2c','opening_suit_type is major, hcp in 6..18, c >= 4'],
+                 ['2d','opening_suit_type is major, hcp in 6..18, d >= 4'],
+                 ['2h','opening is 1s, hcp in 11..18, h >= 5'],
+                 ['jump','hcp >= 19'],
                  ['2d','opening is 1d, hcp in 6..10, d >= 4'],
                  ['2c','opening is 1c, hcp in 6..10, c >= 5'],
                  ['2d','opening is 1d, hcp >= 13, d >= 4'],
-                 ['2c','opening is 1c, hcp >= 13, c >= 5'],
-
-                 
+                 ['2c','opening is 1c, hcp >= 13, c >= 5'],                 
                  ]
+saycOpenerNextBid = [['+1','response1_type is raise, bidseqs is 1+2, hcp+shortage in 13..15'],
+                     ['+1','response1_type is raise, bidseqs is 1+1, hcp+shortage in 16..18'],
+                     ['+2','response1_type is raise, bidseqs is 1+1, hcp+shortage in 19..21'],
+                     ['+2','response1_type is raise, bidseqs is 1+2, hcp+shortage in 16..18'],
+                     ['+3','response1_type is raise, bidseqs is 1+2, hcp+shortage in 19..21'],
+                     ['+3','response1_type is raise, bidseqs is 1+2, hcp+shortage in 19..21'],
+                     ['??','response1 is 1n, hcp in 13..15, shape is unbalanced'],
+                     ['2n','response1 is 1n, hcp in 16..18'],
+                     ['3_','response1 is 1n, hcp+shortage in 16..18'],
+                     ['3n','response1 is 1n, hcp in 19..21'],
+                     ['4_','response1 is 1n, hcp+shortage in 19..21'],
+                     
+                     [' p','catchall']]
 
 class OneHand:
    '''
@@ -283,10 +260,10 @@ class OneHand:
    takeout double, hcp=12+, len(enemysuit)=short
    
    '''
-   opening = ''
-   def __init__(self, hand):
-      self.hand = hand
-      self.suits = hand2suits(hand)
+   def __init__(self, ai):
+      self.ai = ai
+      self.hand = ai.deal.hands[ai.seat]
+      self.suits = hand2suits(self.hand)
    def hcp(self): return hcp(self.hand)
    def n_s(self): return len(self.suits[3])
    def n_h(self): return len(self.suits[2])
@@ -294,6 +271,11 @@ class OneHand:
    def n_c(self): return len(self.suits[0])   
    def opening(self):
        for rule in sayc_opening:
+           if self.check(rule[1]): return rule[0]
+       return None
+   def opening2(self,openbid):
+       self.opening = openbid
+       for rule in sayc_opening2:
            if self.check(rule[1]): return rule[0]
        return None
    def response1(self, openbid):
@@ -309,7 +291,18 @@ class OneHand:
               break
       if response == '': print 'not defined response rule'
       return response
-
+   def newsuit(self):
+       r = []
+       for suit in xrange(4):
+           if suit == self.ai.bidState.opening[1].denom: continue
+           r.append(len(self.suits[suit]))
+       return max(r)
+   def newsuit0(self):
+       r = []
+       for suit in xrange(self.ai.bidState.currentBid[1].denom+1,4):
+           if suit == self.ai.bidState.currentBid[1].denom: continue
+           r.append(len(self.suits[suit]))
+       return max(r)   
    def check(self, ruleseqs):
       if ruleseqs == 'catchall': return True
       for r in ruleseqs.split(','):
@@ -321,8 +314,10 @@ class OneHand:
       return True
    def get(self, symbol):
        if symbol == 'hcp': return self.hcp()
-       if symbol == 'opening_suit_type':return self.opening.suit_type()
-       if symbol == 'opening':return str(self.opening)
+       if symbol == 'opening_suit_type':return self.ai.bidState.opening[1].suit_type()
+       if symbol == 'opening':return str(self.ai.bidState.opening[1])
+       if symbol == 'newsuit':return self.newsuit()
+       if symbol == 'newsuit0': return self.newsuit0()
        if symbol in 'cdhs':
            return  len(self.suits[KIDX[symbol]])
        if symbol.find('..') > 0:
@@ -343,6 +338,57 @@ class OneHand:
       print 'unknown op',left,opcode,right
          
 
+class AIBidStatus:
+    ''' Another class record bid history, but interpret as hcp, shape etc. to help bidding and playing'''
+    opening = None
+    # not pass, double
+    currentBid = None
+    def __init__(self, ai):
+        self.ai = ai
+        self.handsEval = []
+        for p in PLAYERS:
+            self.handsEval.append(HandEvaluation())
+        self.hand = OneHand(ai)
+    def setOpening(self):
+        if self.ai.history == []: return None
+        if self.opening is not None: return self.opening
+        player = self.ai.deal.dealer
+        bids = self.ai.history[:]
+        bids.reverse()
+        for bid in bids:
+            if not bid.is_pass():
+                self.opening = (player, bid)
+                return (player, bid)
+            player = seat_next(player)
+        return None
+    def evaluateBid(self, bid):
+        openbid = self.setOpening()
+        if not bid.is_pass() and not bid.is_double() and not bid.is_redouble():
+            self.curretnBidLevel = (self.ai.deal.player, bid)
+        if openbid is None:
+            for rule in sayc_opening:
+                if str(bid) == rule[0]: print rule[1]
+
+    def evaluate_deal(self):
+       ''' find the proper bid
+        hand, in suit order
+       print hcp, shape, estimate partner and opponents
+       '''
+       deal = self.ai.deal
+
+       #mysuits = hand2suits(hand)
+       if deal.trick is None:
+          print 'HCP', self.hand.hcp()
+          openbid =  self.opening
+          bid = 'pass'
+          if openbid is None: bid = self.hand.opening()
+          elif openbid[0] == partner(self.ai.seat):
+              bid = self.hand.response1(openbid[1])
+          elif openbid[0] == seat_prev(self.ai.seat):
+              bid = self.hand.opening2(openbid[1])
+          print 'ai bid',bid
+          return                
+            
 class HandEvaluation:
     hcp = ''
 
