@@ -51,7 +51,7 @@ class BidGrid:
         self.col = len(self.data[self.row])-1
         
     def append(self, bid):
-        print bid, self.row,self.col
+        #print bid, self.row,self.col
         self.data[self.row].append(bid)
         self.col+=1
         if self.col>3:
@@ -167,6 +167,21 @@ class Card:
         return 0
 
 KIDX = {'c':0,'d':1,'h':2,'s':3,'n':4}
+def f2o_bid(b):
+   #print 'bid',b
+   level = 0
+   denom = None
+   if b == ' p':
+      level = PASS
+   elif b == ' x':
+      level = DOUBLE
+   elif b == 'xx':
+      level = REDOUBLE
+   else:
+      level = int(b[0])
+      denom = KIDX[b[1]]
+   return Bid(level,denom)
+
 class Bid:
     """
     A bid made during the opening phase of a deal.
@@ -185,7 +200,7 @@ class Bid:
             return "Redouble"[:2]
         else:
             return str (self.level) + denomination_to_string (self.denom)
-
+    def incr(self,i): self.level += i
     def is_contract (self):
         """
         Return whether this bid represents a possible contract.

@@ -5,7 +5,6 @@ import defs
 # D 11+ 13 - (A->25)
 # C -2+ 0 - (A->12)
 # S,H,D,C, N,E,S,W
-KIDX = {'c':0,'d':1,'h':2,'s':3,'n':4}
 PBN_HIDX = {'2':0,'3':1,'4':2,'5':3,'6':4,'7':5,'8':6,'9':7,'t':8,'j':9,'q':10,'k':11,'a':12}
 #E S W N
 name_dict = {1:'East',3:'West',2:'South',0:'North'}
@@ -37,20 +36,7 @@ def o2f_bid(b):
    if b.is_double(): return ' x'
    if b.is_redouble(): return 'xx'
    return str(b.level)+'cdhsn'[b.denom]
-def f2o_bid(b):
-   #print 'bid',b
-   level = 0
-   denom = None
-   if b == ' p':
-      level = sbridge.PASS
-   elif b == ' x':
-      level = sbridge.DOUBLE
-   elif b == 'xx':
-      level = sbridge.REDOUBLE
-   else:
-      level = int(b[0])
-      denom = KIDX[b[1]]
-   return sbridge.Bid(level,denom)
+
    
    
 def card_cmp(trump, c1, c2):
