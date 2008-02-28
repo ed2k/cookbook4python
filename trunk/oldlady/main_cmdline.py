@@ -101,7 +101,7 @@ class App:
         self.deal = self.rubber.next_deal ()
         # for debuging biding, use the same deal
         import floater_client
-        pbn = "K8652.976.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.KQ2.AQ97.42"
+        pbn = "K8652.Q76.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.K92.AQ97.42"
         hands = pbn.split()
         for p in sbridge.PLAYERS:
             h = []
@@ -110,14 +110,14 @@ class App:
                 for c in suits[3-s]:
                     card = sbridge.Card(s,floater_client.PBN_HIDX[c.lower()]+2)
                     h.append(card)
-            self.deal.hands[p] = h 
+            #self.deal.hands[p] = h 
         self.distribute_deal()
 
         self.messages = []
         # print deal
         print '-'*80
         for s in sbridge.PLAYERS:
-            print 'WNES'[s],
+            print s,
             for c in self.deal.hands[s]: print c,
             print
         self.play_for_ais ()
@@ -128,7 +128,7 @@ class App:
         Start playing for a new rubber.
         """
 
-        self.rubber = sbridge.Rubber (sbridge.NORTH)
+        self.rubber = sbridge.Rubber (sbridge.WEST)
         self.start_next_deal ()
 
     def populate_legal_bids (self):
