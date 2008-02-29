@@ -199,7 +199,7 @@ sayc_opening2=[[' x','hcp >= 16'],
                [' x','hcp >= 12, suit < 4, unbid_major >= 4'],
                ['+1','hcp in 9..16, newsuit0 >= 5'],
                ['+2','hcp in 11..16, newsuit0 >= 5'],
-               ['jump', 'hcp in 6..10, newsuit >= 6'],
+               ['jumpshift', 'hcp in 6..10, newsuit >= 6'],
                [' p','catchall']
                ]
 ''' short means the length of shortest suit, long means the lenght of longest suit
@@ -226,6 +226,7 @@ sayc_response1= [['+1','opening_suit_type is major, hcp+shortage in 6..10, suit 
                  ['2c','opening is 1c, hcp in 6..10, c >= 5'],
                  ['2d','opening is 1d, hcp >= 13, d >= 4'],
                  ['2c','opening is 1c, hcp >= 13, c >= 5'],
+                 ['new','hcp in 11..12'],
                  [' p','hcp < 6'],
                  ]
 saycOpenerNextBid = [['+1','response1_type is raise, bidseqs is 1+2, hcp+shortage in 13..15'],
@@ -266,6 +267,14 @@ class OneHand:
       self.hand = ai.deal.hands[ai.seat]
       self.suits = hand2suits(self.hand)
    def hcp(self): return hcp(self.hand)
+   def shortage(self):
+       points = 0
+       for s in SUITS:
+           slen = len(self.suits[s])
+           if slen == 0: points += 5
+           elif slen == 1: points += 3
+           elif slen == 2: points += 1
+       return points
    def n_s(self): return len(self.suits[3])
    def n_h(self): return len(self.suits[2])
    def n_d(self): return len(self.suits[1])
@@ -277,7 +286,7 @@ class OneHand:
    def opening2(self,openbid):
        self.opening = openbid
        for rule in sayc_opening2:
-           if self.check(rule[1]): return self.actualBid(rule[0])
+           if self.check(rule[1]): return rule[0]
        print 'undefined opening2'
        return None
    def response1(self, openbid):
@@ -293,16 +302,34 @@ class OneHand:
               break
       if response == '': print 'not defined response rule'
       return response
+   def shape_type(self):
+       r = [len(self.suits[x]) for x in SUITS]
+       r.sort()
+       if r[0] <= 1: return 'unbalanced'
+       if r[1] == 2: return 'semibalanced'
+       return 'balanced'
    def newsuit(self):
        r = []
        for suit in xrange(4):
            if suit == self.ai.bidState.opening[1].denom: continue
            r.append(len(self.suits[suit]))
        return max(r)
+   def getNewsuit(self):
+       slen = 0
+       denom = 0
+       for suit in xrange(4):
+           if suit == self.ai.bidState.opening[1].denom: continue
+           if len(self.suits[suit]) > slen:
+               denom = suit
+       return denom      
    def newsuit0(self):
+       ''' intends to return max len suit in same level above prev valid bid
+       '''
+       print 'newsuit0 current bid',str(self.ai.bidState.currentBid[1])
+       denom = self.ai.bidState.currentBid[1].denom
+       if denom == NO_TRUMP or denom == SPADES: return 0
        r = []
-       for suit in xrange(self.ai.bidState.currentBid[1].denom+1,4):
-           if suit == self.ai.bidState.currentBid[1].denom: continue
+       for suit in xrange(denom+1,4):
            r.append(len(self.suits[suit]))
        return max(r)   
    def check(self, ruleseqs):
@@ -320,6 +347,8 @@ class OneHand:
        if symbol == 'opening':return str(self.ai.bidState.opening[1])
        if symbol == 'newsuit':return self.newsuit()
        if symbol == 'newsuit0': return self.newsuit0()
+       if symbol == 'hcp+shortage':return self.hcp()+self.shortage()
+       if symbol == 'shape_type': return self.shape_type()
        if symbol in 'cdhs':
            return  len(self.suits[KIDX[symbol]])
        if symbol.find('..') > 0:
@@ -364,12 +393,16 @@ class AIBidStatus:
             player = seat_next(player)
         return None
     def evaluateBid(self, bid):
+        print 'evaluateBid',str(bid)
         openbid = self.setOpening()
         if not bid.is_pass() and not bid.is_double() and not bid.is_redouble():
-            self.curretnBid = (self.ai.deal.player, bid)
+            print 'evaluateBid current',str(bid)
+            self.currentBid = (self.ai.deal.player, bid)
         if openbid is None:
             for rule in sayc_opening:
                 if str(bid) == rule[0]: print rule[1]
+            if bid.is_pass():
+                self.handsEval[self.ai.deal.player].hcp = '< 13'
 
     def evaluate_deal(self):
        ''' find the proper bid
@@ -388,9 +421,14 @@ class AIBidStatus:
           bid = self.hand.response1(openbid[1])
           if bid[0] == '+':
               inc = int(bid[1])
-              return  openbid[1].incr(inc)
+              return openbid[1].getIncr(inc)
+          elif bid == 'new':
+              return openbid[1].getNew(self.hand.getNewsuit())
        elif openbid[0] == seat_prev(self.ai.seat):
           bid = self.hand.opening2(openbid[1])
+          if bid == 'jumpshift':
+              return openbid[1].getJumpshift(self.hand.getNewsuit())
+          
        print 'ai bid',bid
        return f2o_bid(bid)
             
