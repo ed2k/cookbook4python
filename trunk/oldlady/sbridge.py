@@ -200,7 +200,12 @@ class Bid:
             return "Redouble"[:2]
         else:
             return str (self.level) + denomination_to_string (self.denom)
-    def incr(self,i): self.level += i
+    def getIncr(self,i): return Bid(self.level + i, self.denom)
+    def getNew(self, denom):
+        if self.denom > denom: return Bid(self.level+1, denom)
+        return Bid(self.level,denom)
+    def getJump(self): return self.getIncr(2)
+    def getJumpshift(self, denom):return self.getNew(denom).getIncr(1)
     def is_contract (self):
         """
         Return whether this bid represents a possible contract.
