@@ -229,6 +229,7 @@ sayc_response1= [['+1','opening_suit_type is major, hcp+shortage in 6..10, suit 
                  ['new','hcp in 11..12'],
                  [' p','hcp < 6'],
                  ]
+saycResponse2 = []
 saycOpenerNextBid = [['+1','response1_type is raise, bidseqs is 1+2, hcp+shortage in 13..15'],
                      ['+1','response1_type is raise, bidseqs is 1+1, hcp+shortage in 16..18'],
                      ['+2','response1_type is raise, bidseqs is 1+1, hcp+shortage in 19..21'],
@@ -242,6 +243,9 @@ saycOpenerNextBid = [['+1','response1_type is raise, bidseqs is 1+2, hcp+shortag
                      ['4_','response1 is 1n, hcp+shortage in 19..21'],
                      
                      [' p','catchall']]
+saycStayman = []
+saycJacob = []
+saycBlackwood = []
 
 class OneHand:
    '''
@@ -374,12 +378,14 @@ class AIBidStatus:
     opening = None
     # not pass, double
     currentBid = None
+    state = 'not opened'
     def __init__(self, ai):
         self.ai = ai
         self.handsEval = []
         for p in PLAYERS:
             self.handsEval.append(HandEvaluation())
         self.hand = OneHand(ai)
+        
     def setOpening(self):
         if self.ai.history == []: return None
         if self.opening is not None: return self.opening
@@ -400,9 +406,23 @@ class AIBidStatus:
             self.currentBid = (self.ai.deal.player, bid)
         if openbid is None:
             for rule in sayc_opening:
-                if str(bid) == rule[0]: print rule[1]
+                if str(bid) == rule[0]:
+                    print rule[1]
+                    self.state == 'opening'
             if bid.is_pass():
                 self.handsEval[self.ai.deal.player].hcp = '< 13'
+        elif self.state == 'opening':
+            self.state = 'opening2'
+        elif self.state == 'opening2':
+            self.state = 'response1'
+        elif self.state == 'response1':
+            self.state = 'response2'
+        elif self.state == 'response2':
+            self.state = 'openerNextBid'
+        elif self.state == 'openerNextBid':
+            pass
+        
+        
 
     def evaluate_deal(self):
        ''' find the proper bid
@@ -415,7 +435,9 @@ class AIBidStatus:
        if deal.trick is not None: return
        print 'HCP', self.hand.hcp()
        openbid =  self.opening
-       bid = ' p' 
+       bid = ' p'
+       #determine bid state, opening, opening2, response1, response2
+       # openerNextBid, Stayman, blackwood, jacob
        if openbid is None: bid = self.hand.opening()
        elif openbid[0] == partner(self.ai.seat):
           bid = self.hand.response1(openbid[1])
