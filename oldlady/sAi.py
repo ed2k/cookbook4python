@@ -240,7 +240,18 @@ sayc_response1= [['+1','opening_suit_type is major, hcp+shortage in 6..10, suit 
                  ['2c','opening is 1c, hcp >= 13, c >= 5'],
                  ['new','hcp in 11..12'],
                  [' p','hcp < 6'],
+                 ['response1_1n', 'opening is 1n'],
                  ]
+sayc_response1_1n = [['shape_type is balanced',[' p','hcp <= 7,2n, hcp in 8..9,3n, hcp in 10..14'],
+                       ['4n', 'hcp in 15..16'],['6n', 'hcp in 17..19'],['7n', 'hcp >= 20']],
+                     ['shape_type is unbalanced',['2s', 'hcp <= 7 s >= 5'],
+                       ['2h', 'hcp <= 7 h >= 5'],['2d', 'hcp <=8 d >= 5'], ['2d','hcp <= 8 c >= 5'],
+                       ['2c', 'hcp >= 8 len_major >= 4'], ['3_', 'hcp >= 9, longest >= 5'],
+                       ['6_', 'hcp in 17..19, longest >= 6'], ['7_', 'hcp >= 21, longest >= 6'],
+                      ['game', 'hcp >= 9 longest >= 6'], ],
+                     ['len_major >= 5', 'case 1'],
+                     ['len_minor >= 5', 'case 0'],
+                     ]
 sayc_response2 = [[' p','catchall']]
 sayc_openerNextBid = [['+1','response1_type is raise, bidseqs is 1+2, hcp+shortage in 13..15'],
                      ['+1','response1_type is raise, bidseqs is 1+1, hcp+shortage in 16..18'],
@@ -305,10 +316,7 @@ class OneHand:
    def n_d(self): return len(self.suits[1])
    def n_c(self): return len(self.suits[0])   
    def opening(self):
-       rsp = ' p'
-       for rule in sayc_opening:
-           if self.check(rule[1]):
-               rsp = rule[0]
+       rsp = self.checkAndReturn(sayc_opening)
        if rsp == 'rule of two and three':
            suit = self.getLongestSuit()
            if self.longest() <= 8: rsp = '4'+'cdhs'[suit]
@@ -318,10 +326,8 @@ class OneHand:
        return rsp
    def opening2(self,openbid):
        self.opening = openbid
-       for rule in sayc_opening2:
-           if self.check(rule[1]): return rule[0]
-       print 'undefined opening2'
-       return None
+       rsp = self.checkAndReturn(sayc_opening2)
+       return rsp
    def gameon(self): return ' p'
    def response1(self, openbid):
       ''' short means the length of shortest suit, long means the lenght of longest suit
@@ -329,26 +335,18 @@ class OneHand:
       '''
       #self.opening = openbid
       print 'openbid',openbid
-      response = ''
-      for rule in sayc_response1:
-          if self.check(rule[1]):
-              response = rule[0]
-              break
+      response = self.checkAndReturn(sayc_response1)
       if response == '': print 'not defined response rule'
+      elif response[:10] == 'response1_':
+          rules = getattr(sAi, 'sayc_response1_'+response[-2:])
+          response = self.check2(rules)
+
       return response
    def response2(self):
-      response = ''
-      for rule in sayc_response2:
-          if self.check(rule[1]):
-              response = rule[0]
-              break
+      response = self.checkAndReturn(sayc_response2)
       return response
    def openerNextBid(self):
-      response = ''
-      for rule in sayc_openerNextBid:
-          if self.check(rule[1]):
-              response = rule[0]
-              break
+      response = self.checkAndReturn(sayc_openerNextBid)
       return response  
    def shape_type(self):
        r = [len(self.suits[x]) for x in SUITS]
@@ -398,6 +396,16 @@ class OneHand:
          if not self.op(left,right,op): return False
       print 'got',ruleseqs   
       return True
+   def checkAndReturn(self, ruleseqs):
+       for rule in ruleseqs:
+           if self.check(rule[1]): return rule[0]       
+   def check2(self, ruleseqs):
+      for rule in ruleseqs:
+          if not self.check(rule[0]): continue
+          if type(rule[1]) == type(''):
+              rule = ruleseqs[int(rule[-1])]
+          return self.checkAndReturn(rule[1])
+                  
    def get(self, symbol):
        if symbol == 'hcp': return self.hcp()
        if symbol == 'opening_suit_type':return self.ai.bidState.opening[1].suit_type()
