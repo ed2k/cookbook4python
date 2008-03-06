@@ -20,6 +20,7 @@
 import sbridge
 from sbridge import *
 import bidding
+import sAi
 
 sayc = bidding.Bidding ()
 
@@ -233,7 +234,7 @@ sayc_response1= [['+1','opening_suit_type is major, hcp+shortage in 6..10, suit 
                  ['2c','opening_suit_type is major, hcp in 6..18, c >= 4'],
                  ['2d','opening_suit_type is major, hcp in 6..18, d >= 4'],                 
                  ['2h','opening is 1s, hcp in 11..18, h >= 5'],
-                 ['jn','hcp >= 19'],
+                 ['jumpshift','hcp >= 19'],
                  ['2d','opening is 1d, hcp in 6..10, d >= 4'],
                  ['2c','opening is 1c, hcp in 6..10, c >= 5'],
                  ['2d','opening is 1d, hcp >= 13, d >= 4'],
@@ -242,12 +243,20 @@ sayc_response1= [['+1','opening_suit_type is major, hcp+shortage in 6..10, suit 
                  [' p','hcp < 6'],
                  ['response1_1n', 'opening is 1n'],
                  ]
-sayc_response1_1n = [['shape_type is balanced',[' p','hcp <= 7,2n, hcp in 8..9,3n, hcp in 10..14'],
-                       ['4n', 'hcp in 15..16'],['6n', 'hcp in 17..19'],['7n', 'hcp >= 20']],
-                     ['shape_type is unbalanced',['2s', 'hcp <= 7 s >= 5'],
-                       ['2h', 'hcp <= 7 h >= 5'],['2d', 'hcp <=8 d >= 5'], ['2d','hcp <= 8 c >= 5'],
-                       ['2c', 'hcp >= 8 len_major >= 4'], ['3_', 'hcp >= 9, longest >= 5'],
-                       ['6_', 'hcp in 17..19, longest >= 6'], ['7_', 'hcp >= 21, longest >= 6'],
+sayc_response1_1n = [['shape_type is balanced',
+                      [' p','hcp <= 7,2n, hcp in 8..9,3n, hcp in 10..14'],
+                      ['4n', 'hcp in 15..16'],
+                      ['6n', 'hcp in 17..19'],
+                      ['7n', 'hcp >= 20']],
+                     ['shape_type is unbalanced',
+                      ['2s', 'hcp <= 7 s >= 5'],
+                      ['2h', 'hcp <= 7 h >= 5'],
+                      ['2d', 'hcp <=8 d >= 5'],
+                      ['2d','hcp <= 8 c >= 5'],
+                      ['2c', 'hcp >= 8 len_major >= 4'],
+                      ['3_', 'hcp >= 9, longest >= 5'],
+                      ['6_', 'hcp in 17..19, longest >= 6'],
+                      ['7_', 'hcp >= 21, longest >= 6'],
                       ['game', 'hcp >= 9 longest >= 6'], ],
                      ['len_major >= 5', 'case 1'],
                      ['len_minor >= 5', 'case 0'],
@@ -314,9 +323,9 @@ class OneHand:
    def n_s(self): return len(self.suits[3])
    def n_h(self): return len(self.suits[2])
    def n_d(self): return len(self.suits[1])
-   def n_c(self): return len(self.suits[0])   
+   def n_c(self): return len(self.suits[0])
    def opening(self):
-       rsp = self.checkAndReturn(sayc_opening)
+       rsp = self.checkAndReturn('opening')
        if rsp == 'rule of two and three':
            suit = self.getLongestSuit()
            if self.longest() <= 8: rsp = '4'+'cdhs'[suit]
@@ -326,7 +335,7 @@ class OneHand:
        return rsp
    def opening2(self,openbid):
        self.opening = openbid
-       rsp = self.checkAndReturn(sayc_opening2)
+       rsp = self.checkAndReturn('opening2')
        return rsp
    def gameon(self): return ' p'
    def response1(self, openbid):
@@ -335,18 +344,19 @@ class OneHand:
       '''
       #self.opening = openbid
       print 'openbid',openbid
-      response = self.checkAndReturn(sayc_response1)
+      response = self.checkAndReturn('response1')
       if response == '': print 'not defined response rule'
       elif response[:10] == 'response1_':
-          rules = getattr(sAi, 'sayc_response1_'+response[-2:])
+          bidsys = self.ai.bidState.bid_system[team(self.ai.deal.player)]
+          rules = getattr(sAi, bidsys+'_response1_'+response[-2:])
           response = self.check2(rules)
 
       return response
    def response2(self):
-      response = self.checkAndReturn(sayc_response2)
+      response = self.checkAndReturn('response2')
       return response
    def openerNextBid(self):
-      response = self.checkAndReturn(sayc_openerNextBid)
+      response = self.checkAndReturn('openerNextBid')
       return response  
    def shape_type(self):
        r = [len(self.suits[x]) for x in SUITS]
@@ -396,7 +406,9 @@ class OneHand:
          if not self.op(left,right,op): return False
       print 'got',ruleseqs   
       return True
-   def checkAndReturn(self, ruleseqs):
+   def checkAndReturn(self, state):
+       bidsys = self.ai.bidState.bid_system[team(self.ai.deal.player)]
+       ruleseqs = getattr(sAi,bidsys+'_'+state)
        for rule in ruleseqs:
            if self.check(rule[1]): return rule[0]       
    def check2(self, ruleseqs):
@@ -429,6 +441,7 @@ class OneHand:
       if opcode == '>': return (left > right)
       if opcode == '>=': return (left >= right)
       if opcode == '<=': return (left <= right)
+      if opcode == '==': return (left == right)
       if opcode == 'in':
           minv,maxv = right
           return (left >= minv) and (left <= maxv)
@@ -442,6 +455,7 @@ class AIBidStatus:
     # not pass, double
     currentBid = None
     state = 'not opened'
+    bid_system = ('sayc','sayc')
     def __init__(self, ai):
         self.ai = ai
         self.handsEval = []
