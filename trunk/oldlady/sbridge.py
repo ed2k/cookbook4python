@@ -190,7 +190,11 @@ class Bid:
     def __init__ (self, level, denom=None):
         self.level = level
         self.denom = denom
-
+    def __cmp__(self, other):
+        d = self.level - other.level
+        if d != 0: return d
+        d = self.denom - other.denom
+        return d
     def __str__ (self):
         if self.is_pass ():
             return "Pass"[:2]
@@ -234,11 +238,19 @@ class Bid:
 
         return self.level == REDOUBLE
 
-    def suit_type(self):
-        if self.denom == DIAMONDS or self.denom == CLUBS: return 'minor'
-        elif self.denom == SPADES or self.denom == HEARTS: return 'major'
+    def type(self):
+        if self.denom == DIAMONDS or self.denom == CLUBS: return str(self.level)+'minor'
+        elif self.denom == SPADES or self.denom == HEARTS: return str(self.level)+'major'
         return ''
-    
+    def difftype(self, bid):
+        '''assume the bid is large then self '''
+        if self <= bid: return '<='
+        d = bid.level - self.level
+        n = bid.denom - self.denom
+        if n == 0: return '+'+str(d)
+        if d == 0: return 'new suit'
+        if d == 1 and n < 0: return 'new suit'
+        return 'jump'
 class Trick:
     """
     A single trick during a deal.

@@ -13,6 +13,7 @@ IDX = {'E':1,'W':3,'S':2,'N':0}
 f_op2argc = {'J':5,'S':4,'C':1,'s':4,'T':4,'e':3,'a':2,'p':2,'Y':3,'*':8}
 
 import sbridge, sAi
+from sbridge import *
 
 
 def f2o(idx):   return idx
