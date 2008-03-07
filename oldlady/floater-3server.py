@@ -61,8 +61,9 @@ def table_handle(state,data):
       if mname == 'S':
          username,seat,ip,port = args
          if state.deal is None: return nextStep('confirm_deal', state, ais)
-         # assume client always north
-         rmsg.append(state.send_new_hand()[NORTH])
+         # assume client always north or south if north is dummy 
+         if ais[NORTH].deal.dummy == NORTH: rmsg.append( state.send_new_hand()[SOUTH])
+         else:rmsg.append( state.send_new_hand()[NORTH])
       elif mname == 'a':
          print 'bids',args
          # reused as table manager deal recorder
@@ -99,15 +100,18 @@ def table_handle(state,data):
           dummy = tbdeal.dummy
           if tbdeal.trick is None: continue
           if mfrom != MANAGERNAME:
-              if dummy == SOUTH or dummy == NORTH:
+              if dummy == SOUTH:
                   if tbdeal.player == WEST or tbdeal.player == EAST: continue
+              elif dummy == NORTH:
+                  if tbdeal.player != NORTH and tbdeal.player != SOUTH: continue
               elif tbdeal.player != NORTH: continue
               print dummy, 'is dummy, NORTH turn',tbdeal.player
           # todo, consider NORTH is dummy to exchange with SOUTH
           state.play_status = convert_str2play(args[1])
 
           if len(state.play_status) == 1:
-              rmsg.append( state.send_new_hand()[NORTH])
+              if dummy == NORTH: rmsg.append( state.send_new_hand()[SOUTH])
+              else:rmsg.append( state.send_new_hand()[NORTH])
               for ai in ais:
                   ai.deal.hands[dummy] = state.deal.hands[dummy][:]
           elif len(state.play_status) == 52:
@@ -120,10 +124,9 @@ def table_handle(state,data):
               for ai in ais:
                   ai.trick_complete()                      
           print 'whose turn',tbdeal.player
-          # what if NORTH is dummy
-          if dummy == SOUTH and tbdeal.player == NORTH: continue
-          if dummy == SOUTH and tbdeal.player == SOUTH: continue
-          if tbdeal.player == NORTH and dummy != NORTH: continue
+          # palyer take SOUTH also if dummy is NORTH
+          if dummy == NORTH and tbdeal.player == SOUTH: continue
+          if tbdeal.player == NORTH: continue
 
           if tbdeal.player != dummy:
               card = ais[tbdeal.player].play_self ()

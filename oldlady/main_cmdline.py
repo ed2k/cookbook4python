@@ -44,6 +44,7 @@
 
 import sAi
 import sbridge
+from sbridge import *
 import defs
 
 import os
@@ -101,16 +102,37 @@ class App:
         self.deal = self.rubber.next_deal ()
         # for debuging biding, use the same deal
         import floater_client
-        pbn = "K8652.Q76.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.K92.AQ97.42"
-        hands = pbn.split()
+        pbn = "K8652.Q76.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.K92.AQ97.42"       
+        hands = [x.split('.') for x in pbn.split()]
+        s = '''
+0 Ts 4s Jh Th 6h Jd Td 4d 3d Ac Kc 8c 3c
+1 Js 9s 7s 2s 8h Ad Kd Qd 8d 7d 6c 5c 4c
+2 As Qs 8s 6s 5s 3s Ah 7h 5d 2d Jc Tc 7c
+3 Ks Kh Qh 9h 5h 4h 3h 2h 9d 6d Qc 9c 2c
+'''
+        hands = s.splitlines()[1:5]
         for p in sbridge.PLAYERS:
             h = []
-            suits = hands[p].split('.')
+            for c in hands[p].split()[1:]:
+                suit = STR2SUIT[c[1].upper()]
+                card = Card(suit,floater_client.PBN_HIDX[c[0].lower()]+2)
+                h.append(card)
+            self.deal.hands[p] = h
+            
+        hands = [
+['7', 'J987', '64', 'AJ9863'],
+['A53', 'AK3', 'K82', 'QT75'],
+['KT62', 'QT52', 'JT3', 'K4'],
+['QJ984', '64', 'AQ975', '2']]
+        for p in sbridge.PLAYERS:
+            h = []
+            suits = hands[p]
             for s in sbridge.SUITS:
                 for c in suits[3-s]:
-                    card = sbridge.Card(s,floater_client.PBN_HIDX[c.lower()]+2)
+                    card = Card(s,floater_client.PBN_HIDX[c.lower()]+2)
                     h.append(card)
-            #self.deal.hands[p] = h 
+            self.deal.hands[p] = h
+            
         self.distribute_deal()
 
         self.messages = []
