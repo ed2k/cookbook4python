@@ -108,6 +108,7 @@ TEAMS = range (2)
 WEST_EAST, NORTH_SOUTH = TEAMS
 TEAM_NAMES = [_("West-East"), _("North-South")]
 STR2RANK = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2}
+STR2SUIT = {'S':3,'H':2,'D':1,'C':0}
 
 def denomination_to_string (denom):
     """

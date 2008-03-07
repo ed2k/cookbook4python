@@ -84,6 +84,7 @@ class ComputerPlayer:
         bid = sayc.choose_bid (self.deal.hands[self.seat], self.history)
         print 'prolog:',self.seat,bid
         bid = self.bidState.evaluate_deal()
+        print 'pybid:',bid
         return bid
         
     
@@ -211,8 +212,8 @@ sayc_opening= [['1n','hcp in 16..18, shape_type is balanced'],
     ]
 sayc_opening2=[[' x','hcp >= 16'],
                [' x','hcp >= 12, suit < 4, unbid_major >= 4'],
-               ['+1','hcp in 9..16, newsuit0 >= 5'],
-               ['+2','hcp in 11..16, newsuit0 >= 5'],
+               ['new0','hcp in 9..16, newsuit0 >= 5'],
+               ['new','hcp in 11..16, newsuit >= 5'],
                ['jumpshift', 'hcp in 6..10, newsuit >= 6'],
                [' p','catchall']
                ]
@@ -220,48 +221,67 @@ sayc_opening2=[[' x','hcp >= 16'],
       suit the one in opening bid
       newsuit0 means if bid only in same level (c -> dhs, d -> hs)
       '''
-sayc_response1= [['+1','opening_type is 1major, hcp+shortage in 6..10, suit >= 3'],
-                 ['+2','opening_type is 1major, hcp+shortage >= 13,suit >= 3'],
-                 ['+3','opening_type is 1major, hcp+shortage in 6..10, suit >= 4, shape_type is unbalanced'],
-                 ['1d','opening is 1c, hcp in 6..18, d >= 4'],
-                 ['1h','opening is 1c, hcp in 6..18, h >= 4'],
-                 ['1s','opening is 1c, hcp in 6..18, s >= 4'],
-                 ['1h','opening is 1d, hcp in 6..18, h >= 4'],
-                 ['1s','opening is 1d, hcp in 6..18, s >= 4'],
-                 ['1n','hcp in 6..10'],
-                 ['2n','opening_type is 1minor, hcp in 13..15, shape_type is balanced'],
-                 ['3n','opening_type is 1minor, hcp in 16..18, shape_type is balanced'],
-                 ['1s','opening is 1h, hcp in 6..18, s >= 4'],
-                 ['2c','opening_type is 1major, hcp in 6..18, c >= 4'],
-                 ['2d','opening_type is 1major, hcp in 6..18, d >= 4'],                 
-                 ['2h','opening is 1s, hcp in 11..18, h >= 5'],
-                 ['jumpshift','hcp >= 19'],
-                 ['2d','opening is 1d, hcp in 6..10, d >= 4'],
-                 ['2c','opening is 1c, hcp in 6..10, c >= 5'],
-                 ['2d','opening is 1d, hcp >= 13, d >= 4'],
-                 ['2c','opening is 1c, hcp >= 13, c >= 5'],
-                 ['new','hcp in 11..12'],
-                 [' p','hcp < 6'],
-                 ['response1_1n', 'opening is 1n'],
-                 ]
-sayc_response1_1n = [['shape_type is balanced',
-                      [' p','hcp <= 7,2n, hcp in 8..9,3n, hcp in 10..14'],
-                      ['4n', 'hcp in 15..16'],
-                      ['6n', 'hcp in 17..19'],
-                      ['7n', 'hcp >= 20']],
-                     ['shape_type is unbalanced',
-                      ['2s', 'hcp <= 7 s >= 5'],
-                      ['2h', 'hcp <= 7 h >= 5'],
-                      ['2d', 'hcp <=8 d >= 5'],
-                      ['2d','hcp <= 8 c >= 5'],
-                      ['2c', 'hcp >= 8 len_major >= 4'],
-                      ['3_', 'hcp >= 9, longest >= 5'],
-                      ['6_', 'hcp in 17..19, longest >= 6'],
-                      ['7_', 'hcp >= 21, longest >= 6'],
-                      ['game', 'hcp >= 9 longest >= 6'], ],
-                     ['len_major >= 5', 'case 1'],
-                     ['len_minor >= 5', 'case 0'],
-                     ]
+sayc_response1= [
+    ['opening_type is 1major',
+     ['+1','hcp+shortage in 6..10, suit >= 3'],
+     ['+2','hcp+shortage >= 13,suit >= 3'],
+     ['1n','hcp in 6..10'],
+     ['2c','hcp in 6..18, c >= 4'],
+     ['2d','hcp in 6..18, d >= 4'],
+     ['2h','opening is 1s, hcp in 11..18, h >= 5'],
+     ['1s','opening is 1h, hcp in 6..18, s >= 4'],
+     ['+3','hcp+shortage in 6..10, suit >= 4, shape_type is unbalanced'],
+     ['jumpshift','hcp >= 19'],
+     ['new','hcp in 11..12'],
+     [' p','hcp < 6']],
+    ['opening_type is 1minor',    
+     ['1d','opening is 1c, hcp in 6..18, d >= 4'],
+     ['1h','opening is 1c, hcp in 6..18, h >= 4'],
+     ['1s','opening is 1c, hcp in 6..18, s >= 4'],
+     ['1h','opening is 1d, hcp in 6..18, h >= 4'],
+     ['1s','opening is 1d, hcp in 6..18, s >= 4'],
+     ['1n','hcp in 6..10'],   
+     ['2n','opening_type is 1minor, hcp in 13..15, shape_type is balanced'],
+     ['3n','opening_type is 1minor, hcp in 16..18, shape_type is balanced'],          
+     ['2d','opening is 1d, hcp in 6..10, d >= 4'],
+     ['2c','opening is 1c, hcp in 6..10, c >= 5'],
+     ['2d','opening is 1d, hcp >= 13, d >= 4'],
+     ['2c','opening is 1c, hcp >= 13, c >= 5'],
+     ['new','hcp in 11..12'],
+     ['jumpshift','hcp >= 19'],     
+     [' p','hcp < 6']],
+    ['opening is 1n',
+     ['response1_1n', 'opening is 1n']],
+    ['opening_type is 2major',
+     [' p', 'catchall']],
+    ['opening_type is 2major',
+     [' p', 'catchall']],
+    ['opening_type is 3minor',
+     [' p', 'catchall']],
+    ['opening_type is 3major',
+     [' p', 'catchall']],    
+    ]
+sayc_response1_1n = [
+    ['shape_type is balanced',
+     [' p','hcp <= 7'],
+     ['2n', 'hcp in 8..9'],
+     ['3n', 'hcp in 10..14'],
+     ['4n', 'hcp in 15..16'],
+     ['6n', 'hcp in 17..19'],
+     ['7n', 'hcp >= 20']],
+    ['shape_type is unbalanced',
+     ['2s', 'hcp <= 7, s >= 5'],
+     ['2h', 'hcp <= 7, h >= 5'],
+     ['2d', 'hcp <= 8, d >= 5'],
+     ['2d','hcp <= 8, c >= 5'],
+     ['2c', 'hcp >= 8, len_major >= 4'],
+     ['3_', 'hcp >= 9, longest >= 5'],
+     ['6_', 'hcp in 17..19, longest >= 6'],
+     ['7_', 'hcp >= 21, longest >= 6'],
+     ['game', 'hcp >= 9 longest >= 6']],
+    ['len_major >= 5', 'case 1'],
+    ['len_minor >= 5', 'case 0'],
+    ]
 sayc_response2 = [[' p','catchall']]
 sayc_openerNextBid = [
     ['opening_type is 1major, response1_type is 2major',
@@ -289,7 +309,31 @@ sayc_openerNextBid = [
      ['5n','hcp in 18..19'],
      ['6n','hcp in 20..21'],
      ['6_','hcp+shortage in 19..21']],
-    
+    ['opening_type is 1minor, response1_type is 2major',
+     ['+1','response1_type is +1, hcp+shortage in 16..18'],
+     ['+2','response1_type is +1, hcp+shortage in 19..21']],
+    ['opening_type is 1major, response1_type is 3s',
+     ['+1','response1_type is +2, hcp+shortage in 13..15'],
+     ['+2','response1_type is +2, hcp+shortage in 16..18'],
+     ['+3','response1_type is +2, hcp+shortage in 19..21']],
+    ['opening_type is 1major, response1 is 1n',
+     ['new','hcp in 13..15, shape is unbalanced'],
+     ['2n','hcp in 16..18'],
+     ['3_','hcp+shortage in 16..18'],
+     ['3n','hcp in 19..21'],
+     ['4_','hcp+shortage in 19..21']],
+    ['opening_type is 1major, response1 is 2n',
+     ['3n','hcp in 13..17'],
+     ['4_','hcp+shortage in 13..18'],  
+     ['5n','hcp in 18..19'],
+     ['6n','hcp in 20..21'],
+     ['6_','hcp+shortage in 19..21']],
+    ['opening_type is 1major, response1 is 3n',
+     ['5n','hcp in 15..16'],
+     ['4_','hcp+shortage in 13..15'],  
+     ['5n','hcp in 18..19'],
+     ['6n','hcp in 20..21'],
+     ['6_','hcp+shortage in 19..21']],    
     ['hcp >= 0',[' p','catchall']]]
 saycStayman = [
     [' p','catchall']]
@@ -342,12 +386,6 @@ class OneHand:
    def n_c(self): return len(self.suits[0])
    def opening(self):
        rsp = self.checkAndReturn('opening')
-       if rsp == 'rule of two and three':
-           suit = self.getLongestSuit()
-           if self.longest() <= 8: rsp = '4'+'cdhs'[suit]
-           else: rsp = '5'+'cdhs'[suit]
-       elif rsp == 'game in hand':
-           rsp = '2c'
        return rsp
    def opening2(self,openbid):
        self.opening = openbid
@@ -358,22 +396,18 @@ class OneHand:
       ''' short means the length of shortest suit, long means the lenght of longest suit
       suit the one in opening bid
       '''
-      #self.opening = openbid
       print 'openbid',openbid
-      response = self.checkAndReturn('response1')
-      if response == '': print 'not defined response rule'
-      elif response[:10] == 'response1_':
-          bidsys = self.ai.bidState.bid_system[team(self.ai.deal.player)]
-          rules = getattr(sAi, bidsys+'_response1_'+response[-2:])
-          response = self.check2(rules)
-
-      return response
+      rsp = self.check2('response1')
+      if rsp[:10] == 'response1_':
+          rsp = self.check2('response1_'+rsp[-2:])
+      return rsp
    def response2(self):
       response = self.checkAndReturn('response2')
       return response
    def openerNextBid(self):
-      response = self.checkAndReturn('openerNextBid')
-      return response  
+       response = self.check2('openerNextBid')
+       return response  
+
    def shape_type(self):
        r = [len(self.suits[x]) for x in SUITS]
        r.sort()
@@ -389,25 +423,27 @@ class OneHand:
        return idx
    def longest(self):
        return len(self.suits[self.getLongestSuit()])
-   def newsuit(self):
+   def newsuit(self,bid):
        r = []
        for suit in xrange(4):
-           if suit == self.ai.bidState.opening[1].denom: continue
+           if suit == bid.denom: continue
            r.append(len(self.suits[suit]))
        return max(r)
-   def getNewsuit(self):
-       slen = 0
-       denom = 0
-       for suit in xrange(4):
-           if suit == self.ai.bidState.opening[1].denom: continue
-           if len(self.suits[suit]) > slen:
-               denom = suit
-       return denom      
-   def newsuit0(self):
+   def getNew(self,bid):
+       slen = self.newsuit(bid)
+       for suit in SUITS:
+           if suit == bid.denom: continue
+           if len(self.suits[suit]) == slen:
+               return bid.getNew(suit)       
+   def getNew0(self, bid):
+       slen = self.newsuit0(bid)
+       for suit in xrange(bid.denom+1,4):
+           if len(self.suits[suit]) == slen:
+               return bid.getNew(suit)
+   def newsuit0(self, bid):
        ''' intends to return max len suit in same level above prev valid bid
        '''
-       print 'newsuit0 current bid',str(self.ai.bidState.currentBid[1])
-       denom = self.ai.bidState.currentBid[1].denom
+       denom = bid.denom
        if denom == NO_TRUMP or denom == SPADES: return 0
        r = []
        for suit in xrange(denom+1,4):
@@ -427,12 +463,17 @@ class OneHand:
        ruleseqs = getattr(sAi,bidsys+'_'+state)
        for rule in ruleseqs:
            if self.check(rule[1]): return rule[0]       
-   def check2(self, ruleseqs):
-      for rule in ruleseqs:
+   def check2(self, state):
+      bidsys = self.ai.bidState.bid_system[team(self.ai.deal.player)]
+      rules = getattr(sAi, bidsys+'_'+state)       
+      for rule in rules:
           if not self.check(rule[0]): continue
           if type(rule[1]) == type(''):
-              rule = ruleseqs[int(rule[-1])]
-          return self.checkAndReturn(rule[1])
+              rule = rules[int(rule[-1])]
+              for onerule in rule[1:]:
+                  if self.check(onerule[1]): return onerule[0]
+          for onerule in rule[1:]:
+              if self.check(onerule[1]): return onerule[0]          
                   
    def get(self, symbol):
        if symbol == 'hcp': return self.hcp()
@@ -440,8 +481,8 @@ class OneHand:
        if symbol == 'response1_type':return self.ai.bidState.response1.type()
        if symbol == 'opening':return str(self.ai.bidState.opening[1])
        if symbol == 'longest':return self.longest()
-       if symbol == 'newsuit':return self.newsuit()
-       if symbol == 'newsuit0': return self.newsuit0()
+       if symbol == 'newsuit':return self.newsuit(self.ai.bidState.currentBid[1])
+       if symbol == 'newsuit0': return self.newsuit0(self.ai.bidState.currentBid[1])
        if symbol == 'hcp+shortage':return self.hcp()+self.shortage()
        if symbol == 'hcp+shortage+length':return self.hcp()+self.shortage()+self.lengthPoints()
        if symbol == 'shape_type': return self.shape_type()
@@ -547,23 +588,32 @@ class AIBidStatus:
        if openbid is None: bid = self.hand.opening()
        elif self.state == 'opening2':
           bid = self.hand.response1(openbid[1])
-          if bid[0] == '+':
-              inc = int(bid[1])
-              return openbid[1].getIncr(inc)
-          elif bid == 'new':
-              return openbid[1].getNew(self.hand.getNewsuit())
        elif self.state == 'opening':
           bid = self.hand.opening2(openbid[1])
-          if bid == 'jumpshift':
-              return openbid[1].getJumpshift(self.hand.getNewsuit())
        elif self.state == 'response1':
            bid = self.hand.response2()
        elif self.state == 'response2':
            bid = self.hand.openerNextBid()
        elif self.state == 'openerNextBid':
+           # guess the hand distribtution,(running massive simulation on all possible hands,
+           # eval the level we can make, select stratege accordingly
            bid = self.hand.gameon()
-          
-       print 'ai bid',bid
+
+       if bid[0] == '+':
+           inc = int(bid[1])
+           return openbid[1].getIncr(inc)
+       elif bid == 'new':
+           return self.hand.getNew(self.currentBid[1])
+       elif bid == 'jumpshift':
+           return openbid[1].getJumpshift(self.hand.getNewsuit())
+       elif bid == 'new0':
+           return self.hand.getNew0(self.currentBid[1])
+       elif bid == 'rule of two and three':
+           suit = self.hand.getLongestSuit()
+           if self.hand.longest() <= 8: bid = '4'+'cdhs'[suit]
+           else: bid = '5'+'cdhs'[suit]
+       elif bid == 'game in hand':
+           bid = '2c'           
        return f2o_bid(bid)
             
 class HandEvaluation:
