@@ -49,7 +49,8 @@ class Panels extends Composite{
 	DockPanel dock ;
 	Deal deal;
 	TabPanel tabs;
-	Grid playGrid,bidGrid, cardCounter; 
+	Grid playGrid,bidGrid, cardCounter,ntrickGrid;
+	Grid[] bidSuit; 
 	int playHistoryRow;
 	HTML debug= new HTML("");
 	HorizontalSplitPanel hSplit;
@@ -75,6 +76,7 @@ class Panels extends Composite{
 	}
 	public Panels() {	
 		tdata = new String[4][4];
+		ntrickGrid  = new Grid(1,2);
 		bidGrid = new Grid(2,4);
 		playGrid = new Grid(13,4); playHistoryRow = 0;
 		playGrid.setWidth("95px");
@@ -84,15 +86,17 @@ class Panels extends Composite{
 		
 		DockPanel dock = new DockPanel();
 		dockHand = new VerticalPanel[4];
+		bidSuit = new Grid[4];		
 		hpSuit = new Grid[4][4];
 		for (int i =0;i<4;i++){
 			dockHand[i] = new VerticalPanel();
+			bidSuit[i] = new Grid(1,14);
 			if (i==1){
 				dockHand[i].add(new HTML("> ")); //cosmetic
-				dockHand[i].add(new HTML("East"));
-			} else if (i==3) {
-				dockHand[i].add(new HTML("< "));
 				dockHand[i].add(new HTML("West"));
+			} else if (i==3) {
+				dockHand[i].add(ntrickGrid);
+				dockHand[i].add(new HTML("East"));
 			}
 			for(int j=0;j<4;j++){
 				hpSuit[i][j] = new Grid(1,14);
@@ -178,7 +182,8 @@ class Panels extends Composite{
 				grid2.setWidget(r, c, b);
 				b.addClickListener(bidclick);
 			}
-		}   
+		}
+		for (int i=0;i<4;i++)vp.add(bidSuit[i]);
 		vp.add(bidGrid);
 		vp.add(grid1);
 		vp.add(grid2);
@@ -222,6 +227,16 @@ class Panels extends Composite{
 				//hpSuit[i].setWidget(j,k+1,b);
 			}
 		}
+		for(int j=0;j<4;j++)
+			for(int k=1;k<14;k++)bidSuit[j].clearCell(0, k);
+		for(int j=0;j<4;j++){
+			String suit = tdata[2][j];
+			bidSuit[j].setWidget(0,0,new HTML(Card.SUIT2STR[3-j]));
+			for (int k=0;k<suit.length();k++){
+				String card = suit.substring(k,k+1);
+				bidSuit[j].setWidget(0,hpsuitRankIDX(Card.ridx(card)),new HTML(card));
+			}
+		}		
 		//if (trick_data.length()>0)showTrickPlayed();
 	}
 	void trackBidHistory(){
@@ -262,12 +277,25 @@ class Panels extends Composite{
 		if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx())); 
 		else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx()));
 		cardCounter.getWidget(c.sidx(), hpsuitRankIDX(c.ridx())).addStyleDependentName("played");
+		Button b = new Button(c.rank());
+		b.addStyleDependentName("played");
+		hpSuit[adjustSeat(p)][c.sidx()].setWidget(0,hpsuitRankIDX(c.ridx()), b);
+		Card lead = deal.trick.lead;
+		if (lead != null){
+			if (c.getColour() != lead.getColour()){
+				hpSuit[adjustSeat(p)][lead.sidx()].setWidget(0,0, new HTML("-"));
+			}
+		}
 		// record in the history
 		deal.play_card(c);
 		playGrid.setWidget(playHistoryRow, p, new HTML(card));
 		if(deal.currenTrickCompleted()){
 			deal.next_trick();
 			playHistoryRow++;
+			for (int i=0;i<2;i++){
+				int t = deal.tricks_taken[i]; 	
+				ntrickGrid.setWidget(0, i, new HTML(String.valueOf(t)));
+			}
 		}
 		if (playHistoryRow < 13)
 			playGrid.setWidget(playHistoryRow, deal.player.idx(), new HTML("?"));

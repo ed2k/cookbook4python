@@ -24,7 +24,7 @@ import java.util.Iterator;
 import cn.client.Category;
 
 /** 
- * @author Axelle Apvrille
+ * @author  
  * @version 0.1
  */
 public class Trick {
