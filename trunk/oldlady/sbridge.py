@@ -245,12 +245,13 @@ class Bid:
         return ''
     def difftype(self, bid):
         '''assume the bid is large then self '''
-        if self <= bid: return '<='
+        if bid.is_pass() or bid.is_double() or bid.is_redouble(): return str(bid)
+        if self >= bid: return str(bid)
         d = bid.level - self.level
         n = bid.denom - self.denom
         if n == 0: return '+'+str(d)
-        if d == 0: return 'new suit'
-        if d == 1 and n < 0: return 'new suit'
+        if d == 0: return 'new0'
+        if d == 1 and n < 0: return 'new'
         return 'jump'
 class Trick:
     """
