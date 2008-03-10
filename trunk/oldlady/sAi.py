@@ -390,12 +390,17 @@ class OneHand:
        self.opening = openbid
        rsp = self.checkAndReturn('opening2')
        return rsp
-   def gameon(self): return ' p'
+   def gameon(self):
+       '''idea is upto opener rebit, use predetermined bidding rule
+       after that, use the exsiting bidding to generator possible deals, then
+       use solvers to tell how many tricks possible to win,
+       based on that go for invitation, game, or slams bidding convention'''
+       return ' p'
    def response1(self, openbid):
       ''' short means the length of shortest suit, long means the lenght of longest suit
       suit the one in opening bid
       '''
-      print 'openbid',openbid
+      #print 'openbid',openbid
       rsp = self.check2('response1')
       if rsp[:10] == 'response1_':
           rsp = self.check2('response1_'+rsp[-2:])

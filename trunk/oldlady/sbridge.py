@@ -63,7 +63,7 @@ class BidGrid:
         self.row = 0
     def getDeclarer(self):
         contract, contractor = self.getContract()
-        print 'contract',contract, contractor
+        #print 'contract',contract, contractor
         self.begin()
         bid = self.getBid()
         while team(self.col) != team(contractor) or bid is None or bid.denom != contract.denom:
@@ -72,7 +72,7 @@ class BidGrid:
         return self.col
 
     def getContract(self):
-        print 'getcontract',str(self)
+        #print 'getcontract',str(self)
         self.end()
         for i in xrange(3):
             if not self.getBid().is_pass(): return None

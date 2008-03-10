@@ -18,7 +18,7 @@
 # 1. test bidding based on pbn library
 # 2. play againgst double dummy solver
 
-
+import floater_client
 import sAi
 import sbridge
 from sbridge import *
@@ -30,26 +30,8 @@ import os
 PLAY_CARD, CONFIRM_TRICK, CONFIRM_DEAL, CONFIRM_GAME, CONFIRM_RUBBER = range (5)
 
 def _(a):return a
-# This is easy to solve with a simple tiny wrapper:
-# class static method
-class Callable:
-    def __init__(self, anycallable):
-        self.__call__ = anycallable
 
 
-class glade:
-    def XML(a):
-        #print 'glade.XML',a
-        return glade()
-    XML = Callable(XML)
-    
-    def signal_autoconnect(self,a):
-        pass
-    def get_widget(self,a):
-        #print 'get_widget',a
-        return glade()
-    def set_label(self,a): pass
-        #print 'set_lable',a
 
 class App:
     """
@@ -57,10 +39,10 @@ class App:
     """
 
     def __init__ (self):
-        self.xml = glade.XML (os.path.join (defs.PKG_DATA_DIR, "oldlady.glade"))
-        self.xml.signal_autoconnect (self)
+        #self.xml = glade.XML (os.path.join (defs.PKG_DATA_DIR, "oldlady.glade"))
+        #self.xml.signal_autoconnect (self)
 
-        self.show_all_cards = False
+        #self.show_all_cards = False
 
         self.ais = [sAi.ComputerPlayer (seat) for seat in sbridge.PLAYERS]
         self.start_next_rubber ()
@@ -78,7 +60,6 @@ class App:
 
         self.deal = self.rubber.next_deal ()
         # for debuging biding, use the same deal
-        import floater_client
         pbn = "K8652.Q76.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.K92.AQ97.42"       
         hands = [x.split('.') for x in pbn.split()]
         s = '''
@@ -116,13 +97,11 @@ class App:
 
         self.messages = []
         # print deal
-        print '-'*80
-        for s in sbridge.PLAYERS:
-            print s,
-            for c in self.deal.hands[s]: print c,
-            print
+        print '-'*80       
+        print [floater_client.o2pbn_hand(self.deal.hands[s]) for s in sbridge.PLAYERS]
+
         self.play_for_ais ()
-        self.update_scores ()
+        #self.update_scores ()
 
     def start_next_rubber (self):
         """
@@ -132,33 +111,24 @@ class App:
         self.rubber = sbridge.Rubber (sbridge.WEST)
         self.start_next_deal ()
 
-    def populate_legal_bids (self):
-        """
-        Fill in the bidding widget with the currently legal bids.
-        """
-
-        self.legal_bids.clear ()
-        for legal_bid in self.deal.legal_bids ():
-            iter = self.legal_bids.append ()
-            self.legal_bids.set (iter, 0, legal_bid)
 
     def update_scores (self):
         """
         Update the displays of scores and tricks taken.
         """
 
-        self.xml.get_widget ("we-vulnerable").set_label (self.rubber.vulnerable[sbridge.WEST_EAST] and _("Yes") or _("No"))
-        self.xml.get_widget ("ns-vulnerable").set_label (self.rubber.vulnerable[sbridge.NORTH_SOUTH] and _("Yes") or _("No"))
+        print self.rubber.vulnerable[sbridge.WEST_EAST],
+        print self.rubber.vulnerable[sbridge.NORTH_SOUTH],
 
-        self.xml.get_widget ("we-above").set_label ("%d" % self.rubber.above[sbridge.WEST_EAST])
-        self.xml.get_widget ("ns-above").set_label ("%d" % self.rubber.above[sbridge.NORTH_SOUTH])
+        print self.rubber.above[sbridge.WEST_EAST],
+        print self.rubber.above[sbridge.NORTH_SOUTH],
 
-        self.xml.get_widget ("we-below").set_label ("%d" % self.rubber.below[sbridge.WEST_EAST])
-        self.xml.get_widget ("ns-below").set_label ("%d" % self.rubber.below[sbridge.NORTH_SOUTH])
+        print self.rubber.below[sbridge.WEST_EAST],
+        print self.rubber.below[sbridge.NORTH_SOUTH],
 
-        self.xml.get_widget ("we-tricks").set_label ("%d" % self.deal.tricks_taken[sbridge.WEST_EAST])
-        self.xml.get_widget ("ns-tricks").set_label ("%d" % self.deal.tricks_taken[sbridge.NORTH_SOUTH])
-
+        print'Tricks WE', self.deal.tricks_taken[sbridge.WEST_EAST],
+        print 'NS',self.deal.tricks_taken[sbridge.NORTH_SOUTH],
+        print
     def play_for_ais (self):
         """
         Have the AIs make their moves, continuing until it is the human
@@ -185,7 +155,7 @@ class App:
             else:
                 if self.deal.trick.cards[self.deal.player] is not None:
                     self.action = CONFIRM_TRICK
-                    self.update_scores ()
+                    #self.update_scores ()
                     return
                 if self.deal.player != self.deal.dummy:
                     card = self.ais[self.deal.player].play_self ()
@@ -205,7 +175,7 @@ class App:
     #
     ##########################################################################
 
-    def tableau_button_release_event_cb (self, tableau, event):
+    def run (self):
         if self.action == PLAY_CARD:
             if self.deal.trick is not None:
                 card = self.hand_renderers[self.deal.player].card_at (event.x, event.y)
@@ -213,7 +183,7 @@ class App:
                     self.deal.play_card (card)
                     if self.deal.trick.cards[self.deal.player] is not None:
                         self.action = CONFIRM_TRICK
-                    self.update_scores ()
+                    #self.update_scores ()
                     #tableau.queue_draw ()
         elif self.action == CONFIRM_TRICK:
             for ai in self.ais:
@@ -224,10 +194,11 @@ class App:
                 self.action = CONFIRM_DEAL
             else:
                 self.action = PLAY_CARD
-            self.update_scores ()
+            #self.update_scores ()
         elif self.action == CONFIRM_DEAL:
             if not self.deal.contract.is_pass ():
                 self.messages = self.rubber.score_game ()
+                print self.messages
                 self.update_scores ()
                 if len (self.messages) > 0:
                     self.action = CONFIRM_GAME
@@ -239,7 +210,7 @@ class App:
                 self.action = None
         elif self.action == CONFIRM_GAME:
             self.messages = self.rubber.score_rubber ()
-            self.update_scores ()
+            #self.update_scores ()
             if len (self.messages) > 0:
                 self.action = CONFIRM_RUBBER
             else:
@@ -253,158 +224,11 @@ class App:
             self.play_for_ais ()
 
 
-    ##########################################################################
-    #
-    # Menu and toolbar callbacks
-    #
-    ##########################################################################
-
-    def game_new_cb (self, widget):
-        self.rubber = sbridge.Rubber (sbridge.SOUTH)
-        self.start_next_deal ()
-        self.update_scores ()
-
-    def game_quit_cb (self, widget):
-        gtk.main_quit ()
-
-    def show_all_toggled_cb (self, widget):
-        self.show_all_cards = widget.active
-        self.xml.get_widget ("tableau").queue_draw ()
-
-    def help_about_cb (self, widget):
-        dialog = self.xml.get_widget ("about")
-        dialog.set_name (_("Old Lady"))
-        dialog.set_version (oldlady.defs.VERSION)
-        dialog.present ()
-
-    ##########################################################################
-    #
-    # App window callbacks
-    #
-    ##########################################################################
-
-    def make_bid_cb (self, button):
-        choose_bid = self.xml.get_widget ("choose-bid")
-        iter = choose_bid.get_active_iter ()
-        bid = self.legal_bids.get_value (iter, 0)
-
-        self.deal.bid (bid)
-        self.play_for_ais ()
-
-    def delete_event_cb (self, window, event):
-        gtk.main_quit ()
-
-    ##########################################################################
-    #
-    # About dialog callbacks
-    #
-    ##########################################################################
-
-    def about_delete_event_cb (self, dialog, event):
-        dialog.hide ()
-        return True
-
-    def about_response_cb (self, dialog, response):
-        dialog.hide ()
-
-    ##########################################################################
-    #
-    # Other callbacks
-    #
-    ##########################################################################
-
-    def render_bid (self, column, renderer, model, iter, player):
-        bid = model.get_value (iter, player)
-        renderer.set_property ("text", bid is not None and str (bid) or "")
-
-
-class HandRenderer:
-    """
-    Helper class that handles rendering and hit detecting of a single player's
-    hand.
-    """
-
-    def __init__ (self, app, player):
-        self.app = app
-        self.player = player
-        self.rect = None
-
-    def refresh (self):
-        """
-        Recompute the bounding rectangle and redraw the hand on the tableau.
-        """
-
-        tableau = self.app.xml.get_widget ("tableau")
-        size = tableau.window.get_size ()
-        hand = self.app.deal.hands[self.player]
-
-        if len (hand) == 0:
-            self.rect = None
-            return
-        self.rect = gdk.Rectangle ()
-
-        if sbridge.team (self.player) == sbridge.WEST_EAST:
-            self.rect.width = self.app.card_width
-            self.rect.height = self.app.card_height + self.app.card_height * (len (hand) - 1) / 4
-            self.rect.y = (size[1] - self.rect.height) / 2
-        else:
-            self.rect.width = self.app.card_width + self.app.card_width * (len (hand) - 1) / 5
-            self.rect.height = self.app.card_height
-            self.rect.x = (size[0] - self.rect.width) / 2
-
-        if self.player == sbridge.WEST:
-            self.rect.x = 10
-        elif self.player == sbridge.NORTH:
-            self.rect.y = 10
-        elif self.player == sbridge.EAST:
-            self.rect.x = size[0] - 10 - self.rect.width
-        else:
-            self.rect.y = size[1] - 10 - self.rect.height
-
-        dst_x = self.rect.x
-        dst_y = self.rect.y
-        for card in hand:
-            if self.player == sbridge.SOUTH or (self.app.deal.opening_lead and self.player == self.app.deal.dummy) or self.app.show_all_cards:
-                src_x = (card.rank != sbridge.ACE) and (card.rank - 1) or 0
-                src_y = card.suit
-            else:
-                src_x = 2
-                src_y = 4
-            tableau.window.draw_pixbuf (None, self.app.cards,
-                                        src_x * self.app.card_width, src_y * self.app.card_height,
-                                        dst_x, dst_y,
-                                        self.app.card_width, self.app.card_height,
-                                        gdk.RGB_DITHER_NONE, 0, 0)
-            if sbridge.team (self.player) == sbridge.WEST_EAST:
-                dst_y += self.app.card_height / 4
-            else:
-                dst_x += self.app.card_width / 5
-
-    def card_at (self, x, y):
-        """
-        Return the card rendered at coordinates (x,y) on the tableau, if any.
-        """
-
-        if self.rect is None or \
-           x < self.rect.x or x >= self.rect.x + self.rect.width or \
-           y < self.rect.y or y >= self.rect.y + self.rect.height:
-               return None
-
-        if sbridge.team (self.player) == sbridge.WEST_EAST:
-            index = (int (y) - self.rect.y) / (self.app.card_height / 4)
-        else:
-            index = (int (x) - self.rect.x) / (self.app.card_width / 5)
-
-        hand = self.app.deal.hands[self.player]
-        if index < len (hand):
-            return hand[index]
-        else:
-            return hand[-1]
 
 if __name__ == "__main__":
     app = App()
     import time
     while True:
-        app.tableau_button_release_event_cb (None, None)
-        time.sleep(0.1)
+        app.run()
+        time.sleep(0.3)
         
