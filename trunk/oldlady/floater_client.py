@@ -1,42 +1,9 @@
 import sys, random,time
 import defs
-# S 37+ 2->39 - 51
-# H 24+ 26 - (A->38)
-# D 11+ 13 - (A->25)
-# C -2+ 0 - (A->12)
-# S,H,D,C, N,E,S,W
-PBN_HIDX = {'2':0,'3':1,'4':2,'5':3,'6':4,'7':5,'8':6,'9':7,'t':8,'j':9,'q':10,'k':11,'a':12}
-#E S W N
-name_dict = {1:'East',3:'West',2:'South',0:'North'}
-IDX = {'E':1,'W':3,'S':2,'N':0}
 
-f_op2argc = {'J':5,'S':4,'C':1,'s':4,'T':4,'e':3,'a':2,'p':2,'Y':3,'*':8}
 
 import sbridge, sAi
 from sbridge import *
-
-
-def f2o(idx):   return idx
-def o2f(idx) : return idx
-def f2o_card(c): return sbridge.Card(c /13, (c % 13)+2)
-def o2f_card(c): return c.suit*13 + c.rank-2
-def f2o_hand(hand): return [f2o_card(c) for c in hand]
-def o2f_hand(hand): return [o2f_card(c) for c in hand]
-def pbn2f_card(c):
-   ''' cdhs -> 0-3 * 13 + rank'''
-   return KIDX[c[0].lower()]*13+PBN_HIDX[c[1].lower()]
-def o2pbn_hand(hand):
-   '''-> SHDC '''
-   h = ['','','','']
-   for c in hand:
-      h[c.suit] += '23456789TJQKA'[c.rank-2]
-   h.reverse()
-   return '.'.join(h)
-def o2f_bid(b):
-   if b.is_pass(): return ' p'
-   if b.is_double(): return ' x'
-   if b.is_redouble(): return 'xx'
-   return str(b.level)+'cdhsn'[b.denom]
 
    
    

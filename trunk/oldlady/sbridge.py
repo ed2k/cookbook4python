@@ -17,11 +17,65 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02111-1301, USA.
 
+def _(A): return A
+RANKS = range (2, 15)
+TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE = RANKS
+
+SUITS = range (4)
+DENOMINATIONS = range (5)
+CLUBS, DIAMONDS, HEARTS, SPADES, NO_TRUMP = DENOMINATIONS
+
+PASS = -1
+DOUBLE = -2
+REDOUBLE = -3
+
+PLAYERS = range (4)
+NORTH, EAST, SOUTH, WEST = PLAYERS
+PLAYER_NAMES = [_("North"), _("East"), _("South"),_("West")]
+
+TEAMS = range (2)
+WEST_EAST, NORTH_SOUTH = TEAMS
+TEAM_NAMES = [_("West-East"), _("North-South")]
+STR2RANK = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2}
+STR2SUIT = {'S':3,'H':2,'D':1,'C':0}
+
+# S 37+ 2->39 - 51
+# H 24+ 26 - (A->38)
+# D 11+ 13 - (A->25)
+# C -2+ 0 - (A->12)
+# S,H,D,C, N,E,S,W
+PBN_HIDX = {'2':0,'3':1,'4':2,'5':3,'6':4,'7':5,'8':6,'9':7,'t':8,'j':9,'q':10,'k':11,'a':12}
+#E S W N
+name_dict = {1:'East',3:'West',2:'South',0:'North'}
+IDX = {'E':1,'W':3,'S':2,'N':0}
+
+f_op2argc = {'J':5,'S':4,'C':1,'s':4,'T':4,'e':3,'a':2,'p':2,'Y':3,'*':8}
+
+def f2o(idx):   return idx
+def o2f(idx) : return idx
+def f2o_card(c): return sbridge.Card(c /13, (c % 13)+2)
+def o2f_card(c): return c.suit*13 + c.rank-2
+def f2o_hand(hand): return [f2o_card(c) for c in hand]
+def o2f_hand(hand): return [o2f_card(c) for c in hand]
+def pbn2f_card(c):
+   ''' cdhs -> 0-3 * 13 + rank'''
+   return KIDX[c[0].lower()]*13+PBN_HIDX[c[1].lower()]
+def o2pbn_hand(hand):
+   '''-> SHDC '''
+   h = ['','','','']
+   for c in hand:
+      h[c.suit] += '23456789TJQKA'[c.rank-2]
+   h.reverse()
+   return '.'.join(h)
+def o2f_bid(b):
+   if b.is_pass(): return ' p'
+   if b.is_double(): return ' x'
+   if b.is_redouble(): return 'xx'
+   return str(b.level)+'cdhsn'[b.denom]
+
+
 
 import random
-
-def _(A): return A
-
 
 class BidGrid:
     ''' n row 4 colum table to record bid N->W 0-3'''
@@ -89,26 +143,6 @@ class BidGrid:
         return '\r\n'.join(s)
                 
 
-RANKS = range (2, 15)
-TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE = RANKS
-
-SUITS = range (4)
-DENOMINATIONS = range (5)
-CLUBS, DIAMONDS, HEARTS, SPADES, NO_TRUMP = DENOMINATIONS
-
-PASS = -1
-DOUBLE = -2
-REDOUBLE = -3
-
-PLAYERS = range (4)
-NORTH, EAST, SOUTH, WEST = PLAYERS
-PLAYER_NAMES = [_("North"), _("East"), _("South"),_("West")]
-
-TEAMS = range (2)
-WEST_EAST, NORTH_SOUTH = TEAMS
-TEAM_NAMES = [_("West-East"), _("North-South")]
-STR2RANK = {'A':14,'K':13,'Q':12,'J':11,'T':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2}
-STR2SUIT = {'S':3,'H':2,'D':1,'C':0}
 
 def denomination_to_string (denom):
     """
@@ -307,7 +341,7 @@ class Deal:
             
     def __init__ (self, dealer):
         self.played_hands = [[],[],[],[]]
-        self.hands = [None]*4
+        self.hands = [None, None, None, None]
         self.dealer = dealer
         self.player = dealer
         self.contract = None

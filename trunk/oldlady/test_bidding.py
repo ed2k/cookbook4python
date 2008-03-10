@@ -49,9 +49,11 @@ class App:
 
 
     def distribute_deal(self):
-        # clone deal to show AI only its own hand
+        # clone deal to show AI only its own hand        
         for ai in self.ais:
-            ai.new_deal (self.deal)
+            deal = Deal(self.deal.dealer)
+            deal.hands[ai.seat] = self.deal.hands[ai.seat]
+            ai.new_deal(deal)
             
     def start_next_deal (self):
         """
@@ -67,8 +69,6 @@ class App:
 1 Js 8s 6s 9h 8h 4h Ad Qd 9d 4d Kc 4c 2c
 2 As Ks Qs Ts 2s Ah Kh 3h 8d 2d 9c 8c 6c
 3 7s 5s 4s 3s Jh 7h 6h 5h Td Qc Jc Tc 7c
-
-
 '''
         hands = s.splitlines()[1:5]
         for p in sbridge.PLAYERS:
@@ -84,9 +84,11 @@ class App:
 ['A53', 'AK3', 'K82', 'QT75'],
 ['KT62', 'QT52', 'JT3', 'K4'],
 ['QJ984', '64', 'AQ975', '2']]
+        hands = ['KJT43.A6.AK98.Q7', '.QJT32.Q75.AK932', 'A962.754.JT4.T64', 'Q875.K98.632.J85']
         for p in sbridge.PLAYERS:
             h = []
             suits = hands[p]
+            if type(suits) != type([]): suits = suits.split('.')
             for s in sbridge.SUITS:
                 for c in suits[3-s]:
                     card = Card(s,floater_client.PBN_HIDX[c.lower()]+2)

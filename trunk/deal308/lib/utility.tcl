@@ -351,3 +351,17 @@ holdingProc -string distinct_cards {A K Q J T x9 x8 x7 x6 x5 x4 x3 x2} {
   }
   set L
 }
+
+
+
+proc shortage { handname} {
+    return  [expr [sh_map [spades $handname]] + [sh_map [hearts $handname]] + [sh_map [diamonds $handname]] + [sh_map [clubs $handname]]]
+}
+
+proc sh_map { pts } {
+    if { $pts == 0 } { return 5 }
+    if { $pts == 1 } { return 3 }
+    if { $pts == 2 } { return 1 }
+    return 0
+}
+

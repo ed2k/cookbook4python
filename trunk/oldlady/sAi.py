@@ -21,7 +21,8 @@ import sbridge
 from sbridge import *
 import bidding
 import sAi
-
+import os
+    
 #sayc = bidding.Bidding ()
 
 class ComputerPlayer:
@@ -84,7 +85,7 @@ class ComputerPlayer:
         #bid = sayc.choose_bid (self.deal.hands[self.seat], self.history)
         #print 'prolog:',self.seat,bid
         bid = self.bidState.evaluate_deal()
-        print 'pybid:',bid
+        print self.seat,'pybid:',bid
         return bid
         
     
@@ -210,7 +211,8 @@ sayc_opening= [['1n','hcp in 16..18, shape_type is balanced'],
     ['game in hand', 'hcp+shortage+length >= 26'],
     ]
 sayc_opening2=[[' x','hcp >= 16'],
-               [' x','hcp >= 12, suit < 4, unbid_major >= 4'],
+               [' x','opening_type is 1major','hcp >= 12, suit < 4'],
+               [' x','opening_type is 1minor','hcp >= 12, suit < 4'],
                ['new0','hcp in 9..16, newsuit0 >= 5'],
                ['new','hcp in 11..16, newsuit >= 5'],
                ['jumpshift', 'hcp in 6..10, newsuit >= 6'],
@@ -360,9 +362,10 @@ class OneHand:
    takeout double, hcp=12+, len(enemysuit)=short
    
    '''
-   def __init__(self, ai):
-      self.ai = ai
-      self.hand = ai.deal.hands[ai.seat]
+   def __init__(self, bids):
+      self.ai = bids.ai
+      self.bidState = bids
+      self.hand = self.ai.deal.hands[self.ai.seat]
       self.suits = hand2suits(self.hand)
    def hcp(self): return hcp(self.hand)
    def shortage(self):
@@ -485,15 +488,16 @@ class OneHand:
    def get(self, symbol):
        if symbol == 'hcp': return self.hcp()
        if symbol == 'longest':return self.longest()
-       if symbol == 'newsuit':return self.newsuit(self.ai.bidState.currentBid[1])
-       if symbol == 'newsuit0': return self.newsuit0(self.ai.bidState.currentBid[1])
+       if symbol == 'newsuit':return self.newsuit(self.bidState.currentBid[1])
+       if symbol == 'newsuit0': return self.newsuit0(self.bidState.currentBid[1])
        if symbol == 'hcp+shortage':return self.hcp()+self.shortage()
        if symbol == 'hcp+shortage+length':return self.hcp()+self.shortage()+self.lengthPoints()
        if symbol == 'shape_type': return self.shape_type()
        if symbol in ['opening','opening_type','response1','response1_type']:
-           return str(self.ai.bidState.getBid(symbol))
+           return str(self.bidState.getBid(symbol))
        if symbol == 'len_major': return max([len(self.suits[x]) for x in [2,3]])
        if symbol == 'len_minor': return max([len(self.suits[x]) for x in [0,1]])
+       if symbol == 'suit': return len(self.suits[self.bidState.getBid('opening').denom])
        if symbol in 'cdhs':
            return  len(self.suits[KIDX[symbol]])
        if symbol.find('..') > 0:
@@ -522,12 +526,12 @@ class AIBidStatus:
         self.handsEval = []
         for p in PLAYERS:
             self.handsEval.append(HandEvaluation())
-        self.hand = OneHand(ai)
         self.first5 = [None,None,None,None,None]
         # not pass, double
         self.currentBid = None
         self.state = 'not opened'
-        self.bid_system = ('sayc','sayc')        
+        self.bid_system = ('sayc','sayc')
+        self.hand = OneHand(self)
     def setOpening(self):
         if self.ai.history == []: return None
         if self.first5[0] is not None: return self.first5[0]
@@ -587,6 +591,7 @@ class AIBidStatus:
             self.state = 'openerNextBid'
             self.first5[4] = bid
         elif self.state == 'openerNextBid':
+            self.generateDealScript()
             if self.ai.seat == NORTH:
                for p in PLAYERS:
                    heval = self.handsEval[p]  
@@ -635,9 +640,25 @@ class AIBidStatus:
            if self.hand.longest() <= 8: bid = '4'+'cdhs'[suit]
            else: bid = '5'+'cdhs'[suit]
        elif bid == 'game in hand':
-           bid = '2c'           
+           bid = '2c'
        return f2o_bid(bid)
-            
+
+    def generateDealScript(self):
+       if self.ai.seat != NORTH: return
+       tcl = []
+       for p in PLAYERS:
+           t =  Translate2Tcl(self, p)
+           for rule in self.handsEval[p].accept:
+               tcl.append( t.go(rule))
+       s = ' && '.join(tcl)
+       print s
+       head = ''' source lib/utility.tcl
+main { if { 
+'''
+       open('temp.tcl','w').write(head+s+' } accept } \n')
+       DealGenerator(self.ai)
+       
+       
 class HandEvaluation:
     def __init__(self):
         self.hcp = ''
@@ -667,3 +688,146 @@ r='''
        hcp in 17..18, support >= 4 -> +1
        
       '''
+class Translate2Tcl:
+    def __init__(self, bids, player):
+        self.seat = ['north','east','south','west'][player]
+        self.player = player
+        self.bidState = bids
+        
+    def go(self, rule):
+        f = []
+        for r in rule.split(','):
+            left,op,right = r.split()
+            if left in ['opening','opening_type','response1','response1_type']:
+                continue
+            if left == 'shape_type':
+                f.append('['+right+ ' '+self.seat+']')
+                continue
+            left = self.get(left)
+            right = self.get(right)
+            f.append(self.op(left,right,op))
+        return ' && '.join(f)
+
+                  
+    def get(self, symbol):
+       if symbol == 'hcp': return '[hcp '+self.seat+']'
+       if symbol == 'longest':return self.longest()
+       if symbol == 'newsuit':return self.newsuit(self.bidState.currentBid[1])
+       if symbol == 'newsuit0': return self.newsuit0(self.bidState.currentBid[1])
+       if symbol == 'hcp+shortage':return '[hcp '+self.seat+'] + [shortage '+ self.seat+']'
+       if symbol == 'hcp+shortage+length':return self.hcp()+self.shortage()+self.lengthPoints()
+       if symbol == 'shape_type': return 'shape_type'
+       if symbol == 'len_major': return max([len(self.suits[x]) for x in [2,3]])
+       if symbol == 'len_minor': return max([len(self.suits[x]) for x in [0,1]])
+       if symbol == 'suit': symbol = 'cdhs'[self.bidState.getBid('opening').denom]
+       if symbol in 'cdhs':
+           return  '['+{'c':'clubs','h':'hearts','d':'diamonds','s':'spades'}[symbol]+' '+self.seat+']'
+       if symbol.find('..') > 0:
+           minv, maxv = symbol.split('..')
+           return (minv, maxv)
+       return symbol
+
+    def op(self, left, right, opcode):
+      if opcode in ['<','>', '>=', '<=', '==']:
+          return ' '.join([left,opcode,right])
+      elif opcode == 'in':
+          minv,maxv = right
+          return ' '.join([left, '>=', minv, '&&', left, '<=', maxv])
+      if opcode == 'is': return ' '.join([left, '==', right])
+      print 'unknown op',left,opcode,right
+                 
+
+
+def solver(trump, currentTricks, deal):
+   '''deal is N-W,S-C 4x4 list, shdc -> 0123 '''
+   if trump != 4: trump = 3-trump
+   print trump,
+   for c in currentTricks: print str(c),
+   print deal
+   # the play to solve is always at 0 (North), so last player is always 3(West)
+   first = (4 - len(currentTricks)) % 4
+   if first == 2: first = 1
+   test = [trump, first]
+   for i in xrange(4):
+      for j in xrange(4):
+         n = 0
+         for k in xrange(len(deal[i][j])):
+            n = n | (1 << STR2RANK[deal[i][j][k]])
+         test.append(n)
+   for c in currentTricks:
+      test.append(3-c.suit)
+      test.append(c.rank)
+   arg = ' '.join([str(x) for x in test])
+   print arg
+   r = os.popen('../ddsprogs/dds '+arg).read().splitlines()[1].split()
+   print 'suit','shdc'[int(r[0])],'rank',r[1],'win tricks',r[3]    
+
+def o2dstack_hand(hand):
+   '''deal stack  has format AK QJ - T98765432, from Spade to Club'''
+   h = o2pbn_hand(hand).split('.')
+   for i in xrange(4):
+      if h[i] == '': h[i] = '-'
+   return ' '.join(h)
+    
+def DealGenerator(ai):
+    hands = ai.deal.hands
+    myseat = ai.seat
+    mine = o2dstack_hand(hands[myseat])
+    cmd = './deal -i format/pbn -'+seat_str(myseat)+' "'+mine+'"'
+    others = PLAYERS[:]
+    others.remove(myseat)
+    if ai.deal.trick is not None:
+        seat2 = ai.deal.dummy
+        if seat2 == myseat: seat2 = partner(myseat)
+        if hands[seat2] is not None:
+            hand2 = o2dstack_hand(hands[seat2])
+            cmd += ' -'+seat_str(seat2)+' "'+ hand2 + '"'
+            others.remove(seat2)
+        # take out played cards
+        eargs = []
+        for i in others:
+           if ai.deal.played_hands[i] != []:
+              eargs.append(sbridge.PLAYER_NAMES[i].lower()+' gets')
+           for c in ai.deal.played_hands[i]:
+              eargs.append(str(c).upper())       
+           eargs.append(';')
+        cmd +=  ' -e "'+' '.join(eargs)+'"'
+    cmd += ' -i temp.tcl 1'
+    print cmd
+
+    newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
+
+    print str(ai.deal.trick)
+    #move ai to North
+    ddeal = [[],[],[],[]]
+    currentTrick = []
+    # put estimated deal in 4x4 format
+    for i in xrange(4):
+       d = newdeal[i].split('.')
+       ddeal[i] = [[],[],[],[]]
+       for j in xrange(4):
+          ddeal[i][j] = list(set(d[j]))
+    # remove played cards
+    for i in xrange(4):
+       seat = f2o(i)
+       for c in ai.deal.played_hands[seat]:
+          s = 3-c.suit
+          ddeal[i][s].remove(str(c)[0])
+    
+    lenMine = len(ai.deal.played_hands[myseat])
+    currentTrick = []
+    seat = seat_prev(myseat)
+    while (len(ai.deal.played_hands[seat]) > lenMine):
+       currentTrick.insert(0,ai.deal.played_hands[seat][-1])
+       seat = seat_prev(seat)
+
+    sdeal = [[],[],[],[]]
+    #move my seat to North for solver
+    for i in xrange(4):
+       d = ddeal[seat_move(myseat,i)]
+       for j in xrange(4):
+          sdeal[i].append(''.join(d[j]))
+
+    solver(ai.deal.contract.denom, currentTrick, sdeal)
+          
+    
