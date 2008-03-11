@@ -365,3 +365,21 @@ proc sh_map { pts } {
     return 0
 }
 
+proc len_major { handname } {
+    set h [hearts $handname]
+    set s [spades $handname]
+    if { $h > $s } { return $h }
+    return $s
+}
+
+proc len_minor { handname } {
+    set d [diamonds $handname]
+    set c [clubs $handname]
+    if { $c > $d } { return $c }
+    return $d
+}
+
+proc unbalanced { handname } {
+    if { [semibalanced $handname] || [balanced $handname] } { return 0 }
+    return 1
+}

@@ -276,6 +276,7 @@ class Bid:
     def type(self):
         if self.denom == DIAMONDS or self.denom == CLUBS: return str(self.level)+'minor'
         elif self.denom == SPADES or self.denom == HEARTS: return str(self.level)+'major'
+        elif self.denom == NO_TRUMP: return 'nt'
         return ''
     def difftype(self, bid):
         '''assume the bid is large then self '''
