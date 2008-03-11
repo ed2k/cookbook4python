@@ -811,7 +811,7 @@ def DealGenerator(ai):
     cmd = './deal -i format/pbn -'+seat_str(myseat)+' "'+mine+'"'
     others = PLAYERS[:]
     others.remove(myseat)
-    if ai.deal.trick is not None:
+    if ai.deal.finishBidding() is not None:
         seat2 = ai.deal.dummy
         #todo, dummy shouldn't be thinking
         #if seat2 == myseat: seat2 = partner(myseat)

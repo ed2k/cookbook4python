@@ -432,7 +432,7 @@ class Deal:
             print 'dealer',self.dealer,'player',self.player, 'dummy',self.dummy,'declarer',self.declarer,'contract',self.contract
         else:
             self.contract = Bid (PASS)
-
+    def finishBidding(self): return self.trick is not None
     def legal_card (self, card):
         """
         Check whether a card is legal to play in the current trick.
