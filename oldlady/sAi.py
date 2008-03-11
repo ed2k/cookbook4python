@@ -813,7 +813,9 @@ def DealGenerator(ai):
     others.remove(myseat)
     if ai.deal.trick is not None:
         seat2 = ai.deal.dummy
-        if seat2 == myseat: seat2 = partner(myseat)
+        #todo, dummy shouldn't be thinking
+        #if seat2 == myseat: seat2 = partner(myseat)
+        assert seat2 != myseat
         if hands[seat2] is not None:
             hand2 = o2dstack_hand(hands[seat2])
             cmd += ' -'+seat_str(seat2)+' "'+ hand2 + '"'
