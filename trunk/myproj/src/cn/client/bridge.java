@@ -76,7 +76,10 @@ class Panels extends Composite{
 	}
 	public Panels() {	
 		tdata = new String[4][4];
-		ntrickGrid  = new Grid(1,2);
+		ntrickGrid  = new Grid(1,5); 
+		ntrickGrid.setWidget(0, 1, new HTML("NS"));
+		ntrickGrid.setWidget(0, 3, new HTML("EW"));
+		
 		bidGrid = new Grid(2,4);
 		playGrid = new Grid(13,4); playHistoryRow = 0;
 		playGrid.setWidth("95px");
@@ -238,6 +241,7 @@ class Panels extends Composite{
 			}
 		}		
 		//if (trick_data.length()>0)showTrickPlayed();
+		ntrickGrid.setWidget(0, 0, new HTML(deal.contract.toString()));		
 	}
 	void trackBidHistory(){
 	    int pos = (hand_id-1) % 4;
@@ -294,7 +298,7 @@ class Panels extends Composite{
 			playHistoryRow++;
 			for (int i=0;i<2;i++){
 				int t = deal.tricks_taken[i]; 	
-				ntrickGrid.setWidget(0, i, new HTML(String.valueOf(t)));
+				ntrickGrid.setWidget(0, i*2, new HTML(String.valueOf(t)));
 			}
 		}
 		if (playHistoryRow < 13)
