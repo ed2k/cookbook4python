@@ -63,6 +63,7 @@ class ComputerPlayer:
         self.deal.bid(bid)
         self.history.insert (0, bid)
         # relys on the history to find out the opening
+        if self.deal.finishBidding() and self.seat == self.deal.dummy: return
         self.bidState.evaluateBid(bid)
         
     def trick_complete (self):
@@ -97,9 +98,11 @@ class ComputerPlayer:
         track of what cards have been played or anything.
         """
 
-        return self.play_from_hand (self.seat)
+        #return self.play_from_hand (self.seat)
         # normally player just play its own card
         # so we return what card played to table manager
+        c,win = DealGenerator(self, self.seat)
+        return c
 
     def play_dummy (self):
         """
@@ -109,7 +112,9 @@ class ComputerPlayer:
         no differently than playing its own.
         """
         assert self.seat == self.deal.declarer
-        return self.play_from_hand (self.deal.dummy)
+        #return self.play_from_hand (self.deal.dummy)
+        c,win = DealGenerator(self, self.deal.dummy)
+        return c
 
     def play_from_hand (self, player):
         """
@@ -543,6 +548,7 @@ class AIBidStatus:
         self.state = 'not opened'
         self.bid_system = ('sayc','sayc')
         self.hand = OneHand(self)
+        self.distributionsScripts = 'main { accept }'
     def setOpening(self):
         if self.ai.history == []: return None
         if self.first5[0] is not None: return self.first5[0]
@@ -674,20 +680,22 @@ class AIBidStatus:
        return f2o_bid(bid)
 
     def generateDealScript(self):
-       if self.ai.seat != NORTH: return
        tcl = []
        for p in PLAYERS:
            if p == self.ai.seat: continue
+           if self.ai.deal.hands[p] is not None: continue
            t =  Translate2Tcl(self, p)
            for rule in self.handsEval[p].accept:
+               if rule is None:
+                   print 'generateDealScript sth wrong, rule is None'
+                   continue
                tcl.append( t.go(rule))
        s = ' && '.join(tcl)
-       print s
+       #print s
        head = ''' source lib/utility.tcl
 main { if { 
 '''
-       open('temp.tcl','w').write(head+s+' } accept } \n')
-       c, win = DealGenerator(self.ai)
+       if s != '': self.distributionsScripts = head+s+' } accept } \n'
        
        
 class HandEvaluation:
@@ -799,25 +807,32 @@ def dds_solver_api(trump, currentTricks, deal):
 
 def o2dstack_hand(hand):
    '''deal stack  has format AK QJ - T98765432, from Spade to Club'''
-   h = o2pbn_hand(hand).split('.')
-   for i in xrange(4):
+   handnew = hand[:]
+   handnew.sort(reverse=True)
+
+   h = o2pbn_hand(handnew).split('.')
+   for i in SUITS:
       if h[i] == '': h[i] = '-'
    return ' '.join(h)
     
-def DealGenerator(ai):
-    hands = ai.deal.hands
+def DealGenerator(ai, player):
+    ''' giving knonw hands, biding history, player, guess how many tricks to win, which card to play
+     dummy should not be as ai.seat
+    '''
+    ai.bidState.generateDealScript()
+    tempTcl = str(player)+'temp.tcl'
+    open(tempTcl,'w').write(ai.bidState.distributionsScripts)
+    
     myseat = ai.seat
-    mine = o2dstack_hand(hands[myseat])
+    mine = o2dstack_hand(ai.deal.originalHand(myseat))
     cmd = './deal -i format/pbn -'+seat_str(myseat)+' "'+mine+'"'
     others = PLAYERS[:]
     others.remove(myseat)
-    if ai.deal.finishBidding() is not None:
+    if ai.deal.finishBidding():
         seat2 = ai.deal.dummy
-        #todo, dummy shouldn't be thinking
-        #if seat2 == myseat: seat2 = partner(myseat)
         assert seat2 != myseat
-        if hands[seat2] is not None:
-            hand2 = o2dstack_hand(hands[seat2])
+        if ai.deal.hands[seat2] is not None:
+            hand2 = o2dstack_hand(ai.deal.originalHand(seat2))
             cmd += ' -'+seat_str(seat2)+' "'+ hand2 + '"'
             others.remove(seat2)
         # take out played cards
@@ -829,7 +844,7 @@ def DealGenerator(ai):
               eargs.append(str(c).upper())       
            eargs.append(';')
         cmd +=  ' -e "'+' '.join(eargs)+'"'
-    cmd += ' -i temp.tcl 1'
+    cmd += ' -i '+tempTcl+' 1'
     print cmd
 
     newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
@@ -851,13 +866,12 @@ def DealGenerator(ai):
           s = 3-c.suit
           ddeal[i][s].remove(str(c)[0])
     
-    lenMine = len(ai.deal.played_hands[myseat])
     currentTrick = []
-    seat = seat_prev(myseat)
-    while (len(ai.deal.played_hands[seat]) > lenMine):
+    seat = seat_prev(player)
+    while (len(ai.deal.played_hands[seat]) > len(ai.deal.played_hands[player])):
        currentTrick.insert(0,ai.deal.played_hands[seat][-1])
        seat = seat_prev(seat)
-    c,win = solver(myseat, ai.deal.contract.denom, currentTrick, ddeal)
+    c,win = solver(player, ai.deal.contract.denom, currentTrick, ddeal)
     print c,win
     return (c, win)
 

@@ -53,7 +53,7 @@ f_op2argc = {'J':5,'S':4,'C':1,'s':4,'T':4,'e':3,'a':2,'p':2,'Y':3,'*':8}
 
 def f2o(idx):   return idx
 def o2f(idx) : return idx
-def f2o_card(c): return sbridge.Card(c /13, (c % 13)+2)
+def f2o_card(c): return Card(c /13, (c % 13)+2)
 def o2f_card(c): return c.suit*13 + c.rank-2
 def f2o_hand(hand): return [f2o_card(c) for c in hand]
 def o2f_hand(hand): return [o2f_card(c) for c in hand]
@@ -128,8 +128,11 @@ class BidGrid:
     def getContract(self):
         #print 'getcontract',str(self)
         self.end()
+        # last three has to be pass
         for i in xrange(3):
             if not self.getBid().is_pass(): return None
+            self.prev()
+        while self.getBid().is_pass() or self.getBid().is_double() or self.getBid().is_redouble():
             self.prev()
         return (self.getBid(), self.col)
     def getBid(self):
@@ -337,8 +340,10 @@ class Deal:
 
         self.hands = [deck[0:13], deck[13:26], deck[26:39], deck[39:52]]
         for hand in self.hands:
-            hand.sort ()
-            hand.reverse()
+            hand.sort(reverse = True)
+        import defs
+        if defs.testing:
+            test_deal_gen(self,defs.hands)
             
     def __init__ (self, dealer):
         self.played_hands = [[],[],[],[]]
@@ -433,6 +438,7 @@ class Deal:
         else:
             self.contract = Bid (PASS)
     def finishBidding(self): return self.trick is not None
+    def finishTrick(self):return self.trick.cards[self.player] is not None
     def legal_card (self, card):
         """
         Check whether a card is legal to play in the current trick.
@@ -454,7 +460,7 @@ class Deal:
         
         self.player = (self.player + 1) % 4
         self.opening_lead = True
-
+    def originalHand(self, player): return self.hands[player]+self.played_hands[player]        
     def trickCompleted(self):
         return  self.trick.cards[self.player] is not None
     def next_trick (self):
@@ -665,3 +671,44 @@ def print_hand(hand):
        r.append(''.join(suits[i]))
    r.reverse()
    print r
+
+def test_deal_gen(obj,hands):
+    import floater_client
+    # for debuging biding, use the same deal
+    if type(hands) == type(''):
+        if len(hands.splitlines()) == 1:
+            #pbn = "K8652.Q76.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.K92.AQ97.42"
+            pbn = hands
+            hands = [x.split('.') for x in pbn.split()]
+        else:
+            s = '''
+0 9s Qh Th 2h Kd Jd 7d 6d 5d 3d Ac 5c 3c
+1 Js 8s 6s 9h 8h 4h Ad Qd 9d 4d Kc 4c 2c
+2 As Ks Qs Ts 2s Ah Kh 3h 8d 2d 9c 8c 6c
+3 7s 5s 4s 3s Jh 7h 6h 5h Td Qc Jc Tc 7c
+'''            
+            hands = hands.splitlines()[1:5]
+            for p in PLAYERS:
+                h = []
+                for c in hands[p].split()[1:]:
+                    suit = STR2SUIT[c[1].upper()]
+                    card = Card(suit,floater_client.PBN_HIDX[c[0].lower()]+2)
+                    h.append(card)
+                obj.hands[p] = h
+    else:
+        example = [
+['5', 'KQ98', 'KJ952', 'Q95'],
+['K3', 'J7653', '7', 'KT832'],
+['AJT9874', 'T4', '3', 'J64'],
+['Q62', 'A2', 'AQT864', 'A7'],
+]
+        #hands = ['KJT43.A6.AK98.Q7', '.QJT32.Q75.AK932', 'A962.754.JT4.T64', 'Q875.K98.632.J85']
+        for p in PLAYERS:
+            h = []
+            suits = hands[p]
+            if type(suits) != type([]): suits = suits.split('.')
+            for s in SUITS:
+                for c in suits[3-s]:
+                    card = Card(s,floater_client.PBN_HIDX[c.lower()]+2)
+                    h.append(card)
+            obj.hands[p] = h    
