@@ -52,7 +52,7 @@ class App:
         # clone deal to show AI only its own hand        
         for ai in self.ais:
             deal = Deal(self.deal.dealer)
-            deal.hands[ai.seat] = self.deal.hands[ai.seat]
+            deal.hands[ai.seat] = self.deal.hands[ai.seat][:]
             ai.new_deal(deal)
             
     def start_next_deal (self):
@@ -80,11 +80,12 @@ class App:
             #self.deal.hands[p] = h
             
         hands = [
-['7', 'J987', '64', 'AJ9863'],
-['A53', 'AK3', 'K82', 'QT75'],
-['KT62', 'QT52', 'JT3', 'K4'],
-['QJ984', '64', 'AQ975', '2']]
-        hands = ['KJT43.A6.AK98.Q7', '.QJT32.Q75.AK932', 'A962.754.JT4.T64', 'Q875.K98.632.J85']
+['5', 'KQ98', 'KJ952', 'Q95'],
+['K3', 'J7653', '7', 'KT832'],
+['AJT9874', 'T4', '3', 'J64'],
+['Q62', 'A2', 'AQT864', 'A7'],
+]
+        #hands = ['KJT43.A6.AK98.Q7', '.QJT32.Q75.AK932', 'A962.754.JT4.T64', 'Q875.K98.632.J85']
         for p in sbridge.PLAYERS:
             h = []
             suits = hands[p]
@@ -93,7 +94,7 @@ class App:
                 for c in suits[3-s]:
                     card = Card(s,floater_client.PBN_HIDX[c.lower()]+2)
                     h.append(card)
-            #self.deal.hands[p] = h
+            self.deal.hands[p] = h
             
         self.distribute_deal()
 
@@ -148,28 +149,36 @@ class App:
                     ai.bid_made (bid)
                 self.deal.bid (bid)
                 # check if bidding is over
-                if self.deal.trick is not None:
+                if self.deal.finishBidding():
                     # show dummy hand to declarer
                     tm = self.deal
                     self.ais[tm.declarer].deal.hands[tm.dummy] = tm.hands[tm.dummy][:]
+                    p = seat_prev(tm.declarer)
+                    self.ais[p].deal.hands[tm.dummy] = tm.hands[tm.dummy][:]
                     # dummy no need to think
-                    self.ais[tm.dummy].deal.hands[tm.dummy] = None                    
+                    self.ais[tm.dummy].deal.hands[tm.dummy] = None
+                    p = seat_next(tm.declarer)
+                    # play frist card
+                    card = self.ais[p].play_self()
+                    # show dummy to leader
+                    self.ais[p].deal.hands[tm.dummy] = tm.hands[tm.dummy][:]
+                    # notify all players
+                    for ai in self.ais: ai.deal.play_card(card)
+                    self.deal.play_card(card)
             else:
-                if self.deal.trick.cards[self.deal.player] is not None:
+                if self.deal.finishTrick():
                     self.action = CONFIRM_TRICK
                     #self.update_scores ()
                     return
                 if self.deal.player != self.deal.dummy:
                     card = self.ais[self.deal.player].play_self ()
                     # notify other players
-                    for ai in self.ais:
-                        ai.deal.play_card(card)
+                    for ai in self.ais: ai.deal.play_card(card)
                     self.deal.play_card(card)
                 else:
                     card = self.ais[self.deal.declarer].play_dummy ()
                     # notify other players
-                    for ai in self.ais:
-                        ai.deal.play_card(card)
+                    for ai in self.ais: ai.deal.play_card(card)
                     self.deal.play_card(card)
     ##########################################################################
     #
