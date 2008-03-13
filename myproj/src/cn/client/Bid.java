@@ -23,12 +23,12 @@ public class Bid {
 
 	private int value; // PASS, or the number of cards to do -6
 	private int suit; // the colours, or No trump.
-	private int insult; // double or redouble
+	//private int insult; // double or redouble
 
 	public Bid() {
 		value = IGNORED;
 		suit = IGNORED;
-		insult = IGNORED;
+		//insult = IGNORED;
 	}
    public Bid(String b){
 		this();
@@ -36,8 +36,8 @@ public class Bid {
 		char first = b.charAt(0);
 		String second = b.substring(1,2);
 		if (bid.startsWith(" p")) value = PASS;
-		else if (bid.startsWith(" x")) insult = DOUBLE;
-		else if (bid.startsWith("xx")) insult = REDOUBLE;
+		else if (bid.startsWith(" x")) value = DOUBLE;
+		else if (bid.startsWith("xx")) value = REDOUBLE;
 		else {
 			value = first - '0';
 			suit = Card.str2suit(second);
@@ -47,8 +47,8 @@ public class Bid {
 		value = b;
 	}
 	public void setValue(int v) {
-		if ((v != PASS) && (v != IGNORED) && ((v < MIN_BID) || (v >MAX_BID)))
-			return;
+		//if ((v != PASS) && (v != IGNORED) && ((v < MIN_BID) || (v >MAX_BID)))
+		//	return;
 		this.value = v;
 	}
 
@@ -63,17 +63,17 @@ public class Bid {
 	}
 
 	public void setInsult(int i)  {
-		if ((i != DOUBLE) && (i != REDOUBLE) && (i != IGNORED))
-			return;
-		this.insult = i;
+//		if ((i != DOUBLE) && (i != REDOUBLE) && (i != IGNORED))
+//			return;
+		this.value = i;
 	}
 
 	public int getValue() { return value; }
 	public int getSuit() { return suit; }
-	public int getInsult() { return insult; }
+	public int getInsult() { return value; }
 
 	public String toString() {
-		return "value="+value+" suit="+suit+" insult="+insult+" ";
+		return value+" "+suit;
 	}
 
 	public static String show( int value, int suit, int insult) {
@@ -95,7 +95,7 @@ public class Bid {
 	}
 
 	public String show() {
-		return Bid.show(this.value,this.suit,this.insult);
+		return Bid.show(this.value,this.suit,this.value);
 	}
 	public boolean is_pass(){
 		return value == PASS;
