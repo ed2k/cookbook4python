@@ -61,40 +61,6 @@ class App:
         """
 
         self.deal = self.rubber.next_deal ()
-        # for debuging biding, use the same deal
-        pbn = "K8652.Q76.KT8.AK T4.843.65.QT9873 AJ.AJT5.J432.J65 Q973.K92.AQ97.42"       
-        hands = [x.split('.') for x in pbn.split()]
-        s = '''
-0 9s Qh Th 2h Kd Jd 7d 6d 5d 3d Ac 5c 3c
-1 Js 8s 6s 9h 8h 4h Ad Qd 9d 4d Kc 4c 2c
-2 As Ks Qs Ts 2s Ah Kh 3h 8d 2d 9c 8c 6c
-3 7s 5s 4s 3s Jh 7h 6h 5h Td Qc Jc Tc 7c
-'''
-        hands = s.splitlines()[1:5]
-        for p in sbridge.PLAYERS:
-            h = []
-            for c in hands[p].split()[1:]:
-                suit = STR2SUIT[c[1].upper()]
-                card = Card(suit,floater_client.PBN_HIDX[c[0].lower()]+2)
-                h.append(card)
-            #self.deal.hands[p] = h
-            
-        hands = [
-['5', 'KQ98', 'KJ952', 'Q95'],
-['K3', 'J7653', '7', 'KT832'],
-['AJT9874', 'T4', '3', 'J64'],
-['Q62', 'A2', 'AQT864', 'A7'],
-]
-        #hands = ['KJT43.A6.AK98.Q7', '.QJT32.Q75.AK932', 'A962.754.JT4.T64', 'Q875.K98.632.J85']
-        for p in sbridge.PLAYERS:
-            h = []
-            suits = hands[p]
-            if type(suits) != type([]): suits = suits.split('.')
-            for s in sbridge.SUITS:
-                for c in suits[3-s]:
-                    card = Card(s,floater_client.PBN_HIDX[c.lower()]+2)
-                    h.append(card)
-            self.deal.hands[p] = h
             
         self.distribute_deal()
 
