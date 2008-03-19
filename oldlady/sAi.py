@@ -22,9 +22,13 @@ from sbridge import *
 import bidding
 import sAi
 import os
+import defs
     
 #sayc = bidding.Bidding ()
-
+def debug(s,level = 0):
+    #if not defs.testing: return
+    print s
+    
 class ComputerPlayer:
     """
     A computer player.
@@ -101,8 +105,7 @@ class ComputerPlayer:
         #return self.play_from_hand (self.seat)
         # normally player just play its own card
         # so we return what card played to table manager
-        c,win = DealGenerator(self, self.seat)
-        return c
+        return self.guess(self.seat)
 
     def play_dummy (self):
         """
@@ -113,9 +116,24 @@ class ComputerPlayer:
         """
         assert self.seat == self.deal.declarer
         #return self.play_from_hand (self.deal.dummy)
-        c,win = DealGenerator(self, self.deal.dummy)
-        return c
-
+        return self.guess(self.deal.dummy)
+    def guess(self,player):
+        r = []
+        for i in xrange(47):
+            c,win = DealGenerator(self, player)
+            r.append(c)
+        maxwin = 0
+        candi = None
+        counter = {}
+        for c in r:
+            if str(c) not in counter: counter[str(c)] = 0
+            counter[str(c)] += 1
+            if counter[str(c)] > maxwin:
+                maxwin = counter[str(c)] 
+                candi = c
+        print candi    
+        return candi
+        
     def play_from_hand (self, player):
         """
         Play a card during a trick from the specified player's hand.
@@ -819,7 +837,7 @@ def DealGenerator(ai, player):
     ''' giving knonw hands, biding history, player, guess how many tricks to win, which card to play
      dummy should not be as ai.seat
     '''
-    ai.bidState.generateDealScript()
+    #ai.bidState.generateDealScript()
     tempTcl = str(player)+'temp.tcl'
     open(tempTcl,'w').write(ai.bidState.distributionsScripts)
     
@@ -845,11 +863,11 @@ def DealGenerator(ai, player):
            eargs.append(';')
         cmd +=  ' -e "'+' '.join(eargs)+'"'
     cmd += ' -i '+tempTcl+' 1'
-    print cmd
+    debug(cmd)
 
     newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
-
-    print str(ai.deal.trick)
+    debug(newdeal)
+    #print str(ai.deal.trick)
 
     ddeal = [[],[],[],[]]
     # put estimated deal in 4x4 format
@@ -872,7 +890,7 @@ def DealGenerator(ai, player):
        currentTrick.insert(0,ai.deal.played_hands[seat][-1])
        seat = seat_prev(seat)
     c,win = solver(player, ai.deal.contract.denom, currentTrick, ddeal)
-    print c,win
+    #debug(str(c)+' win '+win)
     return (c, win)
 
 def solver(player, trump, currentTrick, deal):
