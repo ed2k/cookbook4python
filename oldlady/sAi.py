@@ -118,21 +118,9 @@ class ComputerPlayer:
         #return self.play_from_hand (self.deal.dummy)
         return self.guess(self.deal.dummy)
     def guess(self,player):
-        r = []
-        for i in xrange(47):
-            c,win = DealGenerator(self, player)
-            r.append(c)
-        maxwin = 0
-        candi = None
-        counter = {}
-        for c in r:
-            if str(c) not in counter: counter[str(c)] = 0
-            counter[str(c)] += 1
-            if counter[str(c)] > maxwin:
-                maxwin = counter[str(c)] 
-                candi = c
-        print candi    
-        return candi
+        c,win = DealGenerator(self, player)
+        debug([str(c),win])
+        return c
         
     def play_from_hand (self, player):
         """
@@ -832,7 +820,22 @@ def o2dstack_hand(hand):
    for i in SUITS:
       if h[i] == '': h[i] = '-'
    return ' '.join(h)
-    
+
+def deal2list(s):
+    r = []
+    for line in s.splitlines()[0::2]:
+        newdeal = line.split('"')[1][2:].split()
+        #debug(newdeal)
+        ddeal = [[],[],[],[]]
+        # put estimated deal in 4x4 format
+        for i in xrange(4):
+           d = newdeal[i].split('.')
+           ddeal[i] = [[],[],[],[]]
+           for j in xrange(4):
+               ddeal[i][j] = list(set(d[j]))
+        r.append(ddeal)
+    return r
+               
 def DealGenerator(ai, player):
     ''' giving knonw hands, biding history, player, guess how many tricks to win, which card to play
      dummy should not be as ai.seat
@@ -862,36 +865,36 @@ def DealGenerator(ai, player):
               eargs.append(str(c).upper())       
            eargs.append(';')
         cmd +=  ' -e "'+' '.join(eargs)+'"'
-    cmd += ' -i '+tempTcl+' 1'
-    debug(cmd)
+    cmd += ' -i '+tempTcl+' 23'
+    #debug(cmd)
 
-    newdeal = os.popen(cmd).read().splitlines()[0].split('"')[1][2:].split()
-    debug(newdeal)
+    deals = deal2list(os.popen(cmd).read())
     #print str(ai.deal.trick)
-
-    ddeal = [[],[],[],[]]
-    # put estimated deal in 4x4 format
-    for i in xrange(4):
-       d = newdeal[i].split('.')
-       ddeal[i] = [[],[],[],[]]
-       for j in xrange(4):
-          ddeal[i][j] = list(set(d[j]))
-          
-    # remove played cards
-    for i in xrange(4):
-       seat = f2o(i)
-       for c in ai.deal.played_hands[seat]:
-          s = 3-c.suit
-          ddeal[i][s].remove(str(c)[0])
-    
+   
     currentTrick = []
     seat = seat_prev(player)
     while (len(ai.deal.played_hands[seat]) > len(ai.deal.played_hands[player])):
        currentTrick.insert(0,ai.deal.played_hands[seat][-1])
        seat = seat_prev(seat)
-    c,win = solver(player, ai.deal.contract.denom, currentTrick, ddeal)
-    #debug(str(c)+' win '+win)
-    return (c, win)
+
+    r = []
+    for ddeal in deals:
+        # remove played cards
+        for i in PLAYERS:
+           seat = f2o(i)
+           for c in ai.deal.played_hands[seat]:
+              s = 3-c.suit
+              ddeal[i][s].remove(str(c)[0])
+        tmp = []
+        for p in ddeal:
+            tmp.append('.'.join([''.join(d) for d in p]))
+        debug('  '.join(tmp))
+        c,win = solver(player, ai.deal.contract.denom, currentTrick, ddeal)
+        r.append((c,win))
+    flats = [str(c) for (c,w) in r]
+    debug([(str(c),w) for (c,w) in r])
+    idx = max_freq(flats)
+    return r[idx]
 
 def solver(player, trump, currentTrick, deal):
     sdeal = [[],[],[],[]]
@@ -905,3 +908,17 @@ def solver(player, trump, currentTrick, deal):
     return (Card(3-int(r[0]), int(r[1])),r[3])
           
     
+def max_freq(xlist):
+    r = xlist
+    maxwin = 0
+    candi = -1
+    counter = {}
+    idx = 0
+    for c in r:
+        if c not in counter: counter[c] = 0
+        counter[c] += 1
+        if counter[c] > maxwin:
+            maxwin = counter[c] 
+            candi = idx
+        idx += 1
+    return candi
