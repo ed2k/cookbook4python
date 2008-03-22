@@ -1,5 +1,12 @@
 /* portability-macros header prefix */
 
+/* MSC prefers a different spelling of "long long" */
+#if defined(_MSC_VER)
+/*#    define LONGLONG __int64*/
+#else
+#    define LONGLONG long long
+#endif
+
 /* Windows requires a __declspec(dllexport) tag, etc */
 #if defined(_WIN32)
 #    define DLLEXPORT __declspec(dllexport)
