@@ -28,7 +28,9 @@ def dod(ds):
     print arg
     # without currentTrick, first means whose turn in the next trick
     # with currentTrick, fisrt means who is last player in the current trick
-    r = os.popen('./dds 1 3 '+arg+' 2 10 2 13').read().splitlines()[1].split()
+    rr = os.popen('./dds -1 1 0 1 3 '+arg+' 2 10 2 13').read()
+    print r
+    r = rr.splitlines()[1].split()
     print 'suit',r[0],'rank',r[1],'win tricks',r[3]
     #return 13-s[-1][0]
 

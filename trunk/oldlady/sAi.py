@@ -786,18 +786,19 @@ class Translate2Tcl:
 
 def dds_solver_api(trump, currentTricks, deal):
    '''deal is N-W,S-C 4x4 list, shdc -> 0123, always at the north point of view
+but trump is shdc -> 3210, and currentTricks is list shdc->3210, in play order
    return r[0] suit, r[1] rank, r[3] win trick for north
    '''
    if trump != 4: trump = 3-trump
-   #print trump,
+   #debug(currentTricks)
    #for c in currentTricks: print str(c),
    #print deal
    # the play to solve is always at 0 (North), so last player is always 3(West)
    first = (4 - len(currentTricks)) % 4
-   if first == 2: first = 1
-   test = [trump, first]
-   for i in xrange(4):
-      for j in xrange(4):
+   #if first == 2: first = 1
+   test = [0,3,1,trump, first]
+   for i in PLAYERS:
+      for j in SUITS:
          n = 0
          for k in xrange(len(deal[i][j])):
             n = n | (1 << STR2RANK[deal[i][j][k]])
@@ -806,8 +807,17 @@ def dds_solver_api(trump, currentTricks, deal):
       test.append(3-c.suit)
       test.append(c.rank)
    arg = ' '.join([str(x) for x in test])
-   #print arg
-   r = os.popen('../ddsprogs/dds '+arg).read().splitlines()[1].split()
+   arg = '../ddsprogs/dds '+arg
+   #debug(arg)
+   coutput = os.popen(arg).read()
+   #debug([coutput])
+   lines = [x.split() for x in coutput.splitlines()[1:]]
+   # win in decrease order, so if winmax changes, we don't need those result
+   winmax = int(lines[0][3])
+   r = [lines[0]]
+   for line in lines[1:]:
+        if winmax > int(line[3]): break
+        r.append(line)
    #print 'suit','shdc'[int(r[0])],'rank',r[1],'win tricks',r[3]
    return r
 
@@ -822,17 +832,20 @@ def o2dstack_hand(hand):
    return ' '.join(h)
 
 def deal2list(s):
+    '''input: lines of deal308 output in pbn formats
+       output: in list of list (hands) of list (suits)
+    '''
     r = []
     for line in s.splitlines()[0::2]:
         newdeal = line.split('"')[1][2:].split()
         #debug(newdeal)
         ddeal = [[],[],[],[]]
         # put estimated deal in 4x4 format
-        for i in xrange(4):
+        for i in PLAYERS:
            d = newdeal[i].split('.')
            ddeal[i] = [[],[],[],[]]
-           for j in xrange(4):
-               ddeal[i][j] = list(set(d[j]))
+           for j in SUITS:
+               ddeal[i][j] = list(d[j])
         r.append(ddeal)
     return r
                
@@ -865,7 +878,7 @@ def DealGenerator(ai, player):
               eargs.append(str(c).upper())       
            eargs.append(';')
         cmd +=  ' -e "'+' '.join(eargs)+'"'
-    cmd += ' -i '+tempTcl+' 23'
+    cmd += ' -i '+tempTcl+' 7'
     #debug(cmd)
 
     deals = deal2list(os.popen(cmd).read())
@@ -889,8 +902,9 @@ def DealGenerator(ai, player):
         for p in ddeal:
             tmp.append('.'.join([''.join(d) for d in p]))
         debug('  '.join(tmp))
-        c,win = solver(player, ai.deal.contract.denom, currentTrick, ddeal)
-        r.append((c,win))
+        solutions = solver(player, ai.deal.contract.denom, currentTrick, ddeal)
+        #debug([(str(x),y) for x,y in solutions])
+        r += solutions
     flats = [str(c) for (c,w) in r]
     debug([(str(c),w) for (c,w) in r])
     idx = max_freq(flats)
@@ -904,8 +918,8 @@ def solver(player, trump, currentTrick, deal):
        for j in xrange(4):
           sdeal[i].append(''.join(d[j]))
 
-    r = dds_solver_api(trump, currentTrick, sdeal)
-    return (Card(3-int(r[0]), int(r[1])),r[3])
+    r = dds_solver_api(trump, currentTrick, sdeal)    
+    return [(Card(3-int(x[0]), int(x[1])),x[3]) for x in r]
           
     
 def max_freq(xlist):
