@@ -5007,18 +5007,23 @@ void ReceiveTTstore(struct pos *posPoint, struct nodeCardsType * cardsP,
 
 // to compile, g++ dds.cpp
 int main(int argc, char* argv[]){
-   if (argc < 19) {
+   int len1 = 6, len2 = 16;
+   if (argc < (len1+len2)) {
       printf("dds trump first 4x4_num_sperated_by_space [suit rank]x3\n");
       return 0;
    }
    InitStart();
    struct deal d;
-   d.trump = atoi(argv[1]);
-   d.first = atoi(argv[2]);
+   int target, solution, mode;
+   target = atoi(argv[1]);
+   solution = atoi(argv[2]);
+   mode = atoi(argv[3]);
+   d.trump = atoi(argv[4]);
+   d.first = atoi(argv[5]);
    memset(&(d.currentTrickSuit), 0, 3*sizeof(int));
    memset(&(d.currentTrickRank), 0, 3*sizeof(int));
-   for(int i=0; i < (argc-3-16); i+=2) {
-      int idx = (3+16)+i;
+   for(int i=0; i < (argc-len1-len2)/2; i++) {
+      int idx = (len1+len2)+i*2;
       d.currentTrickSuit[i] = atoi(argv[idx]);
       d.currentTrickRank[i] = atoi(argv[idx+1]);
    }
@@ -5026,13 +5031,13 @@ int main(int argc, char* argv[]){
    // each card take one bit from 1<<14 is A
    for(int i=0; i<4; i++)
       for(int j=0; j<4; j++) {
-         int idx = 3+ 4*i + j;
+         int idx = len1+ 4*i + j;
          d.remainCards[i][j] = atoi(argv[idx]);
       }
    struct futureTricks futp;
-   int status = SolveBoard(d, -1, 1, 0, &futp);
+   int status = SolveBoard(d, target, solution, mode, &futp);
    if (status!=1) {
-      printf("status: %d", status);
+      printf("status: %d argc %d", status,argc);
       return 0;
    }   
    int cards = futp.cards;
