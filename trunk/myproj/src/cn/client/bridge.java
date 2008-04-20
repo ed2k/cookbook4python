@@ -4,11 +4,6 @@ import java.util.Vector;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.*;
-//import com.google.gwt.user.client.ui.ClickListener;
-//import com.google.gwt.user.client.ui.Label;
-//import com.google.gwt.user.client.ui.RootPanel;
-//import com.google.gwt.user.client.ui.Widget;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.HTTPRequest;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.ResponseTextHandler;
@@ -25,9 +20,14 @@ public class bridge implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 		final Panels panel = new Panels();
-		Button button = new Button("test");
+		Button button = new Button("start");
+		final TextBox tb = new TextBox();
+		tb.setVisibleLength(100);
+		tb.setText("http://192.168.0.104:10101/postit.yaws?flproxyB=");
 		button.addClickListener(new ClickListener() {
 			public void onClick(Widget sender) {
+				panel.website = tb.getText();
+				panel.new_start();
 			}
 		});
 		Button bClear = new Button("clear");
@@ -39,11 +39,12 @@ public class bridge implements EntryPoint {
 
 		RootPanel.get().add(button);
 		RootPanel.get().add(bClear);
+		RootPanel.get().add(tb);
 		RootPanel.get().add(panel);
 	}
 }
 /**
- * Demonstrates various panels and the way they lay widgets out.
+ * All UI stuff
  */
 class Panels extends Composite{
 	DockPanel dock ;
@@ -64,6 +65,7 @@ class Panels extends Composite{
 	String trick_data = "";
 	String [][] tdata;
 	//MessageClient message_client;
+	String website = null;
 	public void test(){
 		show_4hands();
 	}
@@ -155,11 +157,13 @@ class Panels extends Composite{
 //	        }
 //	      };
 //	    t.scheduleRepeating(1000);
+	
+	}
+    void new_start(){
 		String[] s = {"N"};
 		FloaterMessage m = new FloaterMessage("request_seat",s);
-		MessageClient.send(m.toString(),this);		
-	}
-
+		MessageClient.send(m.toString(),this);	    	
+    }
 	void showBidInputPanel(){
 		VerticalPanel vp = new VerticalPanel();
 		ClickListener bidclick = new ClickListener() {
@@ -241,7 +245,8 @@ class Panels extends Composite{
 			}
 		}		
 		//if (trick_data.length()>0)showTrickPlayed();
-		ntrickGrid.setWidget(0, 0, new HTML(deal.contract.toString()));		
+		if (deal.contract != null)
+			ntrickGrid.setWidget(0, 0, new HTML(deal.contract.toString()));		
 	}
 	void trackBidHistory(){
 	    int pos = (hand_id-1) % 4;
@@ -391,14 +396,18 @@ class Panels extends Composite{
 
 class MessageClient implements ResponseTextHandler {
 	//static String website = "http://127.0.0.1:10101/postit.yaws?flproxyB=";
-	static String website = "http://142.133.118.126:10101/postit.yaws?flproxyB=";
+	//static String website = "http://142.133.118.126:10101/postit.yaws?flproxyB=";
+	static String website = "192.168.0.104:10101/postit.yaws?flproxyB=";
 	Object owner;
 	String to_send = "";
 	MessageClient(Object caller){
 		owner = caller;
 	}
 	public static void send(String m, Object caller){
+		Panels p = (Panels)caller;
+		if (p.website != null )website = p.website;
 		String url = website + URL.encode(m+"\r\n");
+		System.out.println(url);
 		if (m=="")url = website;
 		MessageClient mc = new MessageClient(caller);
 		HTTPRequest.asyncGet(url, mc);
