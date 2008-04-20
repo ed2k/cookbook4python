@@ -27,30 +27,34 @@ def nextStep(action, state, comps):
             state.bid_status.data += o2f_bid(bid)
             rmsg.append(state.encode_message('auction_status',[str(state.hand_id),str(state.bid_status)]))
     return rmsg
-    
+
+def httpResponse(msg):
+    return "Content-type: text\n\n"+msg    
 class MyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         start = len('/postit.yaws?flproxyB=')
         data = urllib.unquote(self.path[start:])
         print 'r',[data]
+        rsp = []
         while data != '\r\n':
             messages = table_handle(st,data)
             selfdata = []
             print 'messages',messages
             if messages is None:
+                print 'message should not be none'
                 break; # why??? fixme
             for m in messages:
                 if m is None: continue
                 if len(m) == 2: # single client message
                     print 'p2p',m[0],m[1]
-                    self.wfile.write(m[1]+'\r\n')
+                    rsp.append(m[1])
                     selfdata.append(m[1])
                 else:
                     print 's>',m
-                    self.wfile.write(m+'\r\n')
+                    rsp.append(m)
                     selfdata.append(m)
             data = '\r\n'.join(selfdata)+'\r\n'
-        #self.wfile.write("nothing\r\n\r\n")
+        self.wfile.write(httpResponse('\r\n'.join(rsp)+'\r\n'))
 
 def table_handle(state,data):
    rmsg = []
@@ -141,7 +145,7 @@ def table_handle(state,data):
 
 
         
-TODO = """  work on a server that take care of table manager and 3 player
+TODO = """ a web server that take care of table manager and 3 player
  a client can use request/response mode to play bridge, instead of polling data.
  use cases, request/response from client/server
  1. seated at North/hand id, client cards, hand id
@@ -149,6 +153,11 @@ TODO = """  work on a server that take care of table manager and 3 player
  3. hand id, pass/hand id bid history, leading play, dummy (assume client is not leader)
  4. hand id, play/hand id, play history
  5. hand id, play/hand id, play history, new hand, score ...
+
+ plus, possible a cgi interface, that process each request then return result, save its
+ status then quit
+ now, only takes http get, return data not follow http standard
+ TODO: fix response so that erlang http:request can parst it
 """
 if __name__ == "__main__":
    
