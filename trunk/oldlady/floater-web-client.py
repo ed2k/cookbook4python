@@ -1,6 +1,9 @@
 from floater_client import *
 import random
-
+__doc__ = '''
+work with website as message buffer, each client send message to website
+then table manager pickup the message in the same way
+'''
 if __name__ == "__main__":
    website = '142.133.118.94:4080'
    if len(sys.argv) > 1: website = sys.argv[1]
