@@ -27,7 +27,7 @@ import defs
 #sayc = bidding.Bidding ()
 def debug(s,level = 0):
     #if not defs.testing: return
-    print s
+    print '-debug:',s
     
 class ComputerPlayer:
     """
@@ -859,7 +859,7 @@ def DealGenerator(ai, player):
     
     myseat = ai.seat
     mine = o2dstack_hand(ai.deal.originalHand(myseat))
-    cmd = './deal -i format/pbn -'+seat_str(myseat)+' "'+mine+'"'
+    cmd = 'cd '+defs.DEAL_PATH+'; ./deal -i format/pbn -'+seat_str(myseat)+' "'+mine+'"'
     others = PLAYERS[:]
     others.remove(myseat)
     if ai.deal.finishBidding():
