@@ -31,6 +31,7 @@ public class FloaterMessage {
 		name = line.substring(0,1);
 		String fsep = "\\\\";
 		String[] f = line.split(fsep);
+
 		int num_of_args = Integer.parseInt(f[0].substring(1));
 		int len_pfrom = Integer.parseInt(f[1]);
 		int len_pid = Integer.parseInt(f[2]);
