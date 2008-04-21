@@ -23,7 +23,7 @@ public class bridge implements EntryPoint {
 		Button button = new Button("start");
 		final TextBox tb = new TextBox();
 		tb.setVisibleLength(100);
-		tb.setText("http://192.168.0.104:10101/postit.yaws?flproxyB=");
+		tb.setText("bridge-cgi.py?flproxyB=");
 		button.addClickListener(new ClickListener() {
 			public void onClick(Widget sender) {
 				panel.website = tb.getText();
@@ -398,6 +398,7 @@ class MessageClient implements ResponseTextHandler {
 	//static String website = "http://127.0.0.1:10101/postit.yaws?flproxyB=";
 	//static String website = "http://142.133.118.126:10101/postit.yaws?flproxyB=";
 	static String website = "192.168.0.104:10101/postit.yaws?flproxyB=";
+	static String MSG_SEPERATOR="<f/>";
 	Object owner;
 	String to_send = "";
 	MessageClient(Object caller){
@@ -406,7 +407,7 @@ class MessageClient implements ResponseTextHandler {
 	public static void send(String m, Object caller){
 		Panels p = (Panels)caller;
 		if (p.website != null )website = p.website;
-		String url = website + URL.encode(m+"\r\n");
+		String url = website + URL.encode(m+MSG_SEPERATOR);
 		System.out.println(url);
 		if (m=="")url = website;
 		MessageClient mc = new MessageClient(caller);
@@ -416,15 +417,17 @@ class MessageClient implements ResponseTextHandler {
 	public void onCompletion(String responseText) {
 		// TODO Auto-generated method stub
 		Panels p = (Panels)owner;
-		String[] lines = responseText.split("\\r\\n");
-		p.debug(responseText);
+		String[] lines = responseText.split(MSG_SEPERATOR);
+		p.debug("response:"+responseText);
 		for (int k=0;k<lines.length;k++) {
 			String line = lines[k];	
 			if(line.startsWith("nothing")) break; 
 			if(line == "") continue;	
 			if(line.startsWith("T4"))	continue;
-			p.debug(line);	
+			p.debug("line:"+line);	
 			System.out.println (line);
+			char a = line.charAt(0); 
+			if( a != '*' && a !='a' && a!= 'p') continue;	
 
 			FloaterMessage m = new FloaterMessage(line);
 			System.out.print(m.name+":");
