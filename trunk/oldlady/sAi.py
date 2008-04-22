@@ -854,11 +854,14 @@ def DealGenerator(ai, player):
      dummy should not be as ai.seat
     '''
     #ai.bidState.generateDealScript()
-    tempTcl = str(player)+'temp.tcl'
+    # remember the path for xtemp.tcl
+    
+    tempTcl = defs.DEAL_PATH+str(player)+'temp.tcl'
     open(tempTcl,'w').write(ai.bidState.distributionsScripts)
     
     myseat = ai.seat
     mine = o2dstack_hand(ai.deal.originalHand(myseat))
+    # has to work under deal308 dir, otherwise cannt find deal.tcl
     cmd = 'cd '+defs.DEAL_PATH+'; ./deal -i format/pbn -'+seat_str(myseat)+' "'+mine+'"'
     others = PLAYERS[:]
     others.remove(myseat)
