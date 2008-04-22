@@ -17,6 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02111-1301, USA.
 
+#TODO take out pexpect, only prolog need this
 import sbridge
 import defs
 
@@ -24,7 +25,7 @@ import defs
 
 import os
 import re
-import pexpect
+#import pexpect
 
 class Bidding:
     """
@@ -34,13 +35,13 @@ class Bidding:
     at interpreting bids and choosing new ones.
     """
 
-    def __init__ (self):
+    def __init__ (self): pass
         #self.prolog = pyswip.Prolog ()
         #self.prolog.consult (os.path.join (oldlady.defs.PKG_DATA_DIR, "sayc.pl"))
-        self.prolog = pexpect.spawn(defs.SWI_PROLOG)
-        self.prolog.expect('\?- ')
-        self.prolog.sendline("consult('sayc.pl').")
-        self.prolog.expect('\?- ')
+        #self.prolog = pexpect.spawn(defs.SWI_PROLOG)
+        #self.prolog.expect('\?- ')
+        #self.prolog.sendline("consult('sayc.pl').")
+        #self.prolog.expect('\?- ')
     def choose_bid (self, hand, history):
         """
         Choose the proper bid to make, given the current bidding history.
