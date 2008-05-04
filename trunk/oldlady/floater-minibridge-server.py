@@ -157,6 +157,18 @@ def table_handle(state,ais,data):
           
    return rmsg
 
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import urllib
+
+def httpResponse(msg):
+    return "Content-type: text\n\n"+msg    
+
+class MyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        start = len('/postit.yaws?flproxyB=')
+        data = urllib.unquote(self.path[start:])
+        #print 'r',[data]
+        self.wfile.write(httpResponse(do_GET(data)))
 
         
 TODO = """ a web server that take care of table manager and 3 player
@@ -174,6 +186,15 @@ TODO = """ a web server that take care of table manager and 3 player
  TODO: fix response so that erlang http:request can parst it
 """
 
+def mmm():
+   import socket, select
+   try:
+        server = HTTPServer(('', 10101), MyHandler)
+        print 'started httpserver...'
+        server.serve_forever()
+   except KeyboardInterrupt:
+        print '^C received, shutting down server'
+        server.socket.close()
 
 print "Content-type: text/plain\n"
 
