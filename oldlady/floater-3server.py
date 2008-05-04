@@ -1,16 +1,16 @@
+#!/usr/bin/python
+
 from floater_client import *
 from sAi import *
 from sbridge import *
 
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import urllib
-
 MANAGERNAME = "tableserver"
-st = State()
-st.clientname = MANAGERNAME
-ais = [ComputerPlayer(seat) for seat in PLAYERS]
-# working as a live table, don't use st.deal as it is used to save original cards
+MSG_SEPERATOR = '<f/>'
 
+def nothingtodo(s):
+    pass
+import sAi
+sAi.debug = nothingtodo
 
 def nextStep(action, state, comps):
     rmsg = []
@@ -19,46 +19,57 @@ def nextStep(action, state, comps):
         state.bid_status = BidStatus('')
         state.play_status = []
         state.deal = state.rubber.next_deal()
-        for ai in ais: ai.new_deal(state.deal)
-        for ai in ais: print_hand(ai.deal.hands[ai.seat])
+        for ai in comps: ai.new_deal(state.deal)
+        #for ai in ais: print_hand(ai.deal.hands[ai.seat])
         rmsg.append(state.send_new_hand()[NORTH])
         if state.deal.dealer != NORTH: 
-            bid = ais[state.deal.player].bid()
+            bid = comps[state.deal.player].bid()
             state.bid_status.data += o2f_bid(bid)
             rmsg.append(state.encode_message('auction_status',[str(state.hand_id),str(state.bid_status)]))
     return rmsg
 
-def httpResponse(msg):
-    return "Content-type: text\n\n"+msg    
-class MyHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        start = len('/postit.yaws?flproxyB=')
-        data = urllib.unquote(self.path[start:])
-        print 'r',[data]
-        rsp = []
-        while data != '\r\n':
-            messages = table_handle(st,data)
-            selfdata = []
-            print 'messages',messages
-            if messages is None:
-                print 'message should not be none'
-                break; # why??? fixme
-            for m in messages:
-                if m is None: continue
-                if len(m) == 2: # single client message
-                    print 'p2p',m[0],m[1]
-                    rsp.append(m[1])
-                    selfdata.append(m[1])
-                else:
-                    print 's>',m
-                    rsp.append(m)
-                    selfdata.append(m)
-            data = '\r\n'.join(selfdata)+'\r\n'
-        self.wfile.write(httpResponse('\r\n'.join(rsp)+'\r\n'))
+def do_GET(msg):    
+    # working as a live table, don't use st.deal as it is used to save original cards
+    import pickle
+    #data = urllib.unquote(self.path[start:])
+    # read state from persistent storage
+    st = None
+    ais = None
+    try:
+        #TODO from history conversation recontruct state
+        st, ais= pickle.load(open('floater-minibridge-state.pkl','rb'))
+    except:
+        st = State()
+        st.clientname = MANAGERNAME
+        ais = [ComputerPlayer(seat) for seat in PLAYERS]
+    data = msg
+    #print 'r',[data]
+    rsp = []
+    while data != MSG_SEPERATOR:
+        messages = table_handle(st,ais,data)
+        selfdata = []
+        #print '--messages',messages,"<br/>",MSG_SEPERATOR
+        if messages is None:
+            #print 'message should not be none'
+            break; # why??? fixme
+        for m in messages:
+            if m is None: continue
+            if len(m) == 2: # single client message
+                #print 'p2p',m[0],m[1]
+                rsp.append(m[1])
+                selfdata.append(m[1])
+            else:
+                #print 's>',m
+                rsp.append(m)
+                selfdata.append(m)
+        data = MSG_SEPERATOR.join(selfdata)+MSG_SEPERATOR
+    #write state to storage
+    pickle.dump((st,ais),open('floater-minibridge-state.pkl','wb'))
+    return MSG_SEPERATOR+MSG_SEPERATOR.join(rsp)
 
-def table_handle(state,data):
+def table_handle(state,ais,data):
    rmsg = []
-   for line in data.split('\r\n')[:-1]:
+   for line in data.split(MSG_SEPERATOR)[:-1]:
       message = decode_message(line)
       mname,mfrom,mid = message[:3]
       args = message[3:]
@@ -104,12 +115,14 @@ def table_handle(state,data):
           dummy = tbdeal.dummy
           if tbdeal.trick is None: continue
           if mfrom != MANAGERNAME:
-              if dummy == SOUTH:
-                  if tbdeal.player == WEST or tbdeal.player == EAST: continue
-              elif dummy == NORTH:
+              # from user (has to be North or south), avoid user play anything 
+              # when not its turn
+              if dummy == SOUTH or dummy == NORTH:
+                  # alow south and north
                   if tbdeal.player != NORTH and tbdeal.player != SOUTH: continue
               elif tbdeal.player != NORTH: continue
-              print dummy, 'is dummy, NORTH turn',tbdeal.player
+            
+          print '--',dummy, 'is dummy, whose turn',tbdeal.player
           # todo, consider NORTH is dummy to exchange with SOUTH
           state.play_status = convert_str2play(args[1])
 
@@ -128,9 +141,10 @@ def table_handle(state,data):
               for ai in ais:
                   ai.trick_complete()                      
           print 'whose turn',tbdeal.player
-          # palyer take SOUTH also if dummy is NORTH
-          if dummy == NORTH and tbdeal.player == SOUTH: continue
-          if tbdeal.player == NORTH: continue
+          # allow user play south and north if he is the contrator
+          if dummy == NORTH or dummy == SOUTH:
+             if tbdeal.player == SOUTH or tbdeal.player==NORTH: continue
+          elif tbdeal.player == NORTH: continue
 
           if tbdeal.player != dummy:
               card = ais[tbdeal.player].play_self ()
@@ -143,6 +157,18 @@ def table_handle(state,data):
           
    return rmsg
 
+from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
+import urllib
+
+def httpResponse(msg):
+    return "Content-type: text\n\n"+msg    
+
+class MyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        start = len('/postit.yaws?flproxyB=')
+        data = urllib.unquote(self.path[start:])
+        #print 'r',[data]
+        self.wfile.write(httpResponse(do_GET(data)))
 
         
 TODO = """ a web server that take care of table manager and 3 player
@@ -159,8 +185,8 @@ TODO = """ a web server that take care of table manager and 3 player
  now, only takes http get, return data not follow http standard
  TODO: fix response so that erlang http:request can parst it
 """
-if __name__ == "__main__":
-   
+
+def mmm():
    import socket, select
    try:
         server = HTTPServer(('', 10101), MyHandler)
@@ -169,5 +195,14 @@ if __name__ == "__main__":
    except KeyboardInterrupt:
         print '^C received, shutting down server'
         server.socket.close()
+
+print "Content-type: text/plain\n"
+
+import cgi
+import cgitb; cgitb.enable()
+
+form = cgi.FieldStorage()
+msg = form.getvalue('flproxyB','')
+print do_GET(msg)
 
 
