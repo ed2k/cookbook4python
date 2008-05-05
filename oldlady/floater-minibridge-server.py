@@ -15,17 +15,28 @@ sAi.debug = nothingtodo
 def nextStep(action, state, comps):
     rmsg = []
     if action == 'confirm_deal':
-        state.hand_id += 1
+        # make usre NORTH always start the bid, so hand_id % 4 == 0
+        state.hand_id += 4
         state.bid_status = BidStatus('')
         state.play_status = []
         state.deal = state.rubber.next_deal()
         for ai in comps: ai.new_deal(state.deal)
-        #for ai in ais: print_hand(ai.deal.hands[ai.seat])
+
         rmsg.append(state.send_new_hand()[NORTH])
-        if state.deal.dealer != NORTH: 
-            bid = comps[state.deal.player].bid()
-            state.bid_status.data += o2f_bid(bid)
-            rmsg.append(state.encode_message('auction_status',[str(state.hand_id),str(state.bid_status)]))
+        # make up bids
+        bidstatus = ['3n',' p',' p',' p']
+        for fbid in bidstatus:
+            bid = f2o_bid(fbid)
+            for ai in comps: ai.bid_made(bid)
+            state.deal.bid(bid)
+        rmsg.append(state.encode_message('auction_status',[str(state.hand_id),''.join(bidstatus)]))
+        state.bid_status = BidStatus(''.join(bidstatus))
+        # opening player is at east
+        card = comps[state.deal.player].play_self()
+        a = [o2f_card(card)]
+        rmsg.append(state.encode_message('play',[str(state.hand_id), convert_play2str(a)]))
+        #rmsg.append(state.send_new_hand()[SOUTH])      
+        
     return rmsg
 
 def do_GET(msg):    
@@ -40,6 +51,7 @@ def do_GET(msg):
         st, ais= pickle.load(open('floater-minibridge-state.pkl','rb'))
     except:
         st = State()
+        st.hand_id = 1
         st.clientname = MANAGERNAME
         ais = [ComputerPlayer(seat) for seat in PLAYERS]
     data = msg
@@ -76,40 +88,8 @@ def table_handle(state,ais,data):
       if mname == 'S':
          username,seat,ip,port = args
          if state.deal is None: return nextStep('confirm_deal', state, ais)
-         # assume client always north or south if north is dummy 
-         if ais[NORTH].deal.dummy == NORTH: rmsg.append( state.send_new_hand()[SOUTH])
-         else:rmsg.append( state.send_new_hand()[NORTH])
-      elif mname == 'a':
-         print 'bids',args
-         # reused as table manager deal recorder
-         tbdeal = ais[NORTH].deal
-         if mfrom != MANAGERNAME and tbdeal.trick is not None: return rmsg
-         if mfrom != MANAGERNAME and tbdeal.player != NORTH: return rmsg
-         #TODO check if it is the right bidder, and follow rule
-         state.bid_status = BidStatus(args[1].replace('+',' '))
-         bid = f2o_bid(state.bid_status[-1])
-         for ai in ais: ai.bid_made(bid)
-         state.deal.bid(bid)
-         
-         print [state.bid_status.data]
-
-         if tbdeal.contract is not None and tbdeal.contract.is_pass():
-             rmsg += nextStep('confirm_deal', state, ais)
-         elif tbdeal.trick is None:
-             if tbdeal.player == NORTH: continue
-             bid = ais[tbdeal.player].bid ()
-             state.bid_status.data += o2f_bid(bid)
-             rmsg.append(state.encode_message('auction_status',[str(state.hand_id),str(state.bid_status)]))
-         else: # only lead play is possible here
-             # if NORTH is dummy, user takes control of SOUTH 
-             if tbdeal.player == NORTH : continue
-
-             card = ais[tbdeal.player].play_self ()
-             a = o2f_card(card)
-             print tbdeal.player,'lead play',card
-             for ai in ais: print ai.seat,ai.deal.player,
-             state.play_status += [a]
-             rmsg.append(state.encode_message('play',[str(state.hand_id), convert_play2str(state.play_status)]))
+         # client always north, south is always dummy, no bidding
+         rmsg.append( state.send_new_hand()[NORTH])
       elif mname == 'p':
           tbdeal = ais[NORTH].deal
           dummy = tbdeal.dummy
@@ -171,19 +151,17 @@ class MyHandler(BaseHTTPRequestHandler):
         self.wfile.write(httpResponse(do_GET(data)))
 
         
-TODO = """ a web server that take care of table manager and 3 player
+TODO = """ a cgi server as mini bridge
  a client can use request/response mode to play bridge, instead of polling data.
  use cases, request/response from client/server
- 1. seated at North/hand id, client cards, hand id
- 2. hand id, bid/hand id bid history, ...
- 3. hand id, pass/hand id bid history, leading play, dummy (assume client is not leader)
+ 1. client first connect, always seated at North
+ 2. generate a deal, adjust it (north has most points), decide a double blind result
+    return hands for south and north, with the final artificial bid result
+    east is always in the opening position
+ 3. 
  4. hand id, play/hand id, play history
  5. hand id, play/hand id, play history, new hand, score ...
 
- plus, possible a cgi interface, that process each request then return result, save its
- status then quit
- now, only takes http get, return data not follow http standard
- TODO: fix response so that erlang http:request can parst it
 """
 
 def mmm():
