@@ -23,7 +23,7 @@ public class bridge implements EntryPoint {
 		Button button = new Button("start");
 		final TextBox tb = new TextBox();
 		tb.setVisibleLength(100);
-		tb.setText("bridge-cgi.py?flproxyB=");
+		tb.setText("/oldlady/bridge-cgi.py?flproxyB=");
 		button.addClickListener(new ClickListener() {
 			public void onClick(Widget sender) {
 				panel.website = tb.getText();
@@ -351,7 +351,7 @@ class Panels extends Composite{
 		for(int i=0;i<4;i++)for(int j=1;j<14;j++)
 			cardCounter.getWidget(i, j).removeStyleDependentName("played");
 	}
-	private void process() {
+	public void process() {
 		// TODO Auto-generated method stub
 		deal = new Deal(new Orientation((hand_id-1) % 4));
 		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
@@ -437,6 +437,8 @@ class MessageClient implements ResponseTextHandler {
 			System.out.println("");
 			p.handleData(m);
 		}
+		// leave graphic updating the last thing
+		//p.process();
 	}
 }
 
