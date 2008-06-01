@@ -1,5 +1,6 @@
 package cn.client;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -20,17 +21,20 @@ public class bridge implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 		final Panels panel = new Panels();
-		Button button = new Button("start");
+		Button button = new Button("clict to start");
 		final TextBox tb = new TextBox();
 		tb.setVisibleLength(100);
-		tb.setText("/oldlady/bridge-cgi.py?flproxyB=");
+		// TODO, auto detect for bridge.x10hosting.com/ /oldlady/bridge-cgi.py?flproxyB=
+		// for internal eclipse testing 192.168.0.104:8080/cgi.yaws?flproxyB=
+		// internal testing /cgi.yaws?flproxyB=
+		tb.setText("http://192.168.0.104:8080/cgi.yaws?flproxyB=");
 		button.addClickListener(new ClickListener() {
 			public void onClick(Widget sender) {
 				panel.website = tb.getText();
 				panel.new_start();
 			}
 		});
-		Button bClear = new Button("clear");
+		Button bClear = new Button("clear log");
 		bClear.addClickListener(new ClickListener() {
 			public void onClick(Widget sender) {
 				panel.debug=new HTML("");
@@ -50,19 +54,23 @@ class Panels extends Composite{
 	DockPanel dock ;
 	Deal deal;
 	TabPanel tabs;
+	final Button showCardCounter;
 	Grid playGrid,bidGrid, cardCounter,ntrickGrid;
 	Grid[] bidSuit; 
 	int playHistoryRow;
 	HTML debug= new HTML("");
 	HorizontalSplitPanel hSplit;
 	VerticalPanel[] dockHand;
-	Grid[][] hpSuit;
+	// display four hands on the table [4 seats][4 suits]
+	// don't know how to use Grid to display zero width, try Horizontal panel
+	HorizontalPanel[][] hpSuit;
 	//------------ integrate with java applete app.
 	int hand_id = 0;
 	int myseat = 0;
 	String bidhistory = "";
 	// trick layout
 	String trick_data = "";
+	// used to save original hands, TODO remove tdata
 	String [][] tdata;
 	//MessageClient message_client;
 	String website = null;
@@ -83,6 +91,7 @@ class Panels extends Composite{
 		ntrickGrid.setWidget(0, 3, new HTML("EW"));
 		
 		bidGrid = new Grid(2,4);
+		//TODO set flag to hide playGrid, show the current trick only
 		playGrid = new Grid(13,4); playHistoryRow = 0;
 		playGrid.setWidth("95px");
 		ScrollPanel scroller = new ScrollPanel(playGrid);
@@ -92,7 +101,7 @@ class Panels extends Composite{
 		DockPanel dock = new DockPanel();
 		dockHand = new VerticalPanel[4];
 		bidSuit = new Grid[4];		
-		hpSuit = new Grid[4][4];
+		hpSuit = new HorizontalPanel[4][4];
 		for (int i =0;i<4;i++){
 			dockHand[i] = new VerticalPanel();
 			bidSuit[i] = new Grid(1,14);
@@ -104,9 +113,9 @@ class Panels extends Composite{
 				dockHand[i].add(new HTML("East"));
 			}
 			for(int j=0;j<4;j++){
-				hpSuit[i][j] = new Grid(1,14);
-				hpSuit[i][j].setCellSpacing(0);
-				hpSuit[i][j].setBorderWidth(0);
+				hpSuit[i][j] = new HorizontalPanel();
+				//hpSuit[i][j].setCellSpacing(0);
+				//hpSuit[i][j].setBorderWidth(0);
 				dockHand[i].add(hpSuit[i][j]);
 			}
 		}
@@ -129,16 +138,33 @@ class Panels extends Composite{
 		dock.setCellHorizontalAlignment(dockHand[0], DockPanel.ALIGN_CENTER);
 		dock.setCellHorizontalAlignment(dockHand[2], DockPanel.ALIGN_CENTER);
 		
+		showCardCounter = new Button("show card counter");
 		cardCounter = new Grid(4,14);
 		for(int j=0;j<4;j++)cardCounter.setText(j,0, Card.SUIT2STR[3-j]);
 		for (int i=1;i<14;i++)for(int j=0;j<4;j++) {
 			cardCounter.setWidget(j,i, new Button(Card.rank2str(hpsuitRankIDX(i))));
 		}
 
+        showCardCounter.addClickListener(new ClickListener() {
+        	boolean display = false;
+			public void onClick(Widget sender) {		
+				if (!display){
+					cardCounter.setVisible(true);
+					display = true;
+					showCardCounter.setText("hide card counter");
+				} else {
+					display = false;
+					cardCounter.setVisible(false);
+					showCardCounter.setText("show card counter");
+				}
+			}
+		});
 		VerticalPanel vp = new VerticalPanel();
 		vp.add(dock);
+		vp.add(showCardCounter);
 		vp.add(cardCounter);
-		
+
+        cardCounter.setVisible(false);
 		tabs = new TabPanel();
 		//Biding input layout is in a seperate funciton
 		showBidInputPanel(); 
@@ -218,20 +244,34 @@ class Panels extends Composite{
 				String card = Card.SUIT2STR[b.suit]+b.getText();
 				debug("-"+card+"-");
 				sendPlay(card.toLowerCase());
-				//showTrickPlayed(card);
+				hpSuit[b.seat][3-b.suit].remove(sender);
 			}
-		};		
+		};
+		//TODO, for empty cell, show zero width
 		for (int i=0;i<4;i++)for(int j=0;j<4;j++)
-			for(int k=1;k<14;k++)hpSuit[i][j].clearCell(0, k);
-		for (int i=0;i<4;i++)for(int j=0;j<4;j++){
-			String suit = tdata[i][j];
-			hpSuit[i][j].setWidget(0,0,new HTML(Card.SUIT2STR[3-j]));
-			if(suit == "")continue;
-			for (int k=0;k<suit.length();k++){
-				String card = suit.substring(k,k+1);
-				Button b = new CardButton(i,3-j,card,cardClick);
-				hpSuit[i][j].setWidget(0,hpsuitRankIDX(Card.ridx(card)),b);
-				//hpSuit[i].setWidget(j,k+1,b);
+			hpSuit[i][j].clear();
+		for (int i=0;i<4;i++){
+			Hand onehand = deal.hands[adjustSeat(i)];
+			if ( onehand == null) continue;
+			for(int j=0;j<4;j++){
+				int suit = 3-j;
+				// fist add the suit color name
+				hpSuit[i][j].add(new HTML(Card.SUIT2STR[suit]));
+				
+				Vector colour = onehand.selectColour(suit);
+				Iterator card = colour.iterator();
+				while (card.hasNext()){
+					Card c = (Card) card.next();
+					Button b = new CardButton(i,suit,c.rank(),cardClick);
+					hpSuit[i][j].insert(b,1);
+				}
+
+				//for (int k=0;k<suit.length();k++){
+					//String card = suit.substring(k,k+1);
+					//Button b = new CardButton(i,3-j,card,cardClick);
+					//hpSuit[i][j].setWidget(0, hpsuitRankIDX(Card.ridx(card)),b);
+					//hpSuit[i].setWidget(j,k+1,b);
+				//}
 			}
 		}
 		for(int j=0;j<4;j++)
@@ -277,23 +317,29 @@ class Panels extends Composite{
 	 */
 	int hpsuitRankIDX(int rank){ return 15-rank;}
 	
-	void showTrickPlayed(String card){
+	void dealTrickPlayed(String card){
 		int dummyseat = adjustSeat(deal.dummy.idx());
 		int dummy = deal.dummy.idx();		
 		int p = deal.player.idx();
 		Card c = new Card(card);
 		//remove card from table
-		if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx())); 
-		else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx()));
+		//if (p==myseat)hpSuit[2][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx())); 
+		//else if(p==dummy)hpSuit[dummyseat][c.sidx()].clearCell(0,hpsuitRankIDX(c.ridx()));
+		//highlight card played
 		cardCounter.getWidget(c.sidx(), hpsuitRankIDX(c.ridx())).addStyleDependentName("played");
-		Button b = new Button(c.rank());
-		b.addStyleDependentName("played");
-		hpSuit[adjustSeat(p)][c.sidx()].setWidget(0,hpsuitRankIDX(c.ridx()), b);
-		Card lead = deal.trick.lead;
-		if (lead != null){
-			if (c.getColour() != lead.getColour()){
-				hpSuit[adjustSeat(p)][lead.sidx()].setWidget(0,0, new HTML("-"));
+		if (false){ //TODO, use flag to control when to display played card on the table
+			Button b = new Button(c.rank());
+			b.addStyleDependentName("played");
+			//hpSuit[adjustSeat(p)][c.sidx()].setWidget(0,hpsuitRankIDX(c.ridx()), b);
+
+			Card lead = deal.trick.lead;
+			if (lead != null){
+				if (c.getColour() != lead.getColour()){
+					//hpSuit[adjustSeat(p)][lead.sidx()].setWidget(0,0, new HTML("-"));
+				}
 			}
+		} else {
+
 		}
 		// record in the history
 		deal.play_card(c);
@@ -309,7 +355,8 @@ class Panels extends Composite{
 		if (playHistoryRow < 13)
 			playGrid.setWidget(playHistoryRow, deal.player.idx(), new HTML("?"));
 	}
-
+	// for display, user always sit at South (index 2)
+	// so we need to find out where are other players display index
 	int adjustSeat(int seat){return (2+seat-myseat)%4;}
 	public void handleData(FloaterMessage msg){
 		//TODO, update graphic once all date has been processed
@@ -330,7 +377,6 @@ class Panels extends Composite{
 				int fix = adjustSeat(seat);
 				String[] tmp = hs[i].substring(2).split("\\.");
 				for(int j=0;j<tmp.length;j++)
-					//if (tmp[j])
 					tdata[fix][j]=tmp[j]; 
 			}
 			clearCardCounter();
@@ -357,20 +403,21 @@ class Panels extends Composite{
 		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
 		
 		trackBidHistory();
-		show_4hands();
+
 
 		if (deal.trick == null) return;
 		playHistoryRow = 0;
 		for (int i=0;i<4;i++)for(int j=0;j<13;j++)playGrid.clearCell(j,i);
 		int dummyseat = adjustSeat(deal.dummy.idx());		
 		deal.hands[myseat] = new Hand(tdata[2]);
-		deal.hands[deal.dummy.idx()] = new Hand(tdata[dummyseat]);
+		if (dummyseat != 2)
+			deal.hands[deal.dummy.idx()] = new Hand(tdata[dummyseat]);
 
 		for(int i=0;i<trick_data.length()/2;i++){
 			String card = trick_data.substring(2*i,2*i+2);
-			showTrickPlayed(card);
+			dealTrickPlayed(card);
 		}				
-		
+		show_4hands();		
 	}
 	public void sendBid(String b){
 		//check if it is my turn first
@@ -389,7 +436,7 @@ class Panels extends Composite{
 		// TODO Auto-generated method stub
 		trick_data += p;
 		String[] s= {String.valueOf(hand_id),trick_data};
-		showTrickPlayed(p);
+		dealTrickPlayed(p);
 		MessageClient.send(new FloaterMessage("play",s).toString(), this);		
 	}
 }
@@ -422,7 +469,7 @@ class MessageClient implements ResponseTextHandler {
 		for (int k=0;k<lines.length;k++) {
 			String line = lines[k];	
 			if(line.startsWith("nothing")) break; 
-			if(line == "") continue;	
+			if(line.length() == 0) continue;	
 			if(line.startsWith("T4"))	continue;
 			p.debug("line:"+line);	
 			System.out.println (line);
