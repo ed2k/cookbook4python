@@ -1,0 +1,40 @@
+include ..\..\config.nmake
+
+#-- hand made makefile 
+
+LDFLAGS = /NOLOGO /INCREMENTAL:no /MACHINE:I386 $(LOCAL_LDFLAGS)
+
+!IFDEF ENABLE_LIBWIRESHARK
+LINK_PLUGIN_WITH=..\..\epan\libwireshark.lib
+CFLAGS=/DHAVE_WIN32_LIBWIRESHARK_LIB /D_NEED_VAR_IMPORT_ $(CFLAGS)
+
+PROTOCOL_NAME=jser
+ASNOBJ=packet-$(PROTOCOL_NAME).obj
+
+DISSECTOR_FILES=packet-$(PROTOCOL_NAME).c
+
+!ENDIF
+
+asn: $(DISSECTOR_FILES)
+	cp packet-$(PROTOCOL_NAME).c ../../plugins/$(PROTOCOL_NAME)/
+	cd ../../plugins/$(PROTOCOL_NAME)
+	nmake -f Makefile.nmake	
+	copy $(PROTOCOL_NAME).dll "..\..\wireshark-gtk2\plugins\1.0.99"
+
+clean:
+	rm -f $(OBJECTS) $(PROTOCOL_NAME).dll $(PROTOCOL_NAME).exp $(PROTOCOL_NAME).lib *.pdb
+
+
+packet-$(PROTOCOL_NAME).dll packet-$(PROTOCOL_NAME).exp packet-$(PROTOCOL_NAME).lib : $(ASNOBJ) $(LINK_PLUGIN_WITH)
+	link -dll /out:packet-$(PROTOCOL_NAME).dll $(LDFLAGS) $(ASNOBJ) $(LINK_PLUGIN_WITH) \
+	$(GLIB_LIBS) 
+
+$(DISSECTOR_FILES): ../../tools/asn2wrs.py $(PROTOCOL_NAME).asn packet-$(PROTOCOL_NAME)-template.c $(PROTOCOL_NAME).cnf
+!IFDEF PYTHON
+        $(PYTHON) "../../tools/asn2wrs.py" -p $(PROTOCOL_NAME) -c $(PROTOCOL_NAME).cnf -s packet-$(PROTOCOL_NAME)-template $(PROTOCOL_NAME).asn
+!ELSE
+        @echo Error: You need Python to use asn2wrs.py
+        @exit 1
+!ENDIF
+	
+
