@@ -342,6 +342,7 @@ class MyHandler(BaseHTTPRequestHandler):
         else:
             r = get_default()
         self.wfile.write(r)
+
 try:
      server = HTTPServer(('', 80), MyHandler)
      print 'started httpserver...'
