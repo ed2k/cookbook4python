@@ -3,7 +3,7 @@ import java.io.File;
 import java.awt.Point;
 import javax.imageio.ImageIO;
 
-
+//all image sameples are at cards.png
 public class ImageSearch {
 	int startx, starty;
 	BufferedImage[] smallCards, bigCards, smallSuits, bigSuits;
@@ -12,7 +12,7 @@ public class ImageSearch {
 	static String trans2 = "SHDC";
 	
 	ImageSearch(){
-		String root= "C:\\Documents and Settings\\lmcyisu\\My Documents\\My Pictures\\";
+		String root= "";
 		smallCards = new BufferedImage[13];
 		bigCards = new BufferedImage[13];
 		smallSuits = new BufferedImage[4];
