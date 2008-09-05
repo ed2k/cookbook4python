@@ -1,0 +1,29 @@
+application: webminibridge
+version: 1
+runtime: python
+api_version: 1
+
+handlers:
+#- url: /static
+#  static_dir: static
+- url: /favicon.ico
+  static_files: favicon.ico
+  upload: favicon.ico
+  mime_type: image/png
+- url: /guestbook
+  script: guestbook.py
+- url: /sign
+  script: guestbook.py
+
+- url: /images/
+  static_dir: images
+- url: /js/
+  static_dir: js
+- url: /css/
+  static_dir: css
+- url: /search
+  script: search.py
+- url: /suggest
+  script: search.py
+- url: /.*
+  script: search.py
