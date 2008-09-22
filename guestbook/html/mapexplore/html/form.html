@@ -1,0 +1,124 @@
+<html>
+<head>
+    <script type="text/javascript">
+    function controlForm(objetForm) {
+	
+	var IsValidForm = true;	// Boolean used to know if the form is valid
+	var ErrorMessage = "Before continue, check the following points :\n";
+				
+	// Some fields must be filled in
+	if ((objetForm.xres.value == null || objetForm.xres.value == "")) {
+		ErrorMessage += "	- \"x resolution\" must be filled.\n";
+		IsValidForm = false;
+	}	
+	if ((objetForm.xres.value != null))  {
+		if (!(objetForm.xres.value >= 0 && objetForm.xres.value <= 2000)) {
+			ErrorMessage += "	- Maximum \"x resolution\" resolution is 2000 pixels.\n";
+			IsValidForm = false;
+		}
+	}
+	if ((objetForm.yres.value == null || objetForm.yres.value == "")) {
+		ErrorMessage += "	- \"y resolution\" must be filled.\n";
+		IsValidForm = false;
+	}	
+	if ((objetForm.yres.value != null))  {
+		if (!(objetForm.yres.value >= 0 && objetForm.yres.value <= 2000)) {
+			ErrorMessage += "	- Maximum \"y resolution\" resolution is 2000 pixels.\n";
+			IsValidForm = false;
+		}
+	}	
+	
+	// Display error message
+	if (!IsValidForm) alert(ErrorMessage);
+	return IsValidForm;
+    }
+    </script>    
+</head>
+<body>
+<form name="FORM1" target="MAP" method="GET" action="map.html" onSubmit="return controlForm(this);">  
+<table border="1" cellspacing="0" cellpadding="1">
+  <tr> 
+    <td>
+        <table border="0" cellspacing="0" cellpadding="1">
+          <tr>
+            <td>
+              <font face="Arial" size="4">Center on latitude</font>
+            </td>            
+            <td> 
+              <input type="text" size=18 name="latcenter" value="48.85613168160397">
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <font face="Arial" size="4">Center on longitude&nbsp;</font>
+            </td>             
+            <td>
+              <input type="text" size=18 name="longcenter" value="2.3490142822265625">
+            </td>
+            <td>&nbsp;</td>
+          </tr>
+        </table>
+    </td>
+    <td>        
+        <table border="0" cellspacing="0" cellpadding="1">
+          <tr>
+            <td>
+              <font face="Arial" size="4">Zoom level&nbsp;</font>
+            </td>            
+            <td>
+              <select name="zoomlevel">
+                <option value="17">17</option>
+                <option value="16">16</option>
+                <option value="15">15</option>
+                <option value="14">14</option>
+                <option value="13">13</option>
+                <option value="12" selected>12</option>
+                <option value="11">11</option>
+                <option value="10">10</option>
+                <option value="9">9</option>
+                <option value="8">8</option>
+              </select>
+            </td>
+            
+            <td>&nbsp;</td>
+          </tr>
+        </table>        
+    </td>
+    <td>
+        <table border="0" cellspacing="0" cellpadding="1">
+          <tr>
+            <td>
+              <font face="Arial" size="4">Resolution (x)</font>
+            </td>            
+            <td> 
+              <input type="text" size=3 name="xres" value="640">
+            </td>
+            
+            <td>&nbsp;</td>
+          </tr>
+          <tr>
+            <td>
+              <font face="Arial" size="4">Resolution (y)&nbsp;</font>
+            </td>             
+            <td>
+              <input type="text" size=3 name="yres" value="480">
+            </td>
+            <td>&nbsp;</td>
+          </tr>
+        </table>
+    </td>    
+    <td align="center">
+      <table border="0" cellspacing="0" cellpadding="0">
+        <tr>
+          <td><center>&nbsp;&nbsp;&nbsp;&nbsp;
+            <input type="Submit" value="Go !" name="Settings">
+            &nbsp;&nbsp;&nbsp;&nbsp;
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>  
+</form>
+</body>
+</html>

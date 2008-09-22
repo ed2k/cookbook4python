@@ -1,0 +1,888 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>Google Maps JavaScript API Example</title>
+	<style>
+	body {
+	  font-family:tahoma,sans-serif;
+	  font-size:10pt;
+	}
+	.xmlsave-box{
+	  background: #eee;
+	  border: 1px solid black;
+	  padding: 5px;
+	  position: absolute;
+	  left: 50px;
+	  top: 60px;
+	  width: 600px;
+	  height: 500px;
+	  visibility: hidden;
+	  z-index:99;
+	}
+	.mapcalibration-box{
+	  background: #eee;
+	  border: 1px solid black;
+	  padding: 5px;
+	  position: absolute;
+	  left: 50px;
+	  top: 60px;
+	  width: 610px;
+	  height: 270px;
+	  visibility: hidden;
+	  z-index:99;
+	}
+	.imagelinks-box{
+	  background: #C0C0C0;
+	  border: 1px solid black;
+	  padding: 5px;
+	  position: absolute;
+	  left: 50px;
+	  top: 60px;
+	  visibility: hidden;
+	  z-index:99;
+	}
+	.imagelinks-div{
+	  background: #eee;
+	  border: 1px solid black;
+	  padding: 5px;
+	}		
+	.about-box{
+	  background: #8080FF;
+	  border: 1px solid black;
+	  padding: 15px;
+	  position: absolute;
+	  left: 50px;
+	  top: 40px;
+	  width: 500px;
+	  height: 560px;
+	  visibility: hidden;
+	  z-index:99;
+	  overflow:auto;
+	}
+	.options-box{
+	  background: #eee;
+	  border: 1px solid black;
+	  padding: 20px;
+	  position: absolute;
+	  left: 50px;
+	  top: 60px;
+	  width: 500px;
+	  height: 200px;
+	  visibility: hidden;
+	  z-index:99;
+	  overflow:auto;
+	}
+	#coords{
+	  font-family:tahoma,sans-serif;
+	  font-size:8pt;
+	}
+	.waypoint_text{
+	  font-family:tahoma,sans-serif;
+	  font-size:7pt;
+	}
+	</style>                                                      
+    <script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=ABQIAAAAnDuGfPJsGgnK9N-JgcWONhQvrsJDWe8zMPYMz2TrG5Y0aa_c_xSn0xxDX8ZarBotIHxdnLGAjC_mBw"
+      type="text/javascript"></script>
+    <script type="text/javascript">
+
+    //<![CDATA[
+    
+	// Initialiaze variables
+	var map;
+	var ov_map;
+	var arPoints = new Array();
+	var arMarkers = new Array();
+	var arComments = new Array();
+	var gLine = new GPolyline();
+	var l;
+	var longcenter = 2.3490142822265625;
+	var latcenter = 48.85613168160397;
+	var zoomlevel = 12;
+	var xres = 640;
+	var yres = 480;
+	var decimalprecision = 100000000000;
+	var mapname = "Paris";
+	var sMapFileContent;
+	var isMMPXY = 0;
+	var latnorthraw;
+	var latsouthraw;
+	var longeastraw;
+	var longwestraw;
+	var linklatvalue;
+	var linklongvalue;
+	var linkzoomvalue;
+	var linklatvaluetable = new Array();
+	var linklongvaluetable = new Array();
+	var xslice = 1;
+	var yslice = 1;
+
+	// Retrieving data from the form
+	var urlparams = location.search.substring(1);
+	var params = urlparams.split("&");
+	for (i in params) {
+		var elements_param = params[i].split("=");
+		switch(elements_param[0].toString()) {
+			case "longcenter":
+			var longcenter = elements_param[1]*1;
+			break;
+			case "latcenter":
+			var latcenter = elements_param[1]*1;
+			break;
+			case "zoomlevel":
+			var zoomlevel = elements_param[1]*1;
+			break;
+			case "xres":
+			var xres = elements_param[1];
+			break;
+			case "yres":
+			var yres = elements_param[1];
+			break;
+			default:
+ 			break;
+		}
+	}
+	
+	function updateLinksNames() {
+		mapname = document.FORM1.mapname.value;
+		document.FORM1.mapButton.value = mapname + ".map";
+		document.getElementById("mapbuttondiv").innerHTML="<font face=\"Arial\" size=\"3\">Map file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><button id=\"mapButton\" type=\"button\" onclick=\"generate_mapfile(0)\">" + mapname + ".map</button>";
+		document.getElementById("gifbuttondiv").innerHTML="<font face=\"Arial\" size=\"3\">Gif slices&nbsp;&nbsp;&nbsp;</font><button id=\"gifButton\" type=\"button\" onclick=\"generate_imagelinks(0)\">" + mapname + "_0_0.gif ...</button>";
+		updateBounds();
+	}
+	
+	function updateLinksHorizontal() {
+		xslice = document.FORM1.horizontalslices.value;
+		if ( !(xslice > 0) ) {
+		  alert("This value must be an integer greater or equal to 1");
+		  document.FORM1.horizontalslices.value = "1";
+		  xslice = 1;
+		}
+	}
+
+	function updateLinksVertical() {
+		yslice = document.FORM1.verticalslices.value;
+		if ( !(yslice > 0) ) {
+		  alert("This value must be an integer greater or equal to 1");
+		  document.FORM1.verticalslices.value = "1";
+		  yslice = 1;
+		}
+	}
+	
+	function computesbaselinkvalue() {
+		// lat value
+		linklatvalue = latcenter * 1000000;
+		if ( linklatvalue < 0 ) linklatvalue = linklatvalue + Math.pow(2,32);
+		linklatvalue = Math.floor(linklatvalue);
+		
+		//long value
+		linklongvalue = longcenter * 1000000;
+		if ( linklongvalue < 0 ) linklongvalue = linklongvalue + Math.pow(2,32);
+		linklongvalue = Math.floor(linklongvalue);
+		
+		// Zoom value
+		switch(zoomlevel) {
+			case 17:
+			//linkzoomvalue =  1200;
+			linkzoomvalue = 2 * Math.round(100000 * (longeastraw-longwestraw));
+			break;
+			case 16:
+			//linkzoomvalue =  2400;
+			linkzoomvalue = 2 * Math.round(100000 * (longeastraw-longwestraw));
+			break;
+			case 15:			
+			//linkzoomvalue =  4800;//3600???
+			linkzoomvalue = 2 * Math.round(100000 * (longeastraw-longwestraw));
+			break;
+			case 14:
+			//linkzoomvalue =  9600;
+			linkzoomvalue = 2 * Math.round(75000 * (longeastraw-longwestraw));
+			break;
+			case 13:
+			//linkzoomvalue =  19200;
+			linkzoomvalue = 2 * Math.round(75000 * (longeastraw-longwestraw));
+			break;
+			case 12:
+			//linkzoomvalue =  38400;
+			linkzoomvalue = 2 * Math.round(75000 * (longeastraw-longwestraw));
+			break;
+			case 11:
+			//linkzoomvalue =  76800;
+			linkzoomvalue = 2 * Math.round(75000 * (longeastraw-longwestraw));
+			break;
+			case 10:
+			//linkzoomvalue =  180000;
+			linkzoomvalue = 2 * Math.round(75000 * (longeastraw-longwestraw));
+			break;
+			case 9:
+			//linkzoomvalue =  600000;
+			linkzoomvalue = 2 * Math.round(75000 * (longeastraw-longwestraw));
+			break;
+			case 8:
+			//linkzoomvalue =  1800000;
+			linkzoomvalue = 2 * Math.round(100000 * (longeastraw-longwestraw));
+			break;
+			default:
+ 			break;
+		}
+	}
+
+	function computeslinkvalue(numberxslice, numberyslice) {
+		var latoffset = Math.abs(latnorthraw - latsouthraw);
+		var longoffset = Math.abs(longeastraw - longwestraw);
+
+		// lat value
+		for(var a = 0; a < numberyslice; a++) {
+			linklatvaluetable[a] = (latcenter - latoffset * a) * 1000000;
+			if ( linklatvaluetable[a] < 0 ) linklatvaluetable[a] = linklatvaluetable[a] + Math.pow(2,32);
+			linklatvaluetable[a] = Math.floor(linklatvaluetable[a]);
+		}
+		
+		//long value
+		for(var a = 0; a < numberxslice; a++) {
+			linklongvaluetable[a] = (longcenter + longoffset * a) * 1000000;
+			if ( linklongvaluetable[a] < 0 ) linklongvaluetable[a] = linklongvaluetable[a] + Math.pow(2,32);
+			linklongvaluetable[a] = Math.floor(linklongvaluetable[a]);
+		}
+	}
+	
+	function createurlimage(linklat, linklong, linkzoom) {	
+		var urlimage = "http://maps.google.com/mapdata?";
+		urlimage += "latitude_e6=" + linklat;
+		urlimage += "&longitude_e6=" + linklong;
+		urlimage += "&zm=" + linkzoom;
+		urlimage += "&w=" + xres + "&h=" + yres;
+		urlimage += "&cc=us&min_priority=2";
+		return urlimage;
+	}
+	
+	function degreestominutes(coord) {
+		return Math.abs(parseInt(coord)) + "," + (Math.round(Math.abs((coord - parseInt(coord)) * 60)*decimalprecision))/decimalprecision;
+	}
+
+	function updateBounds() {
+		var ne = map.getBounds().getNorthEast();
+		var sw = map.getBounds().getSouthWest();
+		
+		// Retrieve the coord for the top right of the map
+		latnorthraw = map.getBounds().getNorthEast().lat();
+		longeastraw = map.getBounds().getNorthEast().lng();
+		
+		// Retrieve the coord for the bottom left of the map		
+		latsouthraw = map.getBounds().getSouthWest().lat();
+		longwestraw = map.getBounds().getSouthWest().lng();
+		
+		// retrieve the coord for the center of the map
+		latcenter = map.getBounds().getCenter().lat();
+		longcenter = map.getBounds().getCenter().lng();
+		zoomlevel = map.getZoom();
+
+		// Displays the current center values
+		document.getElementById("curpos").innerHTML = "Current map is centered on";
+		document.getElementById("curpos").innerHTML += "<br/>Latitude : " + latcenter + " &deg;<br/>";
+		document.getElementById("curpos").innerHTML += "Longitude : " + longcenter + " &deg;";		
+		
+		// Limit the min zoom to 8
+		if ( zoomlevel < 8 ) map.setZoom(8);		
+	}
+
+	function checkOverview() {
+               ov_map = overview.getOverviewMap();
+               if (ov_map) {      
+               		ov_map.addControl( new GSmallZoomControl() );
+			overview.hide();
+                } else {
+                        setTimeout("checkOverview()",100);
+                }
+        }
+	function load() {
+		if (GBrowserIsCompatible()) {
+			var screen_height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+			
+			document.FORM1.mapname.value = mapname;
+			
+			document.getElementById("map").style.width=xres+"px";
+			document.getElementById("map").style.height=yres+"px";
+			document.getElementById("staticmap").style.height=yres+"px";
+			map = new GMap2(document.getElementById("map"));
+			//map.enableDoubleClickZoom();
+			//map.enableContinuousZoom();
+			//map.disableDragging();
+			map.addControl( new GSmallZoomControl() );
+			map.setCenter(new GLatLng(latcenter, longcenter), zoomlevel);
+			
+			// Recenter the map to get rid of google approximations
+			latcenter = map.getBounds().getCenter().lat();
+			longcenter = map.getBounds().getCenter().lng();
+			zoomlevel = map.getZoom();
+			map.setCenter(new GLatLng(latcenter, longcenter), zoomlevel);
+			
+
+			overview = new GOverviewMapControl(new GSize(264,(screen_height/2)-50));                      
+			map.addControl(overview, new GControlPosition(G_ANCHOR_BOTTOM_LEFT, new GSize(-270, 0)));
+                        // per http://econym.googlepages.com/modularized.htm
+                        // temp hack to make it work
+                        setTimeout("checkOverview()",1000);
+			map.addControl(new GMapTypeControl(), 
+                            new GControlPosition(G_ANCHOR_BOTTOM_RIGHT, new GSize(10, -20)));
+
+			updateBounds();
+			GEvent.addListener(map, "moveend", function() {
+				updateBounds();
+			});
+			GEvent.addListener(map, "click", function(marker, point) {
+		            close_popup('mapcalibration-box');
+		            close_popup('imagelinks-box');
+		            close_popup('xmlsave-box');
+		            close_popup('about-box');
+		                if (marker) {
+		                    // delete a marker
+		                    map.closeInfoWindow();
+		                    for(var i=0; i<arPoints.length; i++){
+		                        // we cannot use point.equals here as the accuracy
+		                        // seems to change when a loaded item comes back,
+		                        // resulting in non-equality, hence the fudge factor:
+		                        if(Math.abs(marker.getPoint().x - arPoints[i].x) < 0.00000001 &&
+		                            Math.abs(marker.getPoint().y - arPoints[i].y) < 0.00000001 ){
+		                            arPoints.splice(i,1);
+		                            arMarkers.splice(i,1);
+		                            arComments.splice(i,1);
+		                            break;
+		                        }
+		                    }
+		                    // reset the marker IDs
+		                    for(i=0; i<arMarkers.length; i++){
+		                        arMarkers[i].MCD_ID=i;
+		                    }
+		                    map.removeOverlay(marker);
+		                    changeText();
+		                } else {
+		                    if (arPoints.length<1000){
+		                        // add a marker
+		                        point.array_index = arPoints.length;
+		                        arPoints.push(point);
+		                        var sWaypointName;
+		                        arComments.push("");
+		                        var marker=createMarker(point, arPoints.length-1);
+		                        arMarkers.push(marker);
+		                        map.addOverlay(marker);
+		                        marker.enableDragging();
+		                        changeText();
+		                    }
+		                }
+		        });		
+		}
+	}
+	
+
+function close_popup(sID) {
+    if(document.layers) //NN4+
+    {
+       document.layers[sID].visibility = "hide";
+    }
+    else if(document.getElementById) //gecko(NN6) + IE 5+
+    {
+        var obj = document.getElementById(sID);
+        obj.style.visibility = "hidden";
+    }
+    else if(document.all) // IE 4
+    {
+        document.all[sID].style.visibility = "hidden";
+    }
+}
+
+function check_for_escape(e, sPopupID){
+    if (e.keyCode==27) {
+        close_popup(sPopupID);
+    }
+}
+
+function show_popup(sID) {
+    if(sID!="about-box")    close_popup("about-box");
+    if(sID!="xmlsave-box")  close_popup("xmlsave-box");
+    if(sID!="mapcalibration-box")  close_popup("mapcalibration-box");
+    if(sID!="imagelinks-box")  close_popup("imagelinks-box");
+    if(sID!="options-box")  close_popup("options-box");
+    if(document.layers) //NN4+
+    {
+       document.layers[sID].visibility = "show";
+    }
+    else if(document.getElementById)  //gecko(NN6) + IE 5+
+    {
+        var obj = document.getElementById(sID);
+        obj.style.visibility = "visible";
+    }
+    else if(document.all) // IE 4
+    {
+        document.all[sID].style.visibility = "visible";
+    }
+}
+
+function show_help(){
+    show_popup("about-box");
+    var obj = document.getElementById("aboutClose");
+    obj.focus();
+}
+
+function show_menu(){
+    show_popup("options-box");
+    var obj = document.getElementById("optionsCloseButton");
+    obj.focus();
+}
+
+function clearRoute(bConfirm){
+    if(bConfirm){
+        if(! confirm("Are you sure you want to delete all the waypoints?")) return;
+    }    
+    map.clearOverlays();
+    arComments.length=0;
+    arPoints.length=0;
+    arMarkers.length=0;
+    changeText();
+    close_popup('options-box');
+}
+
+function insertWaypoint(beforeWaypoint){
+    // this routine inserts a waypoint before waypoint number <beforeWaypoint>
+    if(arPoints.length==0) {
+        alert("Cannot insert as there are no waypoints defined");
+        return;
+    }
+    if(beforeWaypoint > arPoints.length-1){
+        alert("You entered a number higher than the last waypoint.");
+        return;
+    }
+    var obj=document.getElementById("txtInsertWaypoint");
+    nBefore=Number(obj.value) || 0;
+    var point=new GPoint(arPoints[nBefore].x-0.001, arPoints[nBefore].y-0.001)
+    arPoints.splice(nBefore, 0,  point);
+    arComments.splice(nBefore, 0,  "");
+    var mk=createMarker(point, nBefore);
+    arMarkers.splice(nBefore, 0, mk);
+    for(var i=0; i<arMarkers.length; i++){
+        arMarkers[i].MCD_ID=i;
+    }
+    map.addOverlay(mk);
+    mk.enableDragging();
+    changeText();
+    arMarkers[nBefore].openInfoWindowHtml("New marker");
+    //map.setCenter(new GLatLng(point.y, point.x));
+    close_popup("options-box");
+}
+
+
+function positionOverview(x,y) {
+    var omap=document.getElementById("map_overview");
+    omap.style.left = x+"px";
+    omap.style.top = y+"px";
+            
+    // == restyling ==
+    omap.firstChild.style.border = "1px solid gray";
+
+    omap.firstChild.firstChild.style.left="4px";
+    omap.firstChild.firstChild.style.top="4px";
+    omap.firstChild.firstChild.style.width="280px";
+    omap.firstChild.firstChild.style.height=(screen_height/2)-30+"px";
+}
+
+function drawRoute(){
+    map.removeOverlay(gLine);
+    gLine=new GPolyline(arPoints);
+    try{
+      map.addOverlay(gLine);
+    }
+    catch(e){
+      //The above line dies in IE...
+    }
+    close_popup('options-box');
+}
+
+
+function save_text(nIndex, sText){
+    arComments[nIndex]=sText.toUpperCase();
+}
+
+function find_waypoint(n){
+    //map.setCenter(arMarkers[n].getPoint());
+    var sInfo="Waypoint " + n;
+    if(arComments[n].length > 0){
+        sInfo += " (" + arComments[n] + ")";
+    }
+    arMarkers[n].openInfoWindowHtml(sInfo);
+    obj=document.getElementById("txtInsertWaypoint");
+    if(obj) obj.value=n;
+}
+
+function changeText() {
+    var sHTML="<table cellspacing='0px'>";
+    var totalKs=0;
+    var totalMs=0;
+    for(var i=0; i<arPoints.length; i++){
+        var maxCmtLen;
+        if (i<10) {
+            maxCmtLen=6;
+        }else if(i<100){
+            maxCmtLen=5;
+        }else{
+            maxCmtLen=4;
+        }
+        sHTML+="<tr><td align='left'>";
+        if (i>0){
+            var metres=arMarkers[i].getPoint().distanceFrom(arMarkers[i-1].getPoint());
+            totalKs+=(metres * 0.001);
+            totalMs=(totalKs * 0.621371192);
+        }
+        sHTML += "<a href='javascript:find_waypoint(" + i + ");' title='Click to locate waypoint on map'> " +
+        (i) + "</a></td><td>:  <input type='text' " +
+        " id='txtWaypoint" + i + "' " +
+        " class='waypoint_text' name='waypoint_" + i + "' " +
+        "onkeyup=save_text(" + i + ",this.value) " +
+        "size='8' maxlength='" + maxCmtLen + "' " +
+        "value='" + arComments[i] + "'><span title='" + totalMs.toFixed(2) + " miles'> (" + totalKs.toFixed(2) + " kilometres)</span><br>";
+        sHTML+="</td></tr>";
+    }
+    sHTML+="</table>";
+    var coords=document.getElementById('coords');
+    coords.innerHTML="<b>Waypoints:</b><br>" + sHTML;
+    var obj = document.getElementById("txtWaypoint" + (arPoints.length-1) );
+    if(obj){
+        obj.focus();
+        obj.select();
+    }
+}
+
+function generate_mapfile(nFlag){
+	var totalxres = xres * xslice;
+	var totalyres = yres * yslice;
+	var xright = totalxres - 1;
+	var ybottom = totalyres - 1;		
+	var totallongeastraw = xslice * Math.abs((longeastraw - longwestraw)) + longwestraw;
+	var totallatsouthraw = yslice * Math.abs((latsouthraw - latnorthraw)) + latnorthraw;
+	
+	// Convert coord to degrees, minutes.minutes fraction 
+	if (latnorthraw<0) var topcompass = "S"; else var topcompass = "N";
+	if (totallatsouthraw<0) var bottomcompass = "S"; else var bottomcompass = "N";
+	if (totallongeastraw<0) var rightcompass = "W"; else var rightcompass = "E";
+	if (longwestraw<0) var leftcompass = "W"; else var leftcompass = "E";
+	var latnorth = degreestominutes(latnorthraw);
+	var longeast = degreestominutes(totallongeastraw);
+	var latsouth = degreestominutes(totallatsouthraw);
+	var longwest = degreestominutes(longwestraw);
+	
+	// format the map file (using crippled Ozi like calibration format)
+	sMapFileContent = "Point01,xy,0,0,in,deg," + latnorth + "," + topcompass + "," + longwest + "," + leftcompass + ",grid,,,,N" + "<br/>";
+	sMapFileContent += "Point02,xy," + xright + ",0,in,deg," + latnorth + "," + topcompass + "," + longeast + "," + rightcompass + ",grid,,,,N" + "<br/>";
+	sMapFileContent += "Point03,xy,0," + ybottom + ",in,deg," + latsouth + "," + bottomcompass + "," + longwest + "," + leftcompass + ",grid,,,,N" + "<br/>";
+	sMapFileContent += "Point04,xy," + xright + "," + ybottom + ",in,deg," + latsouth + "," + bottomcompass + "," + longeast + "," + rightcompass + ",grid,,,,N" + "<br/>";
+	sMapFileContent += "IWH,Map Image Width/Height," + totalxres.toString() + "," + totalyres.toString();
+	
+	// format the map file (using MMPXY/LL format)
+	sMMPXYFileContent = "MMPXY,1,0,0\n";
+	sMMPXYFileContent += "MMPXY,2," + totalxres + ",0\n";
+	sMMPXYFileContent += "MMPXY,3," + totalxres + "," + totalyres + "\n";
+	sMMPXYFileContent += "MMPXY,4,0," + totalyres + "\n";
+	sMMPXYFileContent += "MMPLL,1,  " + Math.round(longwestraw*1000000)/1000000 + ",  " + Math.round(latnorthraw*1000000)/1000000 + "\n";
+	sMMPXYFileContent += "MMPLL,2,  " + Math.round(totallongeastraw*1000000)/1000000 + ",  " + Math.round(latnorthraw*1000000)/1000000 + "\n";
+	sMMPXYFileContent += "MMPLL,3,  " + Math.round(totallongeastraw*1000000)/1000000 + ",  " + Math.round(totallatsouthraw*1000000)/1000000 + "\n";
+	sMMPXYFileContent += "MMPLL,4,  " + Math.round(longwestraw*1000000)/1000000 + ",  " + Math.round(totallatsouthraw*1000000)/1000000 + "\n";
+		
+	show_popup("mapcalibration-box");
+	var txt2 = document.getElementById("mapfilename");
+	txt2.innerHTML = "<b>" + mapname + ".map</b><br/>";	
+	var txt = document.getElementById("mapcalibration-textarea");
+	if ( nFlag == 1 && isMMPXY == 0 ) isMMPXY = 1;
+	else if ( nFlag == 1 && isMMPXY == 1 ) isMMPXY = 0;
+	if ( isMMPXY == 0 ) 
+		txt.value = sMapFileContent.toString().replace(/<br.>/gi, "\n");
+	else
+		txt.value = sMMPXYFileContent;
+	txt.focus();
+}
+
+function generate_imagelinks(nFlag){
+	show_popup("imagelinks-box");
+	var txt = document.getElementById("imagelinks-div");
+	var x;
+	var y;	
+	computesbaselinkvalue();
+	computeslinkvalue(xslice, yslice);	
+	txt.innerHTML = "";
+	for(y = 0; y < yslice; y++) {
+		for(x = 0; x < xslice; x++) {
+			var tmpurl = createurlimage(linklatvaluetable[y], linklongvaluetable[x], linkzoomvalue);
+			var tmpx = x * xres;
+			var tmpy = y * yres;
+			//txt.innerHTML += "<br/>" + mapname + "_" + tmpx + "_" + tmpy + ".gif" + "&nbsp;&nbsp;(<a href='" + tmpurl + "'>save as</a>)";
+			txt.innerHTML += "<br/>" + "<a href='" + tmpurl + "'>" + mapname + "_" + tmpx + "_" + tmpy + ".gif" + "</a>";
+		}
+	}
+}
+
+function generate_gpx(nFlag){
+    show_popup("xmlsave-box");
+    var txt = document.getElementById("xml-textarea");
+    var sXML= "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n" +
+        "<gpx version=\"1.1\" xmlns=\"http://www.topografix.com/GPX/1/1\">\n"
+    if(nFlag==0 || nFlag==2){
+        for(var i=0; i<arPoints.length; i++){
+            if(nFlag==2 && arComments[i].length==0) continue;
+            sXML+="    <wpt lat=\"" + arPoints[i].y + "\" lon=\"" + arPoints[i].x + "\">\n";
+            var sName="";
+            sName+=(i);
+            if (arComments[i].length>0) sName+="-"+arComments[i];
+            sXML+="      <name>" + sName + "</name>\n";
+            sXML+="    </wpt>\n";
+        }
+    }else if(nFlag==1){
+        for(var i=arPoints.length-1; i>=0; i--){
+            sXML+="    <wpt lat=\"" + arPoints[i].y + "\" lon=\"" + arPoints[i].x + "\">\n";
+            var sName="";
+            sName+=(i);
+            if (arComments[i].length>0) sName+="-";
+            if(arComments[i]=='R' || arComments[i]=="RIGHT") {
+                sName+="L";
+            }else if(arComments[i]=='L' || arComments[i]=="LEFT") {
+                sName+="R";
+            }else{
+                sName+=arComments[i];
+            }
+
+            sXML+="      <name>" + sName + "</name>\n";
+            sXML+="    </wpt>\n";
+        }
+    }
+    sXML+="</gpx>";
+    txt.value=sXML;
+    txt.focus();
+}
+
+function stripSequence(sText, nWaypointNumber) {
+    // Note waypoints can only be 8 chars, and we use the first few of those for the
+    // prefix to ensure that they are unique.  Hence the user has only a few
+    // more to enter stuff, and we have to lose anything over that on an imported GPX.
+    var maxCmtLen=4;
+    if(nWaypointNumber<100) maxCmtLen=5;
+    if(nWaypointNumber<10)  maxCmtLen=6;
+    var ValidChars = "0123456789";
+    for(var n=0; n<3; n++){
+        if(sText.length==n) return "";
+        if(ValidChars.indexOf(sText.charAt(n)) == -1) return sText.substring(0,maxCmtLen);
+        if(sText.charAt(n+1)=='-') return sText.substring(n+2,n+2+maxCmtLen);
+    }
+    // if we get here, we generated the GPX most likely, so we strip off the
+    // guff at the beginning of the waypoint name
+    return sText.substring(3,8);
+}
+
+function createMarker(point,number) {
+    var marker = new GMarker(point, {draggable:true});
+    marker.MCD_ID=number;
+    GEvent.addListener(marker, "dragend", function() {
+        arPoints[marker.MCD_ID]=marker.getPoint();
+        changeText();
+        obj=document.getElementById("txtWaypoint" + marker.MCD_ID);
+        if(obj){
+            obj.focus();
+            obj.select();
+        }
+    });
+    GEvent.addListener(marker, "dragstart", function(){
+        map.removeOverlay(gLine);
+        map.closeInfoWindow();
+    });
+    GEvent.addListener(marker, "mouseover", function() {
+        obj=document.getElementById("txtInsertWaypoint");
+        if(obj) obj.value=marker.MCD_ID;
+        obj=document.getElementById("txtWaypoint" + marker.MCD_ID);
+        if(obj){
+            obj.focus();
+            obj.select();
+        }
+        var sHTML="Waypoint " + marker.MCD_ID;
+        if(arComments[marker.MCD_ID].length>0) sHTML += ": " + arComments[marker.MCD_ID];
+        marker.openInfoWindowHtml(sHTML);
+    });        
+    GEvent.addListener(marker, "mouseout", function() {
+        map.closeInfoWindow();
+    });        
+        
+    return marker;
+}
+
+    //]]>
+    </script>
+  </head>
+  <body onload="load();" onunload="GUnload()">
+
+<!--  --- SHOW OPTIONS BOX --- -->
+
+<div class="options-box" id="options-box" onkeypress='check_for_escape(event, "options-box")'>
+<h3>Tools and Options</h3>
+<hr>
+<table>
+    <tr>
+        <td>
+            <button type='button' onclick='javascript:clearRoute(true)' id='cmdClearRoute'>Clear</button>
+        </td>
+        <td>
+            Click here to clear down the current waypoints
+        </td>
+
+    </tr>
+    <tr>
+        <td>
+            <button type='button' onclick='javascript:drawRoute()' id='cmdDrawRoute'>Lines</button>
+        </td>
+        <td>
+            Click here to draw a temporary route line between each waypoint on the map
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            <button type='button' onclick='javascript:insertWaypoint()' id='cmdInsertWaypoint'>Insert</button>
+        </td>
+        <td>
+            Insert a waypoint before existing waypoint number <input id="txtInsertWaypoint" type="text" size="5" maxlength="3" value="0">
+        </td>
+    </tr>
+</table>
+<p style="text-align: right;">
+<button type='button' id='optionsCloseButton' onclick='javascript:close_popup("options-box")' >Close</button>
+</p>
+</div>
+
+<!--  --- SHOW GPX SAVE BOX --- -->
+
+<div class="xmlsave-box" id="xmlsave-box">
+To save, copy the text below, paste it into a text editor, and save from there.
+<textarea id="xml-textarea" style='width:590px;height:430px' onkeypress='check_for_escape(event, "xmlsave-box")'>
+
+</textarea>
+<p style="text-align: right;">
+<button type='button' onclick='javascript:generate_gpx(2)' title='Strip non-named waypoints'>Strip</button> &nbsp;
+<button type='button' onclick='javascript:generate_gpx(1)' title='Reverse the waypoints for a return route'>Reverse</button> &nbsp;
+
+<button type='button' onclick='javascript:close_popup("xmlsave-box")' >Close</button>
+</p>
+</div>
+
+<!--  --- SHOW MAP CALIBRATION BOX --- -->
+
+<div class="mapcalibration-box" id="mapcalibration-box">
+To save, copy the text below, paste it into a text editor, and save from there in a file called:
+<div id="mapfilename"><br/></div>
+<textarea id="mapcalibration-textarea" style='width:600px;height:200px' onkeypress='check_for_escape(event, "mapcalibration-box")'>
+
+</textarea>
+<p style="text-align: right;">
+<font face="Arial" size="2">Switch format (crippled Ozi or MMPXY/LL)</font>
+<button type='button' onclick='javascript:generate_mapfile(1)' >Switch</button>
+<button type='button' onclick='javascript:close_popup("mapcalibration-box")' >Close</button>
+</p>
+</div>
+
+<!--  --- SHOW IMAGE LINKS BOX --- -->
+
+<div class="imagelinks-box" id="imagelinks-box" onkeypress='check_for_escape(event, "imagelinks-box")'>
+To save, copy the image name below, then right click, "save as", paste the image name and save
+<div class="imagelinks-div" id="imagelinks-div">
+
+</div>
+<p style="text-align: right;">
+<button type='button' onclick='javascript:close_popup("imagelinks-box")' >Close</button>
+</p>
+</div>
+
+<!--  --- SHOW HELP BOX --- -->
+
+<div class="about-box" id="about-box" onkeypress='check_for_escape(event, "about-box")'>
+<b>Google Maps Explore</b><BR>
+2006 La Ouiche<BR><HR>
+
+Special thanks to Marengo, Google and GMaps.<BR>
+<hr>
+TrekBuddy map :
+<ul>
+    <li>First select from the upper form where do you want to start, and the resolution of the image (which will be a slice in fact).</li>
+    <li>Now it is possible to navigate : move on your map, zoom, and display an overview by clicking the arrow on the bottom left (just upper the GPX button) are possible actions.</li>    
+    <li>You can from there enter a map name, and specify how much slices you want (you will get all links for all your slices). 
+    Note that the current displayed image is the top left image, and all the others slices will be the images on the right and bottom from this one.</li>
+    <li>Click on the ".MAP" button and copy the content to the same file name, it is the calibration data.</li>
+    <li>Click on the ".GIF" button. All the links to the slices are displayed. You will have to copy the name of each image and 'save as' the link using this name.</li>
+    <li>Now you have all needed for a complete map but some work remains (!) : Convert the slices to PNG, create a .set file, and organize all this for TrekBuddy!
+    (or you can merge big image files and cut them in smaller slices with TBCutter, that's usefull for large maps ;)
+</ul>    
+<hr>
+Waypoint feature :
+<ul>    
+    <li>Click on the map to add a waypoint.  Enter some text against it on the list to the left of the map.
+    Click the waypoint again to remove it, or hold it to move it.</li>
+    <li>To save a GPX file, press "GPX" and copy and paste the displayed XML to a text editor, and then save it.
+    The GPX file uses waypoints and can be read in TrekBuddy</li>
+</ul>
+<p style="text-align: right;">
+<a id="aboutClose" href="javascript:close_popup('about-box');">close</a>&nbsp;
+</p>
+</div>
+ 
+  <form name="FORM1" target="MAP" method="GET" action="map.html">
+    <table>
+      <tr>
+        <td height="600" width="270" valign="top" nowrap>
+          <table width="270">
+          <tr><td>
+          <div id="staticmap" style="width:270px;">
+            <div id="curpos" style="font-family:Arial;font-size:12px;"></div>
+            <div><hr><div>
+            <div id="maptunes"> 
+            	<font face="Arial" size="2">Give a name to the map</font>
+            	<BR/>
+                <font face="Arial" size="3">Map name&nbsp;&nbsp;</font><input type="text" size=18 name="mapname" onchange="updateLinksNames()">
+            </div>
+            <div><font face="Arial" size="2">Number of slices (current is top-left slice) </font></div>
+            <div id="numberHslices">
+                <font face="Arial" size="3">Horizontally&nbsp;</font><input type="text" size=2 name="horizontalslices" onchange="updateLinksHorizontal()" value="1">
+            </div>
+            <div id="numberVslices">
+                <font face="Arial" size="3">Vertically&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><input type="text" size=2 name="verticalslices" onchange="updateLinksVertical()" value="1">
+            </div>            
+            <div><font face="Arial" size="2">Click the button below to get the calibration file</font></div>
+            <div id="mapbuttondiv">
+                <font face="Arial" size="3">Map file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font><button id="mapButton" type="button" onclick="generate_mapfile(0)">Paris.map</button>
+            </div>
+            <div><font face="Arial" size="2">Click below to get the gif images</font></div>
+            <div id="gifbuttondiv">
+                <font face="Arial" size="3">Gif slices&nbsp;&nbsp;&nbsp;</font><button id="gifButton" type="button" onclick="generate_imagelinks(0)">Paris_0_0.gif ...</button>
+            </div>            
+            <div><hr><div>
+	    <div id="links"></div>
+	        <script language="javascript">
+	        <!--
+	        var screen_width = (window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth);
+	        var screen_height = (window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight);
+	        var coords_height=(screen_height/2)-20;
+	        if (coords_height<0) coords_height=100;
+	        document.write("<div id='coords' style='background:#eee;padding-left:20px;width:250px;height:" + coords_height + "px;overflow:auto'>");
+	        // -->
+	        </script>
+	    </div>   
+          </div>
+          </td></tr>
+          </table>
+        </td>
+        <td valign="bottom">
+          <div id="map"></div>
+        </td>
+      </tr>
+    </table>
+    <div><hr><div>
+    <div id="buttons">
+	<button id="gpxButton" type="button" title="Generate waypoints file" onclick="generate_gpx(0)" >GPX</button>&nbsp;
+	<button type="button" title="Tools" onclick="javascript:show_menu()">Tools</button>&nbsp;
+	<button type="button" title="Show quick help" onclick="javascript:show_help()">Help</button>&nbsp;
+    </div>
+  </form>
+  </body>
+</html>
