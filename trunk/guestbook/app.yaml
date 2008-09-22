@@ -3,6 +3,8 @@ version: 1
 runtime: python
 api_version: 1
 
+# to upload, cd to dir above guestbook
+# python appcfg.py update guestbook
 handlers:
 #- url: /static
 #  static_dir: static
@@ -14,6 +16,9 @@ handlers:
   script: guestbook.py
 - url: /sign
   script: guestbook.py
+
+- url: /html
+  static_dir: html
 
 - url: /images/
   static_dir: images
