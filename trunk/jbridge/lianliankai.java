@@ -7,9 +7,9 @@ import java.awt.Point;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.util.*;
-import cn.client.*;
 
-public class sbridge {
+// TODO: computer help to find matched pair
+public class lianliankai {
 	BufferedImage image, left, right, up, down;
 	ImageSearch igs;
 	String [][] cards = new String[4][13];
@@ -17,7 +17,7 @@ public class sbridge {
 	JFrame capture;
 	JPanel panel;
 	Robot robot;
-	sbridge(){
+	lianliankai(){
 		for(int i=0;i<4;i++)for(int j=0;j<13;j++)cards[i][j] = "?";
 		capture = new JFrame();
 		capture.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -69,7 +69,7 @@ public class sbridge {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		new sbridge();
+		new lianliankai();
 
 	}
 	void find(BufferedImage img){
@@ -128,10 +128,8 @@ public class sbridge {
 				right = rotate90(image.getSubimage(x+50, y-10, w, h));
 				up = image.getSubimage(x, y-100, w, h);
 				down = image.getSubimage(x, y-20, w, h);
-				find(up);
-				find(down);
-				find(left);
-				find(right);
+				//find(up);
+
 				
 
 				panel.repaint();
