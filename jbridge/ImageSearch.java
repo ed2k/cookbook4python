@@ -3,7 +3,7 @@ import java.io.File;
 import java.awt.Point;
 import javax.imageio.ImageIO;
 
-//all image sameples are at cards.png
+//all image samples are at cards.png
 public class ImageSearch {
 	int startx, starty;
 	BufferedImage[] smallCards, bigCards, smallSuits, bigSuits;
@@ -12,7 +12,7 @@ public class ImageSearch {
 	static String trans2 = "SHDC";
 	
 	ImageSearch(){
-		String root= "";
+		String root= ".\\";
 		smallCards = new BufferedImage[13];
 		bigCards = new BufferedImage[13];
 		smallSuits = new BufferedImage[4];
@@ -70,7 +70,6 @@ public class ImageSearch {
 		return c;
 	}
 	private void find(String[] src, BufferedImage image ) {
-		// TODO Auto-generated method stub
 		for(int y=0;y<(image.getHeight()-src.length);y++){
 			StringBuffer sb = new StringBuffer();
 			for(int x=0;x<image.getWidth();x++){
@@ -92,23 +91,21 @@ public class ImageSearch {
 	}
 	class MatchBlue implements PixelOpts {
 
-		@Override
+		
 		public boolean match(int a, int b) {
-			// TODO Auto-generated method stub
 			return getB(a) == getB(b);
 		}
 		
 	}
 	class PixelMatch implements PixelOpts{
 
-		@Override
+		
 		public boolean match(int a, int b) {
-			// TODO Auto-generated method stub
 			return a == b;
 		}
 		
 	}
-	public Point isIn(BufferedImage src, BufferedImage image, int initx,int inity, int width, int height, PixelOpts op){
+	static public Point isIn(BufferedImage src, BufferedImage image, int initx,int inity, int width, int height, PixelOpts op){
 		if (src.getHeight()> height || src.getWidth()>width)return null;
 		if ((initx+src.getWidth())> image.getWidth() || (inity+src.getHeight())> image.getHeight()) return null;
 		for(int y=inity; y<(inity+height-src.getHeight());y++){
@@ -120,8 +117,7 @@ public class ImageSearch {
 		return null;
 	}
 
-	private boolean match(BufferedImage src, BufferedImage image, int startx, int starty, PixelOpts op) {
-		// TODO Auto-generated method stub
+	static private boolean match(BufferedImage src, BufferedImage image, int startx, int starty, PixelOpts op) {
 		for(int i=0;i<src.getWidth();i++)for(int j=0;j<src.getHeight();j++){
 			if(!op.match(src.getRGB(i, j),image.getRGB(startx+i, starty+j))) return false;
 		}
@@ -129,7 +125,6 @@ public class ImageSearch {
 	}
 
 	private boolean matchAscii(String[] src, BufferedImage image, int startx, int starty) {
-		// TODO Auto-generated method stub
 		for(int i=0;i<src[0].length();i++)for(int j=0;j<src.length;j++){
 			int y = starty + j;
 			if (y > image.getHeight())return false;
