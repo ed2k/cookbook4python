@@ -3,13 +3,16 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.awt.Point;
+import java.io.File;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.util.*;
 
 // TODO: computer help to find matched pair
 public class lianliankai {
+	BufferedImage[] smallCards = new BufferedImage[40];
 	BufferedImage image, left, right, up, down;
 	ImageSearch igs;
 	String [][] cards = new String[4][13];
@@ -18,7 +21,7 @@ public class lianliankai {
 	JPanel panel;
 	Robot robot;
 	lianliankai(){
-		for(int i=0;i<4;i++)for(int j=0;j<13;j++)cards[i][j] = "?";
+		//for(int i=0;i<4;i++)for(int j=0;j<13;j++)cards[i][j] = "?";
 		capture = new JFrame();
 		capture.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//Toolkit kit = Toolkit.getDefaultToolkit();
@@ -27,33 +30,24 @@ public class lianliankai {
 		//Rectangle rect = new Rectangle(d);
 		
 		igs = new ImageSearch();
+		try{		
+			BufferedImage base = ImageIO.read(new File("lianliankai.png"));
+			for (int row=0;row<4;row++) for(int col=0;col<10;col++){
+				smallCards[row*10+col] = base.getSubimage(col*39+2,row*35+2, 34, 31);
+			}
+		} catch (Exception e) { e.printStackTrace(); }
         
-		//		for(int j=0;j<9;j++){
-//			StringBuffer sb = new StringBuffer();
-//			for(int i=0;i<8;i++){
-//				int p = source.getRGB(i, j);
-//				sb.append(scale2ascii(p));
-//			}
-//			src[j] = sb.toString();
-//			System.out.println(src[j]);
-//		}
 		panel = new JPanel() {
 			public void paintComponent(Graphics g) {
-				if (left == null)return;
 				g.drawImage(left, 0, 0,  this);
 				g.drawImage(right, 50, 0, this);
 				g.drawImage(up, 100, 0, this);
 				g.drawImage(down, 150, 0,  this);
 				g.drawImage(image, 0,60,this);
-				//g.drawRect(startx, starty, 8, 9);
-				//g.drawImage(source, 200,0, this);
-				for (int i=0;i<13;i++){
-					g.drawImage(igs.bigCards[i],200+i*10,0, this);
+				for (int i=0;i<4;i++)for (int j=0;j<10;j++){
+					g.drawImage(smallCards[i*10+j],300+38*i,j*35, this);
 				}
-				for (int i=0;i<4;i++){
-					g.drawImage(igs.bigSuits[i],200+i*10,11, this);
-				}
-				g.drawImage(igs.bidImage,200,20,this);
+
 			}
 		};
 		panel.setOpaque(true);
@@ -84,16 +78,7 @@ public class lianliankai {
 		c = igs.findBigCard(img);
 		if (c == 0) return;
 		s.append(c);
-		Card card = new Card(s.toString());
-		int suit = card.getColour();
-		int rank = card.getValue()-2;
-		if (cards[suit][rank].charAt(0) != '?') return;
-		cards[suit][rank] = card.rank();
-		System.out.print(card.toString()+" ");
-		for (int i =0;i<13;i++){
-			System.out.print(cards[suit][i]);
-		}
-		System.out.println();
+		
 		
 	}
 	public static BufferedImage rotate90(BufferedImage src){		

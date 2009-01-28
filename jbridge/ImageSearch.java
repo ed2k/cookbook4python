@@ -85,8 +85,8 @@ public class ImageSearch {
 			starty = y;
 		}			
 	}
-
-	public Point isIn(BufferedImage src, BufferedImage image, PixelOpts op) {
+	//determin if src image is within image
+	static public Point isIn(BufferedImage src, BufferedImage image, PixelOpts op) {
 		return isIn(src, image, 0,0, image.getWidth(),image.getHeight(), op);
 	}
 	class MatchBlue implements PixelOpts {
@@ -105,6 +105,7 @@ public class ImageSearch {
 		}
 		
 	}
+	//determin if src image is within image
 	static public Point isIn(BufferedImage src, BufferedImage image, int initx,int inity, int width, int height, PixelOpts op){
 		if (src.getHeight()> height || src.getWidth()>width)return null;
 		if ((initx+src.getWidth())> image.getWidth() || (inity+src.getHeight())> image.getHeight()) return null;
