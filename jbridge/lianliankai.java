@@ -13,7 +13,9 @@ import java.util.*;
 // TODO: computer help to find matched pair
 public class lianliankai {
 	BufferedImage[] smallCards = new BufferedImage[40];
-	BufferedImage image, left, right, up, down;
+	BufferedImage[][] originCards = new BufferedImage[10][14];
+	int[] found = new int[40];
+	BufferedImage image;
 	ImageSearch igs;
 	String [][] cards = new String[4][13];
 	int startx,starty;
@@ -26,28 +28,30 @@ public class lianliankai {
 		capture.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		//Toolkit kit = Toolkit.getDefaultToolkit();
 		//final Dimension d = kit.getScreenSize();
-		capture.setSize(500,500);
-		//Rectangle rect = new Rectangle(d);
+		capture.setSize(40*14,500);
 		
 		igs = new ImageSearch();
 		try{		
 			BufferedImage base = ImageIO.read(new File("lianliankai.png"));
+			int delta = 4;
 			for (int row=0;row<4;row++) for(int col=0;col<10;col++){
-				smallCards[row*10+col] = base.getSubimage(col*39+2,row*35+2, 34, 31);
+				smallCards[row*10+col] = base.getSubimage(col*39+delta,row*35+delta, 38-delta-delta, 35-delta-delta);
 			}
 		} catch (Exception e) { e.printStackTrace(); }
-        
+		for (int i=0;i<40;i++){
+			found[i] = -1;
+		}      
 		panel = new JPanel() {
 			public void paintComponent(Graphics g) {
-				g.drawImage(left, 0, 0,  this);
-				g.drawImage(right, 50, 0, this);
-				g.drawImage(up, 100, 0, this);
-				g.drawImage(down, 150, 0,  this);
-				g.drawImage(image, 0,60,this);
-				for (int i=0;i<4;i++)for (int j=0;j<10;j++){
-					g.drawImage(smallCards[i*10+j],300+38*i,j*35, this);
+				//g.drawImage(image, 0,60,this);
+				for (int i=0;i<10;i++)for (int j=0;j<14;j++){
+					g.drawImage(originCards[i][j],40*j,60+i*40, this);
 				}
-
+				for (int i=0;i<40;i++){
+					if (found[i]!=-1){
+					  g.drawImage(smallCards[found[i]],38*i,0, this);
+					} else g.drawImage(smallCards[0],38*i,0, this);
+				}
 			}
 		};
 		panel.setOpaque(true);
@@ -55,9 +59,9 @@ public class lianliankai {
 		//panel.repaint();
 		capture.getContentPane().add(panel);
 		capture.setVisible(true);	
-		
+
 		Timer t = new Timer();
-		t.scheduleAtFixedRate(new T(), 1000, 1000);
+		t.schedule(new T(), 100, 2000);
 	}
 	/**
 	 * @param args
@@ -66,21 +70,7 @@ public class lianliankai {
 		new lianliankai();
 
 	}
-	void find(BufferedImage img){
-		if (igs.findBidImage(img) != null){
-			for(int i=0;i<4;i++)for(int j=0;j<13;j++)cards[i][j] = "?";
-			return;
-		}
-		StringBuffer s = new StringBuffer();
-		char c = igs.findBigSuit(img);
-		if (c == 0)	return;
-		s.append(c);
-		c = igs.findBigCard(img);
-		if (c == 0) return;
-		s.append(c);
-		
-		
-	}
+
 	public static BufferedImage rotate90(BufferedImage src){		
 		int nw = src.getHeight();
 		BufferedImage tgt = new BufferedImage(nw,src.getWidth(),BufferedImage.TYPE_INT_ARGB);
@@ -102,20 +92,26 @@ public class lianliankai {
 			try {
 				if (robot == null)robot = new Robot();
 				//TODO auto align to table
-				Point p = new Point(281,200);
-				image = robot.createScreenCapture(new Rectangle(p.x+200,p.y+200));
+				Point p = new Point(20,100);
+				image = robot.createScreenCapture(new Rectangle(p.x+14*39,p.y+10*35));
 				image.flush();
 				//adjustTablePos();
 				image = image.getSubimage(p.x, p.y, image.getWidth()-p.x, image.getHeight()-p.y);
-				int w = 50,h=50;
-				int x = 100,y=100;
-				left = rotate90(image.getSubimage(x-100, y-10, w, h));
-				right = rotate90(image.getSubimage(x+50, y-10, w, h));
-				up = image.getSubimage(x, y-100, w, h);
-				down = image.getSubimage(x, y-20, w, h);
-				//find(up);
-
-				
+				for (int row=0;row<10;row++) for(int col=0;col<14;col++){
+					originCards[row][col] = image.getSubimage(col*39,row*35, 39, 35);
+				}
+				for (int i=0;i<40;i++){
+					found[i] = -1;
+				}   
+				int idx = 0;
+				for(int i=0;i<40;i++){
+					if (igs.isIn(smallCards[i], image)){
+						System.out.print(" " +i);
+						found[idx] = i;
+						idx++;
+					}
+				}
+				System.out.println(" ");
 
 				panel.repaint();
 			} catch (Exception e) {

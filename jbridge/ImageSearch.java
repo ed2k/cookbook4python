@@ -89,21 +89,21 @@ public class ImageSearch {
 	static public Point isIn(BufferedImage src, BufferedImage image, PixelOpts op) {
 		return isIn(src, image, 0,0, image.getWidth(),image.getHeight(), op);
 	}
-	class MatchBlue implements PixelOpts {
+	public boolean isIn(BufferedImage src, BufferedImage img) {
+		PixelMatch op = new PixelMatch();
+		if(null ==  isIn(src,img, op))return false;
+		return true;
+	}
 
-		
+	class MatchBlue implements PixelOpts {	
 		public boolean match(int a, int b) {
 			return getB(a) == getB(b);
-		}
-		
+		}		
 	}
 	class PixelMatch implements PixelOpts{
-
-		
 		public boolean match(int a, int b) {
 			return a == b;
-		}
-		
+		}		
 	}
 	//determin if src image is within image
 	static public Point isIn(BufferedImage src, BufferedImage image, int initx,int inity, int width, int height, PixelOpts op){
