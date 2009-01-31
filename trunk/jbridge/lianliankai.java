@@ -12,6 +12,7 @@ import java.util.*;
 
 // TODO: computer help to find matched pair
 public class lianliankai {
+	int DELTA = 4; // distance to the edge
 	BufferedImage[] smallCards = new BufferedImage[40];
 	BufferedImage[][] originCards = new BufferedImage[10][14];
 	int[] found = new int[40];
@@ -33,9 +34,9 @@ public class lianliankai {
 		igs = new ImageSearch();
 		try{		
 			BufferedImage base = ImageIO.read(new File("lianliankai.png"));
-			int delta = 4;
+
 			for (int row=0;row<4;row++) for(int col=0;col<10;col++){
-				smallCards[row*10+col] = base.getSubimage(col*39+delta,row*35+delta, 38-delta-delta, 35-delta-delta);
+				smallCards[row*10+col] = base.getSubimage(col*39+DELTA,row*35+DELTA, 38-DELTA-DELTA, 35-DELTA-DELTA);
 			}
 		} catch (Exception e) { e.printStackTrace(); }
 		for (int i=0;i<40;i++){
@@ -61,10 +62,10 @@ public class lianliankai {
 		capture.setVisible(true);	
 
 		Timer t = new Timer();
-		t.schedule(new T(), 100, 2000);
+		t.scheduleAtFixedRate(new T(), 100, 2000);
 	}
 	/**
-	 * @param args
+	 * @param args 
 	 */
 	public static void main(String[] args) {
 		new lianliankai();
@@ -85,6 +86,62 @@ public class lianliankai {
 		Point p = igs.findTableCorner(image);
 		if (p!= null)System.out.println(p.toString()); 
 	}
+	// find any image in templ from src
+	Point findImage(BufferedImage[] templ, BufferedImage src){
+		for(int i=0;i<templ.length;i++){
+			Point p = igs.findImage(templ[i], src);
+			if (p != null){
+				return p;
+			}
+		}			
+		return null;
+	}
+	public Point getCorner(BufferedImage[] templ, BufferedImage src){
+		int leftX=0, leftY=0;
+		Point p = findImage(templ,src);
+		if (p==null) return new Point(leftX,leftY);
+		leftX = p.x;
+		leftY = p.y;
+		while (true) {
+			int nx = leftX+templ[0].getWidth();
+			BufferedImage img = src.getSubimage(0,0,nx,src.getHeight());
+			Point n = findImage(templ,img);
+			if (n==null)break;
+			leftX = n.x;
+		}
+		
+		while (true) {
+			int ny = leftY+templ[0].getHeight();
+			BufferedImage img = src.getSubimage(0,0,src.getWidth(),ny);
+			Point n = findImage(templ,img);
+			if (n==null)break;
+			leftY = n.y;
+		}	
+		return new Point(leftX,leftY);
+	}
+	public Point getCornerDownRight(BufferedImage[] templ, BufferedImage src){
+		int leftX=src.getWidth(), leftY=src.getHeight();
+		Point p = findImage(templ,src);
+		if (p==null) return new Point(leftX,leftY);
+		leftX = p.x;
+		leftY = p.y;
+		while (true) {
+			int nx = leftX+templ[0].getWidth();
+			BufferedImage img = src.getSubimage(nx,0,src.getWidth()-nx,src.getHeight());
+			Point n = findImage(templ,img);
+			if (n==null)break;
+			leftX = n.x;
+		}
+		
+		while (true) {
+			int ny = leftY+templ[0].getHeight();
+			BufferedImage img = src.getSubimage(0,ny,src.getWidth(),src.getHeight()-ny);
+			Point n = findImage(templ,img);
+			if (n==null)break;
+			leftY = n.y;
+		}	
+		return new Point(leftX+templ[0].getWidth(),leftY+templ[0].getHeight());
+	}	
 	class T extends TimerTask{
 			
 		public void run() {
@@ -92,19 +149,31 @@ public class lianliankai {
 			try {
 				if (robot == null)robot = new Robot();
 				//TODO auto align to table
-				Point p = new Point(20,100);
-				image = robot.createScreenCapture(new Rectangle(p.x+14*39,p.y+10*35));
+				Point p = new Point(0,0);
+				image = robot.createScreenCapture(new Rectangle(0,0,700,600));
+				p = getCorner(smallCards,image);
+				int left = p.x,up = p.y;
+				if (left>=DELTA)left-=DELTA;
+				if(up>=DELTA)up-=DELTA;
 				image.flush();
 				//adjustTablePos();
-				image = image.getSubimage(p.x, p.y, image.getWidth()-p.x, image.getHeight()-p.y);
-				for (int row=0;row<10;row++) for(int col=0;col<14;col++){
+				int w = 14*39, h = 10*35;
+				if ((left+w)>image.getWidth())w=image.getWidth()-left;
+				if ((up+h)>image.getHeight())h=image.getHeight()-up;
+				image = image.getSubimage(left, up, w, h);
+				
+				System.out.println(p.x+" "+p.y);
+				for (int row=0;row<originCards.length;row++) for(int col=0;col<originCards[row].length;col++){
+					int right = (col+1)*39, down = (row+1)*35;
+					if (right<=image.getWidth() && down<=image.getHeight()){
 					originCards[row][col] = image.getSubimage(col*39,row*35, 39, 35);
+					}
 				}
 				for (int i=0;i<40;i++){
 					found[i] = -1;
 				}   
 				int idx = 0;
-				for(int i=0;i<40;i++){
+				for(int i=0;i<smallCards.length;i++){
 					if (igs.isIn(smallCards[i], image)){
 						System.out.print(" " +i);
 						found[idx] = i;

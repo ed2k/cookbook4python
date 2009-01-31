@@ -94,6 +94,10 @@ public class ImageSearch {
 		if(null ==  isIn(src,img, op))return false;
 		return true;
 	}
+	public Point findImage(BufferedImage src, BufferedImage img) {
+		PixelMatch op = new PixelMatch();
+		return  isIn(src,img, op);
+	}
 
 	class MatchBlue implements PixelOpts {	
 		public boolean match(int a, int b) {
