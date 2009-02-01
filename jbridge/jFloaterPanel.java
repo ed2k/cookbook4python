@@ -9,11 +9,11 @@ import cn.client.*;
 
 
 //Panel to hold buttons leds and mine field
-public class jMine extends Panel {
+public class jFloaterPanel extends Panel {
    MineCanvas mineCanvas=new MineCanvas();
    Panel palette = new Panel(new FlowLayout());
 
-   jMine() {
+   jFloaterPanel() {
       setLayout(new BorderLayout());
       // Layout components
       add(mineCanvas, BorderLayout.CENTER);

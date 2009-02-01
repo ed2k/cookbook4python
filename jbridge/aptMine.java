@@ -6,7 +6,7 @@ import java.net.*;
 public class aptMine extends Applet {
    Button a, b;
    int level=0;
-   jMine  assoc;
+   jFloaterPanel  assoc;
 
 
   boolean isStandalone = false;
@@ -15,7 +15,7 @@ public class aptMine extends Applet {
   public void init() {
       setLayout(new BorderLayout());
 
-      assoc = new jMine();
+      assoc = new jFloaterPanel();
       add("Center", assoc);
   }
    public void destroy() {

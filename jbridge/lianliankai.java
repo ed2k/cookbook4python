@@ -3,7 +3,12 @@ import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.image.BufferedImage;
 import java.awt.Point;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
@@ -12,10 +17,13 @@ import java.util.*;
 
 // TODO: computer help to find matched pair
 public class lianliankai {
-	int DELTA = 4; // distance to the edge
-	BufferedImage[] smallCards = new BufferedImage[40];
+	static int DELTA = 5; // distance to the edge
+	static int CardWidth = 38-DELTA-DELTA;
+	static int CardHeight = 35-DELTA-DELTA;
+	Point tableUperCorner;
+	BufferedImage[] smallCards = new BufferedImage[42];
 	BufferedImage[][] originCards = new BufferedImage[10][14];
-	int[] found = new int[40];
+	int[][] logicBoard = new int[10][14];
 	BufferedImage image;
 	ImageSearch igs;
 	String [][] cards = new String[4][13];
@@ -36,23 +44,25 @@ public class lianliankai {
 			BufferedImage base = ImageIO.read(new File("lianliankai.png"));
 
 			for (int row=0;row<4;row++) for(int col=0;col<10;col++){
-				smallCards[row*10+col] = base.getSubimage(col*39+DELTA,row*35+DELTA, 38-DELTA-DELTA, 35-DELTA-DELTA);
+				int r = (int) (row*35.5+DELTA);
+				smallCards[row*10+col+1] = base.getSubimage(col*39+DELTA,r, CardWidth, CardHeight);
 			}
+			smallCards[41] = base.getSubimage(10*39+DELTA,DELTA, CardWidth, CardHeight);
+			smallCards[0] = base.getSubimage(10*39+DELTA,DELTA+36, CardWidth, CardHeight);
 		} catch (Exception e) { e.printStackTrace(); }
-		for (int i=0;i<40;i++){
-			found[i] = -1;
-		}      
+    
 		panel = new JPanel() {
 			public void paintComponent(Graphics g) {
-				//g.drawImage(image, 0,60,this);
-				for (int i=0;i<10;i++)for (int j=0;j<14;j++){
-					g.drawImage(originCards[i][j],40*j,60+i*40, this);
+				for (int i=0;i<logicBoard.length;i++)for (int j=0;j<logicBoard[i].length;j++){
+					//g.drawImage(originCards[i][j],40*j,60+i*40, this);
+					g.drawImage(smallCards[logicBoard[i][j]],35*j,60+i*32, this);
 				}
-				for (int i=0;i<40;i++){
-					if (found[i]!=-1){
-					  g.drawImage(smallCards[found[i]],38*i,0, this);
-					} else g.drawImage(smallCards[0],38*i,0, this);
+				for (int i=0;i<5;i++){
+					g.drawImage(smallCards[i+37],38*(i+5),0, this);
 				}
+				for (int i=0;i<5;i++)
+					g.drawImage(smallCards[i],38*i,0, this);
+				//g.drawImage(image, 0,0,this);
 			}
 		};
 		panel.setOpaque(true);
@@ -61,8 +71,143 @@ public class lianliankai {
 		capture.getContentPane().add(panel);
 		capture.setVisible(true);	
 
-		Timer t = new Timer();
-		t.scheduleAtFixedRate(new T(), 100, 2000);
+		//Timer t = new Timer();
+		//t.scheduleAtFixedRate(new T(), 100, 2000);
+		
+		Runnable server = new Runnable() {
+			@Override
+			public void run() {
+				try {
+					ServerSocket serverSocket = new ServerSocket(4444);
+					while (true){
+						Socket clientSocket = null;
+						clientSocket = serverSocket.accept();
+						PrintWriter out = new PrintWriter(
+			                      clientSocket.getOutputStream(), true);
+						BufferedReader in = new BufferedReader(
+						                        new InputStreamReader(
+						                            clientSocket.getInputStream()));
+						String inputLine, outputLine="";
+				
+						try {
+						while ((inputLine = in.readLine()) != null) {	
+							outputLine = processInput(inputLine);
+						    out.println(outputLine);
+						    if (outputLine.equals("Bye."))
+						        break;
+						}  } catch (Exception e) {
+							System.out.println(e.getMessage());
+						}	
+					}
+				} catch (Exception e) {
+				    System.out.println(e.getMessage());
+				    System.exit(-1);
+				}
+				
+			}
+			
+		};
+		new Thread(server).start();
+	}
+	protected String processInput(String inputLine) {
+		if(inputLine.equals("calibrate")){
+			return calibrate();
+		} else if(inputLine.equals("update")){
+			return update();
+		} else if(inputLine.startsWith("mark ")){
+			String[] r =inputLine.split(" ");
+			mark(Integer.parseInt(r[1]),Integer.parseInt(r[2]));
+			mark(Integer.parseInt(r[3]),Integer.parseInt(r[4]));
+		}
+		return "done";
+	}
+	private void mark(int i, int j) {
+		// TODO Auto-generated method stub
+		
+		//panel.repaint();
+	}
+	private String update() {
+		try {
+			if (robot == null)robot = new Robot();
+			// auto align to table
+			image = robot.createScreenCapture(new Rectangle(0,0,700,600));
+			
+			Point p = tableUperCorner;
+			int w = 14*39, h = (int)((double)10*(double)35.5);
+			image.flush();
+			image = image.getSubimage(p.x, p.y, w, h);
+			//image.flush();
+			//image = robot.createScreenCapture(new Rectangle(p.x,p.y,w,h));
+            System.out.println(p.x+"-up-"+p.y);
+			splitImage();
+			
+			panel.repaint();
+			return getLogicBoard();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	private String calibrate() {
+		try {
+			if (robot == null)robot = new Robot();
+			// auto align to table
+			Point p = new Point(0,0);
+			image = robot.createScreenCapture(new Rectangle(0,0,700,600));
+			//image.flush();
+			p = getCorner(smallCards,image);
+			int left = p.x,up = p.y;
+			if (left>=DELTA)left-=DELTA;
+			if(up>=DELTA)up-=DELTA;
+
+			//adjustTablePos();
+			int w = 14*39, h = (int)((double)10*(double)35.5);
+			if ((left+w)>image.getWidth())w=image.getWidth()-left;
+			if ((up+h)>image.getHeight())h=image.getHeight()-up;
+			//image = robot.createScreenCapture(new Rectangle(left,up,w,h));
+			image = image.getSubimage(left, up, w, h);
+			//image.flush();
+			tableUperCorner = new Point(left,up);
+			System.out.println(left+" "+up);
+			splitImage();
+			
+			panel.repaint();
+			return getLogicBoard();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	private String getLogicBoard() {
+		String s = "";
+		for (int row=0;row<originCards.length;row++) {
+			for(int col=0;col<originCards[row].length;col++){	
+				int i = findImageIdx(smallCards,originCards[row][col]);
+				logicBoard[row][col]=i;
+				s += (i+" "); 				
+			}
+			s += ",";
+		}	
+		return s;
+	}
+	private int findImageIdx(BufferedImage[] templ,	BufferedImage img) {
+		for(int i=0;i<templ.length;i++){
+			if (igs.isIn(templ[i], img)){
+				return i;
+			}
+		}		
+		return 0;
+	}
+	private void splitImage() {
+		for (int row=0;row<originCards.length;row++) for(int col=0;col<originCards[row].length;col++){
+			int right = (col+1)*39, down = (row+1)*35;
+			if (right<=image.getWidth() && down<=image.getHeight()){
+				int c = col*(39), r = (int)((double)row*(double)(35.5)), w = 39, h=35;
+				if ( (c+w)> image.getWidth())w=image.getWidth()-c;
+				if ((r+h) > image.getHeight())h=image.getHeight()-r;
+				originCards[row][col] = image.getSubimage(c,r,w,h);
+			}
+		}
 	}
 	/**
 	 * @param args 
@@ -72,20 +217,6 @@ public class lianliankai {
 
 	}
 
-	public static BufferedImage rotate90(BufferedImage src){		
-		int nw = src.getHeight();
-		BufferedImage tgt = new BufferedImage(nw,src.getWidth(),BufferedImage.TYPE_INT_ARGB);
-
-		for(int x = 0;x<src.getWidth();x++)for (int y=0;y<nw;y++)
-			tgt.setRGB(nw-1-y, x, src.getRGB(x,y));
-		return tgt;
-	}
-	void adjustTablePos(){
-		image = robot.createScreenCapture(new Rectangle(800,500));
-		image.flush();
-		Point p = igs.findTableCorner(image);
-		if (p!= null)System.out.println(p.toString()); 
-	}
 	// find any image in templ from src
 	Point findImage(BufferedImage[] templ, BufferedImage src){
 		for(int i=0;i<templ.length;i++){
@@ -103,7 +234,7 @@ public class lianliankai {
 		leftX = p.x;
 		leftY = p.y;
 		while (true) {
-			int nx = leftX+templ[0].getWidth();
+			int nx = leftX;
 			BufferedImage img = src.getSubimage(0,0,nx,src.getHeight());
 			Point n = findImage(templ,img);
 			if (n==null)break;
@@ -111,7 +242,7 @@ public class lianliankai {
 		}
 		
 		while (true) {
-			int ny = leftY+templ[0].getHeight();
+			int ny = leftY;
 			BufferedImage img = src.getSubimage(0,0,src.getWidth(),ny);
 			Point n = findImage(templ,img);
 			if (n==null)break;
@@ -130,7 +261,7 @@ public class lianliankai {
 			BufferedImage img = src.getSubimage(nx,0,src.getWidth()-nx,src.getHeight());
 			Point n = findImage(templ,img);
 			if (n==null)break;
-			leftX = n.x;
+			leftX += nx+n.x;
 		}
 		
 		while (true) {
@@ -138,7 +269,7 @@ public class lianliankai {
 			BufferedImage img = src.getSubimage(0,ny,src.getWidth(),src.getHeight()-ny);
 			Point n = findImage(templ,img);
 			if (n==null)break;
-			leftY = n.y;
+			leftY = ny+n.y;
 		}	
 		return new Point(leftX+templ[0].getWidth(),leftY+templ[0].getHeight());
 	}	
@@ -147,41 +278,6 @@ public class lianliankai {
 		public void run() {
 			
 			try {
-				if (robot == null)robot = new Robot();
-				//TODO auto align to table
-				Point p = new Point(0,0);
-				image = robot.createScreenCapture(new Rectangle(0,0,700,600));
-				p = getCorner(smallCards,image);
-				int left = p.x,up = p.y;
-				if (left>=DELTA)left-=DELTA;
-				if(up>=DELTA)up-=DELTA;
-				image.flush();
-				//adjustTablePos();
-				int w = 14*39, h = 10*35;
-				if ((left+w)>image.getWidth())w=image.getWidth()-left;
-				if ((up+h)>image.getHeight())h=image.getHeight()-up;
-				image = image.getSubimage(left, up, w, h);
-				
-				System.out.println(p.x+" "+p.y);
-				for (int row=0;row<originCards.length;row++) for(int col=0;col<originCards[row].length;col++){
-					int right = (col+1)*39, down = (row+1)*35;
-					if (right<=image.getWidth() && down<=image.getHeight()){
-					originCards[row][col] = image.getSubimage(col*39,row*35, 39, 35);
-					}
-				}
-				for (int i=0;i<40;i++){
-					found[i] = -1;
-				}   
-				int idx = 0;
-				for(int i=0;i<smallCards.length;i++){
-					if (igs.isIn(smallCards[i], image)){
-						System.out.print(" " +i);
-						found[idx] = i;
-						idx++;
-					}
-				}
-				System.out.println(" ");
-
 				panel.repaint();
 			} catch (Exception e) {
 				e.printStackTrace();

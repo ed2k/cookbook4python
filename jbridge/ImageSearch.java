@@ -1,5 +1,7 @@
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.awt.Point;
 import javax.imageio.ImageIO;
 
@@ -139,7 +141,16 @@ public class ImageSearch {
 		}
 		return true;
 	}
-
+	// direction 0,row
+	static boolean isLine(BufferedImage image,int start, int direction){
+		return true;
+	}
+	static Point findLines(BufferedImage image,int startx, int starty){
+		for(int x=startx;x<image.getWidth();x++){
+			
+		}
+		return new Point(0,0);
+	}
 }
 
 interface PixelOpts {
