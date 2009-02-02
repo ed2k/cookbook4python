@@ -64,6 +64,15 @@ def findOne(board):
             pos = find(board,r,c)
             if pos is not None:
                 return [[r,c],pos]
+def findAll(board):
+    result = []
+    for r in xrange(len(board)):
+        for c in xrange(len(board[0])):
+            if board[r][c] == 0: continue
+            pos = find(board,r,c)
+            if pos is not None:
+                result+=[r,c]
+    return result
 
 import socket,time
 
@@ -77,20 +86,11 @@ while True:
     for line in r.split(',')[:-1]:
         a.append([int(i) for i in line.split()])
                   
-    result =  findOne(a)
-    if result is not None:
-        p1,p2 = result
-        print a[p1[0]][p1[1]],p1,a[p2[0]][p2[1]],p2
-        #s.send('mark '+' '.join(p1+p2)+'\n')
-        
-        for x in xrange(10):
-            for y in xrange(14):
-                if a[x][y] != 0:
-                    a[x][y] = 1           
-        a[p1[0]][p1[1]] = 88
-        a[p2[0]][p2[1]] = 88    
-    for r in a:
-        print '%2d,'*14 % tuple(r)    
-    time.sleep(2)
+    result =  findAll(a)
+    if len(result)>0:
+        print result
+        s.send('mark '+' '.join([str(x) for x in result])+'\n')
+        s.recv(1024)
+    time.sleep(1)
     s.send("update\n")
 

@@ -1,6 +1,10 @@
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.Point;
 import java.io.BufferedReader;
@@ -20,6 +24,7 @@ public class lianliankai {
 	static int DELTA = 5; // distance to the edge
 	static int CardWidth = 38-DELTA-DELTA;
 	static int CardHeight = 35-DELTA-DELTA;
+	Point[] marker = new Point[2];
 	Point tableUperCorner;
 	BufferedImage[] smallCards = new BufferedImage[42];
 	BufferedImage[][] originCards = new BufferedImage[10][14];
@@ -53,9 +58,11 @@ public class lianliankai {
     
 		panel = new JPanel() {
 			public void paintComponent(Graphics g) {
+				g.fillRect(0, 0, 600, 500);
 				for (int i=0;i<logicBoard.length;i++)for (int j=0;j<logicBoard[i].length;j++){
 					//g.drawImage(originCards[i][j],40*j,60+i*40, this);
-					g.drawImage(smallCards[logicBoard[i][j]],35*j,60+i*32, this);
+					if (logicBoard[i][j]==0) continue;
+					g.drawImage(smallCards[logicBoard[i][j]],35*j+DELTA,60+i*32+DELTA, this);
 				}
 				for (int i=0;i<5;i++){
 					g.drawImage(smallCards[i+37],38*(i+5),0, this);
@@ -63,6 +70,15 @@ public class lianliankai {
 				for (int i=0;i<5;i++)
 					g.drawImage(smallCards[i],38*i,0, this);
 				//g.drawImage(image, 0,0,this);
+				BasicStroke stroke = new BasicStroke(4.0f);
+				Graphics2D g2 = (Graphics2D) g;
+				g2.setStroke(stroke);			
+				if (marker [0] != null){
+					g.setColor(Color.orange);
+					for (int i=0;i<marker.length;i++){
+						g2.draw(new Rectangle2D.Double(marker[i].x*35, 60+marker[i].y*32, 35, 32));
+					}
+				}
 			}
 		};
 		panel.setOpaque(true);
@@ -115,16 +131,16 @@ public class lianliankai {
 		} else if(inputLine.equals("update")){
 			return update();
 		} else if(inputLine.startsWith("mark ")){
-			String[] r =inputLine.split(" ");
-			mark(Integer.parseInt(r[1]),Integer.parseInt(r[2]));
-			mark(Integer.parseInt(r[3]),Integer.parseInt(r[4]));
+			mark(inputLine.split(" "));
 		}
 		return "done";
 	}
-	private void mark(int i, int j) {
-		// TODO Auto-generated method stub
-		
-		//panel.repaint();
+	private void mark(String[] pos) {
+		marker = new Point[pos.length/2];
+		for(int i=0;i<marker.length;i++){
+			marker[i] = new Point(Integer.parseInt(pos[2*i+2]),Integer.parseInt(pos[2*i+1]));
+		}
+		panel.repaint();
 	}
 	private String update() {
 		try {
