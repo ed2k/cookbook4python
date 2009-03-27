@@ -1,4 +1,6 @@
-#labels hpgl,png,converter
+#labels hpgl,png,converter,python
+#a python program that converts HPGL to png image
+
 def getXY(line):
     a=line.split(',')
     y = int(a[1].strip()[:-1])
