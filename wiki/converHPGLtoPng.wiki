@@ -1,4 +1,6 @@
 #labels hpgl,png,converter,python
+{{{
+
 #a python program that converts HPGL to png image
 
 def getXY(line):
@@ -24,3 +26,5 @@ for line in open('C:\Users\aaa\Documents\Downloads\\A_S_A.hpgl').read().splitlin
         
 
 im.save("ttt.png","PNG")
+
+}}}
