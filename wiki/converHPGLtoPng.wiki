@@ -1,0 +1,24 @@
+#labels hpgl,png,converter
+def getXY(line):
+    a=line.split(',')
+    y = int(a[1].strip()[:-1])
+    x = int(a[0])
+    return (3000+y,5000+x)
+
+import os,sys
+import Image, ImageDraw
+size = 5000,5000
+im = Image.new("RGB", size,(255,255,255))
+draw = ImageDraw.Draw(im)
+
+
+cp = 0,0
+for line in open('C:\Users\aaa\Documents\Downloads\\A_S_A.hpgl').read().splitlines():
+    if line[:4] == 'PUPA': cp = getXY(line[4:])
+    elif line[:4] == 'PDPA':
+        xy = getXY(line[4:])
+        draw.line([cp,xy],fill=0)
+        cp = xy
+        
+
+im.save("ttt.png","PNG")
