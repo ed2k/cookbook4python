@@ -8,48 +8,7 @@ sys.path.append(os.path.dirname(filename))
 #personalizd settings in config.py
 import config
 reload(config)
-
-import telnetlib
-
-def rcmd(tn,cmd): return tn.write(cmd+'\r')
-def rcmd1(tn,cmd, prompt = '# '):
-    #print cmd
-    # try to clean up the buffer, sync
-    tn.read_until('xxx',0.1)    
-    tn.write(cmd+'\r')
-    r = tn.read_until(prompt,3)
-    if r and (len(r) > len(prompt)):
-        return r[:-len(prompt)]
-    return r
-
-class APGTelnet:
-        apg_prompt = '\x03>'
-        mml_prompt = '\r\n\x03<'
-        osmon_prompt = '\r\nOSmon> \x03:'
-        logmon_prompt = 'LOGMON> \x03:'
-
-        def __init__(self, tn):
-                self.tn = tn
-        def osmon_cmd(self, cmd):
-              return rcmd1(self.tn, cmd, self.osmon_prompt)  
-        def mml_cmd(self, cmd):
-              return rcmd1(self.tn, cmd, self.mml_prompt)
-        def apg_cmd(self, cmd):
-              return rcmd1(self.tn, cmd, self.apg_prompt)
-        
-def telnet_2_node(host, username, password, prompt = '>'):
-    tn = telnetlib.Telnet(host)
-    tn.set_debuglevel(1)
-    tn.read_until('login name:')
-    rcmd(tn, username)
-    tn.read_until('assword:')
-    rcmd(tn, password)
-    tn.read_until('omain:')
-    rcmd(tn,'')
-    tn.read_until('choose')
-    rcmd(tn,'')
-    tn.read_until(prompt)
-    return tn
+from config import Remote
 
 
 import traceback
@@ -163,9 +122,7 @@ class MyFrame(wx.Frame):
         wx.EVT_KEY_DOWN(self.chat, self.OnKeyDown)        
         wx.CallAfter(self.chat.SetFocus)
 
-        tn = telnet_2_node(*config.stp)
-        self.apgtn = APGTelnet(tn)
-        self.apgtn.mml_cmd('mml -a')
+        self.remote = Remote()
         
     # Take input from maco template
     def write(self, text):
@@ -175,20 +132,16 @@ class MyFrame(wx.Frame):
         while idx > -1:
             cmd = text[:idx+1]
             # need to take out unicode?
-            r = self.apgtn.mml_cmd(str(cmd))
+            r = self.remote.cmd(str(cmd))
             self.context._data.update({'_rlines':r})
             self.result.AddText(r)
             text = text[idx+1:]
             idx = text.find('\n')
         self.lineBuf = text
-
                 
     def OnRefresh(self, event):
-        self.codes['OnPaint'] = self.chat.GetText()
-        
+        self.codes['OnPaint'] = self.chat.GetText()        
         self.canvas.refresh()
-        #r = self.apgtn.mml_cmd('dpwsp;')
-        #self.code_panel.result.AddText(r)
     def OnSave(self, event):
         fn = os.path.join(os.path.dirname(filename),'cmdlogs.txt')
         f = file(fn,'w')
