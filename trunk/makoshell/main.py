@@ -101,12 +101,12 @@ class MyFrame(wx.Frame):
         self.result = self.code_panel.result
         self.btnRefresh = self.code_panel.btnRefresh
         self.btnSave = self.code_panel.btnSave
-#        lexer = Globals.mainframe.lexers.getNamedLexer('python')
-#        if lexer:
-#            lexer.colourize(self.result)
-#        lexer2 = Globals.mainframe.lexers.getNamedLexer('makotmp')
-#        if lexer2:
-#            lexer2.colourize(self.chat)
+        lexer = Globals.mainframe.lexers.getNamedLexer('python')
+        if lexer:
+            lexer.colourize(self.result)
+        lexer2 = Globals.mainframe.lexers.getNamedLexer('makotmp')
+        if lexer2:
+            lexer2.colourize(self.chat)
         
         self.splitter.SetMinimumPaneSize(10)
 #        self.splitter.SplitHorizontally(self.top, self.code_panel)
@@ -214,15 +214,150 @@ class mydebug():
         self.mwin.AddText(text)
         self.mwin.EnsureCaretVisible()
 
-w = MyFrame(win)
-w.SetSize((700,600))
-w.Show()
-w.splitter.SetSashPosition(10,True)
-w.chat.AddText(w.OpenCmdLog())
-ddd = mydebug(w)       
+ddd = ''
+def testNewShellWindow():
+    w = MyFrame(win)
+    w.SetSize((700,600))
+    w.Show()
+    w.splitter.SetSashPosition(10,True)
+    w.chat.AddText(w.OpenCmdLog())
+    ddd = mydebug(w)       
 
-#p = win.messagewindow
-#win.panel.showPage(tr('Messages'))
-#p.SetReadOnly(False)
-#p.SetText('')
+    #p = win.messagewindow
+    #win.panel.showPage(tr('Messages'))
+    #p.SetReadOnly(False)
+    #p.SetText('')
+
+from mixins.NCustomLexer import *
+
+class NewLexer(CustomLexer):
+    metaname = 'newlexer'    
+    casesensitive = True
+
+    keywords = ['include', 'def', 'namespace', 'inherit', 'call', 'doc',
+            'text', 'page']
+
+    preview_code = """Hello there ${username}, how are ya.  Lets see what your account says:
+
+${account()}
+
+<%def name="account()">
+    Account for ${username}:<br/>
+
+    % for row in accountdata:
+        Value: ${row}<br/>
+    % endfor
+</%def>
+"""
+
+    syl_tag = STYLE_CUSTOM + 1
+    syl_attrname = STYLE_CUSTOM + 2
+    syl_attrvalue = STYLE_CUSTOM + 3
+    syl_variable = STYLE_CUSTOM + 4
+    syl_symbol = STYLE_CUSTOM + 5
+    syl_tagtext = STYLE_CUSTOM + 7
+    syl_makotag = STYLE_CUSTOM + 8
+    syl_script_text = STYLE_CUSTOM + 9
+    syl_style_text = STYLE_CUSTOM + 10
+    syl_cdatatag = STYLE_CUSTOM + 11
+    
+    def initSyntaxItems(self):
+        self.addSyntaxItem('m_default',         'Default',              STYLE_DEFAULT,              self.STC_STYLE_TEXT)
+        self.addSyntaxItem('keyword',           'Keyword',              STYLE_KEYWORD,              self.STC_STYLE_KEYWORD1)
+        self.addSyntaxItem('tag',               'Tag',                  self.syl_tag,               self.STC_STYLE_TAG)
+        self.addSyntaxItem('attribute',         'Attribute Name',       self.syl_attrname,          self.STC_STYLE_ATTRNAME)
+        self.addSyntaxItem('attrvalue',         'Attribute Value',      self.syl_attrvalue,         self.STC_STYLE_ATTRVALUE)
+        self.addSyntaxItem('comment',           'Comment',              STYLE_COMMENT,              self.STC_STYLE_COMMENT)
+        self.addSyntaxItem('variable',          'Variable',             self.syl_variable,          'italic,fore:#FFDCFF')
+        self.addSyntaxItem('symbol',            'Symbol',               self.syl_symbol,            self.STC_STYLE_TAG1)
+        self.addSyntaxItem('tagtext',           'Tag Text',             self.syl_tagtext,           self.STC_STYLE_TEXT)
+        self.addSyntaxItem('makotag',           'Mako Tag',             self.syl_makotag,           self.STC_STYLE_KEYWORD2)
+        self.addSyntaxItem('script_text',       'Script Text',          self.syl_script_text,       self.STC_STYLE_COMMENT)
+        self.addSyntaxItem('style_text',        'Style Text',           self.syl_style_text,        self.STC_STYLE_COMMENT)
+        self.addSyntaxItem('cdatatag',          'CDATA Tag',            self.syl_cdatatag,          'fore:#FF833F')
+    
+        
+    def loadToken(self):
+        token_tag = TokenList([
+            (r'([\w\-:_.]+)\s*=\s*(%s|%s|\S+)' % (PATTERN_DOUBLE_STRING, PATTERN_SINGLE_STRING),
+                    [(1, self.syl_attrname), (2, self.syl_attrvalue)]),
+            (r'([\w\-:_.]+)\b(?!=)', self.syl_attrname),
+        ])
+            
+        return TokenList([
+            (r'<!--.*?-->', STYLE_COMMENT),
+            (re.compile(r'^(##.*?)$', re.M), [(1, STYLE_COMMENT)]),
+            (r'(<!\[CDATA\[)(.*?)(\]\]>)', 
+                [(1, self.syl_cdatatag), (3, self.syl_cdatatag)]),
+            (r'(<)(script)(.*?)(>)(.*?)(</)(script)(>)', 
+                [(1, self.syl_tag), (2, STYLE_KEYWORD), (3, token_tag),
+                (4, self.syl_tag), (5, self.syl_script_text), (6, self.syl_tag), 
+                (7, STYLE_KEYWORD), (8, self.syl_tag),
+                ]),
+            (r'(<)(style)(.*?)(>)(.*?)(</)(style)(>)', 
+                [(1, self.syl_tag), (2, STYLE_KEYWORD), (3, token_tag),
+                (4, self.syl_tag), (5, self.syl_style_text), (6, self.syl_tag), 
+                (7, STYLE_KEYWORD), (8, self.syl_tag),
+                ]),
+            (r'(</?%!?)\s*(\w+)\s*(.*?)\s*(/?>)', 
+                [(1, self.syl_symbol), (2, self.syl_makotag),
+                (3, token_tag), (4, self.syl_symbol),
+                ]),
+            (r'(\$\{)\s*(.*?)\s*(\})',
+                [(1, self.syl_symbol), (2, self.syl_variable),
+                (3, self.syl_symbol),
+                ]),
+            (r'(<!|<\?|</?)\s*([\w\-:_.]+)\s*(.*?)\s*(\?>|/?>)', 
+                [(1, self.syl_tag), (2, STYLE_KEYWORD), 
+                (3, token_tag), (4, self.syl_tag)
+                ]),
+        ])
+        
+    backstyles = [
+        (STYLE_COMMENT, '<!--'),
+        (syl_cdatatag, '<![CDATA['),
+        (syl_tag, '<script'),
+        (syl_tag, '<style'),
+        (syl_tag, '<'),
+    ]
+
+    def pre_colourize(self, win):
+        #FOLDING
+        win.enablefolder = True
+        win.SetProperty("fold", "1")
+        win.SetProperty("tab.timmy.whinge.level", "1")
+#        win.SetProperty("fold.comment.python", "0")
+#        win.SetProperty("fold.quotes.python", "0")
+    def colourize(self, win, force=False):
+        print 'coloring'
+        LexerBase.colourize(self,win,force)    
+    def styleneeded(self, win, pos):
+        line = win.LineFromPosition(pos)
+        print pos, line, win.GetFoldLevel(line)
+        win.SetFoldLevel(line,wx.stc.STC_FOLDLEVELHEADERFLAG|wx.stc.STC_FOLDLEVELBASE)
+        begin = self._get_begin_pos(win)
+        text = win.GetTextRange(begin, pos).encode('utf-8')
+        if not text:
+            return
+        
+        if self.tokens:
+            tokens = self.tokens
+        else:
+            tokens = self.loadToken()
+        self.render(win, begin, pos, text, tokens)
+    
+    
+def testFolding():
+    f = wx.Frame(win)
+    f.SetSize((600,500))
+    editor = TextEditor(f,None, 'ouput test', 'titor', True)
+    lexer2 = NewLexer('name','PPP|*.pay;*.pya',wx.stc.STC_LEX_CONTAINER,'a.stx')
+    if lexer2:
+        lexer2.colourize(editor)
+    editor.AddText('<%\n#aa\n#bb\n#ccc\n"""\n\n"""\ndef f():\n return "a"\n%>\n'+lexer2.preview_code)
+    
+    f.Show()
+
+testFolding()
 #run(win)
+#testNewShellWindow()
