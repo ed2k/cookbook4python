@@ -329,8 +329,8 @@ ${account()}
 #        win.SetProperty("fold.comment.python", "0")
 #        win.SetProperty("fold.quotes.python", "0")
     def colourize(self, win, force=False):
-        print 'coloring'
         LexerBase.colourize(self,win,force)    
+        
     def styleneeded(self, win, pos):
         line = win.LineFromPosition(pos)
         print pos, line, win.GetFoldLevel(line)
@@ -346,18 +346,11 @@ ${account()}
             tokens = self.loadToken()
         self.render(win, begin, pos, text, tokens)
     
-    
-def testFolding():
-    f = wx.Frame(win)
-    f.SetSize((600,500))
-    editor = TextEditor(f,None, 'ouput test', 'titor', True)
-    lexer2 = NewLexer('name','PPP|*.pay;*.pya',wx.stc.STC_LEX_CONTAINER,'a.stx')
-    if lexer2:
-        lexer2.colourize(editor)
-    editor.AddText('<%\n#aa\n#bb\n#ccc\n"""\n\n"""\ndef f():\n return "a"\n%>\n'+lexer2.preview_code)
-    
-    f.Show()
 
-testFolding()
+
+#testFolding()
 #run(win)
 #testNewShellWindow()
+import lexerTest
+reload(lexerTest)
+lexerTest.run(win)
