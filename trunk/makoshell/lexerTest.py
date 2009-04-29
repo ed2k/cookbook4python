@@ -62,11 +62,11 @@ def run(win):
     
     f = wx.Frame(win)
     f.SetSize((600,500))
-    editor = TextEditor(f,None, 'ouput test', 'titor', True)
-    lexer2 = YawsLexer2('erlang','PPP|*.pay;*.pya',wx.stc.STC_LEX_CONTAINER,'a.stx')
-    lexer2.colourize(editor)
-    editor.AddText('\n'+lexer2.preview_code)
-    
+    ed = TextEditor(f,None, 'ouput test', 'titor', True)
+    lex = YawsLexer2('erlang','PPP|*.pay;*.pya',wx.stc.STC_LEX_CONTAINER,'a.stx')
+    lex.colourize(ed)
+    ed.AddText('\n'+lex.preview_code)
+
     f.Show()
 
 
