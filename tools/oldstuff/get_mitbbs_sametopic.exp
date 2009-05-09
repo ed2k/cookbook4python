@@ -1,0 +1,256 @@
+#!/usr/bin/expect
+# initial version of new mitbbs digest
+#
+#remember to use english lang mode shell to exe wget
+#messages maybe other languages.
+#source /x/to_backup/configsave/enlang.rc
+#
+# also, try if the idea can be embeded into javascript
+# a frame/parent page contains code to display digested page and load page/code from other website
+# this is limited by domain restriction, to bypass, either lower security level or use http proxy, or server side support post fetch (like google search/spell check).
+# GreaseMonkey for firefox set an example for client side extension of cross-domain http get.
+proc clean_up {} {
+    close $::ftp_spawn 
+    exec kill $::ftp_proc
+}
+
+
+# use explict spawn_id for multi sessions.
+
+
+
+#periodically check download status
+# step 1, xxx connected -> server connected
+# step 2, 
+# ==> SYST ...
+# ==> TYPE I ...
+# ==> PORT ...
+# xxx: ??,???,??? (xxx)  -> get file size, 
+# step 3, download in progress
+proc get_file { id url } {
+    set spawn_id $id
+    set status "wait"
+    send_user "\r $status "
+    set ::timeout 60
+
+    expect {
+        
+        -re "connected." { 
+            set status "connected"
+        }
+        -re "failed" { return "con_failed" }
+        timeout { return "con_timeout" }
+    }
+    
+    send_user "\r $status "
+
+    # get file size
+    expect {
+        -re "saved" { 
+            # no file size, html page case
+            return "finished"; 
+        }        
+        -re "ERROR 404: Object Not Found" { return finished }
+        -re "already fully retrieved" { return finished }
+        -re "refuses" { return "refuse" }
+        -re "Error" { return "error" }
+        -re ": (\[0-9,]+) " { 
+            set str  $expect_out(1,string)
+            send_user "\nfile size: $str\n"
+            # TODO replace xx,xx expression with xxxx
+            set status "size"
+        }
+        timeout { return "sz_timeout"; }
+    }
+    
+    
+    while { 1 } {
+        # check spawn_id first
+        
+        expect {
+            -re "(\[0-9]+%)" { 
+                set str  $expect_out(1,string)
+                #send_user "out: $str\r"
+                set status "downloading"
+            }
+            timeout { return "pg_timeout"; }
+        }  
+
+        if { $str == "100%"} {
+            return "finished"
+        }
+        
+        send_user "\r $str $status "
+    }
+}    
+
+
+proc get_one_mitbbs_file { url output {wget_cmd "wget"}} {
+#    set wget_cmd "wget"
+
+    set ftp_proc [spawn ${wget_cmd} --cookies=off --header "Cookie: cookie_setting=on; path=/" $url -O $output]
+    #    set ftp_proc [spawn wget proxy\.smth\.org ]
+    set ftp_spawn $spawn_id
+
+    set st [get_file $spawn_id $url]
+    while { $st != "finished" } { 
+        send_user "\nServer : $st\n"
+        close $ftp_spawn
+        exec kill $ftp_proc
+        
+        send_user "con failed, sleep awhile ... \n" 
+        set t [expr 60+60*rand()]
+        sleep $t;
+        set ftp_proc [spawn ${wget_cmd} -c -g off $url]
+        send_user " after spawn...\n"
+        set ftp_spawn $spawn_id
+        set st [get_file $url]
+    }
+    #    sleep 5;
+}
+
+
+# This is for old mitbbs
+# match <tr><td>12208</td><td>Oct 30 14:18</td><td><a href="...">...</a></td><td><A HREF="...">user_id</A></td></tr>
+# New mitbbs uses bbstcon.php?board=Family&gid=52546&pno=2 for same topic list
+# inside same topic list html page, it gives how many pages  
+# <a href="/bbstcon.php?board=Family&gid=52546&start=52546&pno=23"><u>23</u></a>
+# also each page gives list of javascript src for contents 
+# src="/jscon.php?bid=41&id=52612&currentusr=guest"
+# each javascipt document.write('**********');
+#
+#return list of page ids 
+proc parse_topic_list { html_file } {
+    set fd [open $html_file]
+    set a [read $fd]
+    close $fd
+    set d "\[0-9]+"
+    set s "\[ ]*"
+    set D "\[A-Za-z 0-9:]+"
+#    puts $a
+
+    set r_value {}
+    set pattern "<tr><td>$d</td><td>$D</td><td><a href=\"(\[^\"]+)\">\[^<]+</a></td><td><A HREF=\"(\[^\"]+)\">(\[^<]+)</A> </td></tr>"
+    set pattern "src=\"\(/jscon.php?bid=$d&id=$d&currentusr=guest)"
+    set remove_pattern  "<tr><td>$d</td><td>$D</td><td><a href=\"\[^\"]+\">\[^<]+</a></td><td><A HREF=\"\[^\"]+\">\[^<]+</A> </td></tr>"
+    set remove_pattern  "<tr><td>$d</td><td>$D</td><td><a href"
+    while { [regexp $pattern $a dummy j] } {
+        # found one, remove it from page
+        set pos [string first $j $a]
+        #        send_user "pos $pos\n"
+        set a [string range $a [expr $pos+1] end]
+
+        lappend r_value $j
+        send_user "get one src: $j"
+    }
+    return $r_value
+}
+
+#-------------------------------------------------------------------
+#    set url_page "${url_base}/bbsdoc.php?board=Picture&page=$pg_idx"
+#
+# --cookies=off --header "Cookie: cookie_setting=on; path=/"
+#
+#---------------------------------------------------
+# JavaScript Function: escape(string)
+# 
+# The top-level function, escape, encodes the string that is contained in the string argument to make it portable. A string is considered portable if it can be transmitted across any network to any computer that supports ASCII characters.
+# 
+# To make a string portable, characters other than the following 69 ASCII characters must be encoded:
+# 
+# ABCDEFGHIJKLMNOPQRSTUVWXYZ
+# abcdefghijklmnopqrstuvwxyz
+# 1234567890
+# @*-_+./
+# 
+# All other characters are converted either to their two digit (%xx) or four digit (%uxxxx) hexadecimal equivalent (refered to as the character's "hexadecimal escape sequence"). For example, a blank space will be represented by %20 and a semicolon by %3B. (Note that the hexadecimal numbers are: 0123456789ABCDEF).
+# 
+# Use the unescape function to decode an encoded sequence that was created using escape.
+# 
+# Code:
+# document.write(escape("Miss Piggy."))
+# 
+# Output:
+# Miss%20Piggy.
+# 
+# Code:
+# document.write(escape("!@#$%^&*()_+|"))
+# 
+# Output:
+# %21@%23%24%25%5E%26*%28%29_+%7C
+# 
+# copy from http://www.devguru.com/Technologies/ecmascript/quickref/escape.html
+#----------------------------------------------------------
+
+
+log_user 1
+
+set url "http://mitbbs.com"
+set url_base "http://mitbbs.com"
+
+# get one page by same title index
+# such as http://mitbbs.com/cgi-bin/BBSArticleSearch?board=Canada&title=%BD%F1%CC%EC%D3%F6%B5%BD%A1%B0%D2%AE%BA%CD%BB%AA%BC%FB%D6%A4%C8%CB%A1%B1%B5%C4%C8%CB
+
+
+set gid [lindex $argv 0]
+
+
+set fd_summary [open summary.html w]
+
+set max_pageno 23
+for {set pno 1} {$pno <= $max_pageno } {incr pno } {
+set url_page "$gid$pno"
+
+get_one_mitbbs_file $url_page tmp.html 
+set contents_list [split [exec  grep Java tmp.html] "\n"]
+
+#puts $contents_list
+#set file_list [parse_topic_list tmp.html]
+    
+
+    foreach pgid $contents_list {
+        regexp "src=\"/(\[^\"]+)\"" $pgid dummy pgid
+        # parse page content
+        set url "${url_base}/$pgid"
+        get_one_mitbbs_file $url tmp_$pgid.html
+        
+        set fd [open tmp_$pgid.html]
+        set a [read $fd]
+        close $fd
+
+        # take out java code document.write
+        regsub -all {document.write\(\'} $a "" a
+        regsub -all {\'\);} $a "" a
+#        puts $a
+
+        set sig_sign "--<br />";
+        set de4dazuo1zhong2tidao "的大作中提到";
+# dummy way jump 4 lines (the header), stop before RE:
+# 2nd way, read line by line take out blank water.
+        set line_num 0
+        set digest ""
+        foreach line [split $a "\n"] {
+ 
+            if {$line_num < 4} {incr line_num; continue;}
+
+            if {[string first $de4dazuo1zhong2tidao $line] > -1 } {
+                break;
+            }
+            if {[string first $sig_sign $line] > -1 } {
+                break;
+            }
+
+            puts $line
+            append digest $line
+            incr line_num
+        }
+
+set faxin_ren "发信人:"
+set laiyuan "来源"
+
+        send_user $digest
+        puts $fd_summary $digest
+        sleep [expr 1+10*rand()]
+    }; # end of foreach pgid
+}; # end of foreach pno
+close $fd_summary
