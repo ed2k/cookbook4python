@@ -1,0 +1,116 @@
+#!/usr/bin/expect
+
+proc file2str { filename } {
+    set fd [open $filename]
+    set a [read $fd]
+    close $fd
+    return $a
+}
+
+proc str2file { str filename } {
+    set fd [open $filename w]
+    puts -nonewline $fd $str
+    close $fd
+}
+
+proc D { str } {
+    #TODO add timestamp
+    send_user "D: $str\n"
+}
+
+log_user 0
+set env(LC_ALL) en
+set env(LANGUAGE) en
+
+# use explict spawn_id for multi sessions.
+#
+#periodically check download status
+# step 1, xxx connected -> server connected
+# step 2, 
+# ==> SYST ...
+# ==> TYPE I ...
+# ==> PORT ...
+# xxx: ??,???,??? (xxx)  -> get file size, 
+# step 3, download in progress
+proc get_file { id url } {
+    set spawn_id $id
+    set status "wait"
+    send_user "\r $status "
+    set ::timeout 60
+
+    expect {
+        -re "connected." { 
+            set status "connected"
+        }
+        -re "failed" { return "con_failed" }
+        timeout { return "con_timeout" }
+    }
+    
+    send_user "\r $status "
+
+    # get file size
+    expect {
+        -re "saved" { 
+            # no file size, html page case
+            return "finished"; 
+        }        
+        -re "ERROR 404: Object Not Found" { return finished }
+        -re "already fully retrieved" { return finished }
+        -re "refuses" { return "refuse" }
+        -re "Error" { return "error" }
+        -re ": (\[0-9,]+) " { 
+            set str  $expect_out(1,string)
+            send_user "\nfile size: $str\n"
+            # TODO replace xx,xx expression with xxxx
+            set status "size"
+        }
+        timeout { return "sz_timeout"; }
+    }
+    
+    
+    while { 1 } {
+        # check spawn_id first
+        expect {
+            -re "(\[0-9]+%)" { 
+                set str  $expect_out(1,string)
+                #send_user "out: $str\r"
+                set status "downloading"
+            }
+            timeout { return "pg_timeout"; }
+        }  
+
+        if { $str == "100%"} {
+            return "finished"
+        }
+        
+        send_user "\r $str $status "
+    }
+}    
+
+proc get_one_file { url output} {
+    set wget_cmd "wget"
+
+    set ftp_proc [spawn ${wget_cmd} $url -O $output]
+    D "proc $ftp_proc $spawn_id"
+    set ftp_spawn $spawn_id
+
+    set st [get_file $ftp_spawn $url]
+    while { $st != "finished" } { 
+        send_user "\nServer : $st\n"
+        close -i $ftp_spawn ; wait -i $ftp_spawn
+        #exec kill $ftp_proc
+        
+        send_user "con failed, sleep awhile ... \n" 
+        set t [expr 60+60*rand()]
+        sleep $t;
+        set ftp_proc [spawn ${wget_cmd} -c -g off $url]
+        D " after spawn...\n"
+        set ftp_spawn $spawn_id
+        set st [get_file $url]
+    }
+#    exec kill $ftp_proc
+    close -i $ftp_spawn; wait -i $ftp_spawn
+
+}
+
+

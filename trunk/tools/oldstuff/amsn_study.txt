@@ -1,0 +1,257 @@
+start with command: wish amsn
+[notice] namespace amsn is in gui.tcl
+
+set the working directory
+load all the  source code
+
+initialize
+ sb stands for switch board in protocol.tcl
+ 
+ draw main window
+ set idle check every 5 min.
+
+ control-d toggle debug window
+ control-m toggle NS command window
+ control-alt-space  boss mode
+ control-s system status log
+
+ set  NS, SB auto check
+
+ ::MSN::connect $config(login) password
+gui: cmsn_ns_connect username password
+protocol: cmsn_socket ns
+   socket readable trigger: $readable_handler
+   socket writable trigger: $next
+
+2003/12/06
+socket in read direction MSN server -> client
+---> protocol: read_sb_sock sbn ;hand shake with MSN swith board
+     gets $sb_sock tmp_date ; read data into tmp
+
+     call read_non_blocking ; that keeps on reading 
+     call finished_reading_msg; when whole trunk of data reading finished.
+                              ; change back to read_sb_sock to wait
+                              ; for new read event
+
+socket in write direction client -> MSN server
+---> protocol: cmsn_ns_connected
+        call cmsn_auth 
+            call cmsn_auth_msnp9
+
+after write something to server, a handler is used to process the
+response
+sb.write_proc = DirectWrite
+
+state machine for sb (switch board)
+ cw: connection waiting
+ c: connectted
+ v: authenticating,
+cw -> c -> v -> i -> u
+
+--------------------------------------------------------------
+MSNP9 handshake procedure
+
+[17:14:04] ->ns-sock7 VER 42 MSNP9 MSNP8 CVR0
+
+[17:14:04] <-ns VER 42 MSNP9 MSNP8 CVR0\n
+[17:14:04] ->ns-sock7 CVR 43 0x0409 winnt 6.0 i386 MSNMSGR 6.0.0602 MSMSGS sunyin@hotmail.com
+
+[17:14:04] <-ns CVR 43 6.0.0602 6.0.0602 6.0.0602 http://download.microsoft.com/download/8/3/C/83C4B2DB-AC1C-4B56-8144-4472C0982F21/SetupDl.exe http://messenger.msn.com\n
+[17:14:04] ->ns-sock7 USR 44 TWN I sunyin@hotmail.com
+
+[17:14:07] <-ns XFR 44 NS 207.46.107.67:1863 0 207.46.104.20:1863\n
+[17:14:08] ->ns-sock7 VER 45 MSNP9 MSNP8 CVR0
+
+[17:14:08] <-ns VER 45 MSNP9 MSNP8 CVR0\n
+[17:14:08] ->ns-sock7 CVR 46 0x0409 winnt 6.0 i386 MSNMSGR 6.0.0602 MSMSGS sunyin@hotmail.com
+
+[17:14:08] <-ns CVR 46 6.0.0602 6.0.0602 6.0.0602 http://download.microsoft.com/download/8/3/C/83C4B2DB-AC1C-4B56-8144-4472C0982F21/SetupDl.exe http://messenger.msn.com\n
+[17:14:08] ->ns-sock7 USR 47 TWN I sunyin@hotmail.com
+
+[17:14:08] <-ns USR 47 TWN S lc=1033,id=507,tw=40,fs=1,ru=http%3A%2F%2Fmessenger%2Emsn%2Ecom,ct=1070749165,kpp=1,kv=5,ver=2.1.0173.1,tpf=575f2dfa3df44aa485f0b1b049ca1e19\n
+[17:14:11] ->ns-sock7 USR 48 TWN S t=5MOl23uB9D5xDe8RSiWOPYQctiHsN1pgQD17qMAyaDz4kkpwtPaP1owvBH*GeI30H0XEIV993*3SDE84XH!NPQWQ$$&p=5khmH78L7ARnLZ7AToMRH7PtFOUTLIIAvy6T*qigGKOohPY0xN2IqSGMoAH3SR9pM00lB8NjtpVlgDWAVB0JvjDYo7eFhN9ru5sMVtp52s*1C6nNblBPgQAh757KlZ5BLVq8XYfOD5qJas3wju9x94rCKh2*NN5TZSia*sVOf2xS8$
+
+[17:14:11] <-ns USR 48 OK sunyin@hotmail.com %3A%29%20%28h%29 1 0\n
+[17:14:11] <-ns MSG Hotmail Hotmail 459\n
+[17:14:11] Message Contents:
+MIME-Version: 1.0
+Content-Type: text/x-msmsgsprofile; charset=UTF-8
+LoginTime: 1070749168
+EmailEnabled: 1
+MemberIdHigh: 72583
+MemberIdLow: 1280905894
+lang_preference: 1033
+preferredEmail: 
+country: CN
+PostalCode: 
+Gender: 
+Kid: 0
+Age: 
+BDayPre: 
+Birthday: 
+Wallet: 
+Flags: 4099
+sid: 507
+kv: 5
+MSPAuth: 5MOl23uB9D5xDe8RSiWOPYQctiHsN1pgQD17qMAyaDz4kkpwtPaP1owvBH*GeI30H0XEIV993*3SDE84XH!NPQWQ$$
+ClientIP: 24.202.102.17
+ClientPort: 51585
+
+
+[17:14:11] ->ns-sock7 SYN 49 1
+
+[17:14:11] ->ns-sock7 CHG 50 NLN 268435500 %3Cmsnobj%20Creator%3D%22sunyin%40hotmail%2Ecom%22%20Size%3D%225361%22%20Type%3D%223%22%20Location%3D%22amsn%2Etmp%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%22P9TEjRVbrA7FyLJflMeDJetCBik%3D%22%20SHA1C%3D%22gq5y9MYYw9CGB%2FtKfzGj1lc0pjQ%3D%22%2F%3E
+
+[17:14:11] <-ns SYN 49 606 42 5\n
+[17:14:11] <-ns GTC A\n
+[17:14:11] <-ns BLP AL\n
+[17:14:11] <-ns PRP PHH unknown%20%20\n
+[17:14:11] <-ns PRP PHW unknown%20%20\n
+[17:14:11] <-ns PRP PHM unknown%20%20\n
+[17:14:11] <-ns PRP MBE Y\n
+[17:14:11] <-ns LSG 0 Other%20Contacts 0\n
+[17:14:11] <-ns LSG 1 Coworkers 0\n
+[17:14:11] <-ns LSG 2 math 0\n
+[17:14:11] <-ns LSG 3 Family 0\n
+[17:14:11] <-ns LSG 4 auto31 0\n
+[17:14:11] <-ns LST caiying@hotmail.com Ying%20Cai 11 4\n
+[17:14:11] <-ns LST guoyush@hotmail.com Guo%20Yu 11 0\n
+[17:14:11] <-ns LST papabamboo@hotmail.com papabamboo@hotmail.com 1 0\n
+[17:14:11] <-ns LST xuruofan@hotmail.com Ruofan%20Xu 11 4\n
+[17:14:11] <-ns LST jhzhou1975@hotmail.com jinghao 11 0\n
+[17:14:11] <-ns LST ywang29@hotmail.com Yue 11 4\n
+[17:14:11] <-ns LST jiong_zhao@hotmail.com %E8%B5%B5%E7%82%AF%7E%7E%E5%AF%BB%E6%89%BE%E5%B7%A5%E4%BD%9C%E4%B8%AD 11 2\n
+[17:14:11] <-ns BPR PHH 86%202162811594\n
+[17:14:11] <-ns BPR PHW 86%202164301822\n
+[17:14:11] <-ns BPR PHM 86%2013816884612\n
+[17:14:11] <-ns BPR MOB Y\n
+[17:14:11] <-ns LST shenhui_cn@hotmail.com shaker 11 4\n
+[17:14:11] <-ns LST yunkaiz@msn.com Yunkai 11 4\n
+[17:14:11] <-ns BPR PHH 1%20425-883-3835\n
+[17:14:11] <-ns BPR PHW 1%20425-722-7049\n
+[17:14:11] <-ns BPR PHM 1%20267-258-6817\n
+[17:14:11] <-ns LST cxwen@hotmail.com Xiaowen 11 4\n
+[17:14:11] <-ns LST sunyongsheng@hotmail.com %28z%29%E5%AD%99%E6%B0%B8%E7%94%9F%3A%5B 11 0\n
+[17:14:11] <-ns BPR PHH 86%201064733128\n
+[17:14:11] <-ns BPR PHW 86%201065102160\n
+[17:14:11] <-ns LST panyinji@msn.com Hawk 11 2\n
+[17:14:11] <-ns BPR PHM 86%2013916212158\n
+[17:14:11] <-ns LST fengjiong@hotmail.com FJiong 11 2\n
+[17:14:11] <-ns LST zhongee@hotmail.com zhongee@hotmail.com 1 0\n
+[17:14:11] <-ns LST luqs_cn@hotmail.com luqs_cn@hotmail.com 3 0\n
+[17:14:11] <-ns LST misswindy0201@hotmail.com misswindy0201@hotmail.com 3 0\n
+[17:14:11] <-ns LST yi_lin_21cn@hotmail.com Yi 11 4\n
+[17:14:11] <-ns LST zzzhengyi@hotmail.com ALEX 11 3\n
+[17:14:11] <-ns LST dearest_holly@hotmail.com DuDu%20%26%20Holly%20%2D%20I%20love%20%E5%B0%8F%E9%85%B8%E7%86%8A 11 0\n
+[17:14:11] <-ns LST dingxing@hotmail.com %E5%BF%AB%E7%82%B9%EF%BC%8C%E5%86%8D%E5%BF%AB%E7%82%B9%EF%BC%8C%E5%89%8D%E8%BE%88%E7%94%B0%E4%BC%AF%E5%85%89%E4%B8%80%E5%91%BC%E4%B8%80%E5%90%B8%E9%97%B4%E8%83%BD%E7%A0%8D%E5%87%BA%E5%8D%81%E5%85%AB%E5%88%80%EF%BC%8C%E9%83%BD%E5%8F%AB%E4%B8%8D%E6%88%92%E5%A4%A7%E5%B8%88%E7%BB%99yan%E4%BA%86%2E%2E%2E 11 2\n
+[17:14:11] <-ns LST zhuxiangfei@hotmail.com Xiangfei%7E%E4%B8%83%E4%B8%83%E4%B8%83%E4%B8%83 11 4\n
+[17:14:12] <-ns LST wangshaolong@hotmail.com Sean 11 4\n
+[17:14:12] <-ns BPR PHM 1%20765-409-4198\n
+[17:14:12] <-ns LST zxljyf@hotmail.com zhxin 11 3\n
+[17:14:12] <-ns LST xieliebin@hotmail.com .Nut%20-%20The%20Job%20Hunter 11 2\n
+[17:14:12] <-ns LST zhao_jie_924@hotmail.com jie 11 4\n
+[17:14:12] <-ns LST pingli2000@hotmail.com Ping 11 4\n
+[17:14:12] <-ns BPR PHH 1%206504971664\n
+[17:14:12] <-ns LST panyinji@yahoo.com.cn panyinji@yahoo.com.cn%20(E-mail%20Address%20Not%20Verified) 11 0\n
+[17:14:12] <-ns BPR PHM 86%2013003195207\n
+[17:14:12] <-ns LST sunxiaoqing_1@msn.com %E5%92%AF%E5%92%AF%E5%97%92 11 0\n
+[17:14:12] <-ns LST ahsan_butt5000@hotmail.com gÃ¶Ã¶d%20pÃ«Ã¶plÃ«%20Ã¤Â®Ã«%20Ã¤lwÃ¤Ã¿Â§%20hÃ¤Â®d%20tÃ¶%20fÃ¯Ã±d 12\n
+[17:14:12] <-ns LST shihong9@hotmail.com Hong 3 0\n
+[17:14:12] <-ns LST chenhong45220@hotmail.com ChongZi 11 0\n
+[17:14:12] <-ns LST yulei716@hotmail.com Lei 11 2\n
+[17:14:12] <-ns LST yunkaiz@microsoft.com Yunkai 11 4\n
+[17:14:12] <-ns LST jijiacui@public4.sta.net.cn jijiacui@public4.sta.net.cn 11 0\n
+[17:14:12] <-ns LST tvbinstinct@hotmail.com Xiangfei%20-%20at%20work 11 4\n
+[17:14:12] <-ns LST albertzhouh@hotmail.com å¨èª 3 0\n
+[17:14:12] <-ns LST lovebailey2001@hotmail.com Genius 11 0\n
+[17:14:12] <-ns LST elduendeazul6@hotmail.com el%20gato 12\n
+[17:14:12] <-ns LST runlin@hotmail.com runlin 11 1\n
+[17:14:12] <-ns LST ravi_nr@hotmail.com ravi_nr@hotmail.com 11 1\n
+[17:14:12] <-ns LST jhzhou1974@hotmail.com zhoujinghao 11 0\n
+[17:14:12] <-ns BPR PHH 86%20021-64559134\n
+[17:14:12] <-ns LST shirleyxsun@hotmail.com Shirley%20Sun 11 2\n
+[17:14:12] <-ns BPR PHW 1%20(425)705-3478\n
+[17:14:12] <-ns CHG 50 NLN 268435500 %3Cmsnobj%20Creator%3D%22sunyin%40hotmail%2Ecom%22%20Size%3D%225361%22%20Type%3D%223%22%20Location%3D%22amsn%2Etmp%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%22P9TEjRVbrA7FyLJflMeDJetCBik%3D%22%20SHA1C%3D%22gq5y9MYYw9CGB%2FtKfzGj1lc0pjQ%3D%22%2F%3E\n
+[17:14:12] <-ns ILN 50 NLN caiying@hotmail.com Ying%20Cai 536870948 %3Cmsnobj%20Creator%3D%22caiying%40hotmail.com%22%20Size%3D%2214071%22%20Type%3D%223%22%20Location%3D%22TFR5E.dat%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%22oQtPyUB9rQRyavuWgS6gJfdq61A%3D%22%20SHA1C%3D%22AeB6u3p1S3RXtWD25iB8bhqDHnY%3D%22%2F%3E\n
+[17:14:12] <-ns ILN 50 NLN wangshaolong@hotmail.com Sean 268435492 %3Cmsnobj%20Creator%3D%22wangshaolong%40hotmail.com%22%20Size%3D%2221762%22%20Type%3D%223%22%20Location%3D%22TFRDE.tmp%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%22PVIya%2BfDafSuu9mJl1FhP3SQP%2Bo%3D%22%20SHA1C%3D%22bp0vGf%2FquDIeT%2BQUH5zMg2lcGps%3D%22%2F%3E\n
+[17:14:12] <-ns ILN 50 NLN shirleyxsun@hotmail.com Shirley%20Sun 268435492 %3Cmsnobj%20Creator%3D%22shirleyxsun%40hotmail.com%22%20Size%3D%2219712%22%20Type%3D%223%22%20Location%3D%22TFR49.tmp%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%22VXRmTeZ3ivxmFNtkgipnm4gY7XE%3D%22%20SHA1C%3D%22KlGlbVtGBp7lLSTlL1VtZZ%2BlVMA%3D%22%2F%3E\n
+[17:14:12] <-ns ILN 50 NLN chenhong45220@hotmail.com ChongZi 268435492 %3Cmsnobj%20Creator%3D%22chenhong45220%40hotmail.com%22%20Size%3D%2212280%22%20Type%3D%223%22%20Location%3D%22TFR9032.TMP%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%2262XqXd9OS5t9JFZ6AfDkpkTMCNI%3D%22%20SHA1C%3D%22vj%2FPpCGjkyW%2FfdCAx43eE%2FOGdqg%3D%22%2F%3E\n
+[17:14:12] <-ns ILN 50 AWY yulei716@hotmail.com Lei 268435500 %3Cmsnobj%20Creator%3D%22yulei716%40hotmail.com%22%20Size%3D%2219816%22%20Type%3D%223%22%20Location%3D%22TFR3B9.tmp%22%20Friendly%3D%22AAA%3D%22%20SHA1D%3D%22rk0zfK%2BJAyq3qcR5oRQlCs0IPC0%3D%22%20SHA1C%3D%22fedXGXBFaLBvTNTRQXHRD6GRMDo%3D%22%2F%3E\n
+[17:14:12] <-ns MSG Hotmail Hotmail 223\n
+[17:14:12] Message Contents:
+MIME-Version: 1.0
+Content-Type: text/x-msmsgsinitialemailnotification; charset=UTF-8
+
+Inbox-Unread: 0
+Folders-Unread: 138
+Inbox-URL: /cgi-bin/HoTMaiL
+Folders-URL: /cgi-bin/folders
+Post-URL: http://www.hotmail.com
+
+
+[17:14:25] <-ns CHL 0 31184266611687220492\n
+[17:14:25] ->ns-sock7 QRY 51 PROD0061VRRZH@4F 32
+5b0151b7fd3b704f8a05f5cbd39a20d2
+[17:14:25] <-ns QRY 51\n
+
+
+----------------------------
+audio invitation call flow
+
+MIME-Version: 1.0
+Content-Type: text/x-msmsgsinvite; charset=UTF-8
+
+Application-Name: an audio conversation
+Application-GUID: {02D3C01F-BF30-4825-A83A-DE7AF41648AA}
+Session-Protocol: SM1
+Context-Data: Requested:SIP_A,;Capabilities:SIP_A,;
+Invitation-Command: INVITE
+Invitation-Cookie: 106932
+Session-ID: {E1AE9B38-A7A5-4AAE-BC79-A2B0101C972D}
+Conn-Type: Symmetric-NAT
+Sip-Capability: 1
+Private-IP: 10.11.12.13
+Public-IP: 10.11.12.13
+UPnP: FALSE
+
+
+[16:20:17] <-sb_8 MSG chenhong45220@hotmail.com ChongZi 472\n
+[16:20:17] Message Contents:
+MIME-Version: 1.0
+Content-Type: text/x-msmsgsinvite; charset=UTF-8
+
+Invitation-Command: ACCEPT
+Context-Data: Requested:SIP_A,;
+Invitation-Cookie: 106932
+Session-ID: {75826D13-8798-47F5-B378-B9E3B1FE262D}
+Session-Protocol: SM1
+Conn-Type: Symmetric-NAT
+Sip-Capability: 1
+Private-IP: 10.11.12.15
+Public-IP: 24.202.102.17
+UPnP: FALSE
+Launch-Application: TRUE
+Request-Data: IP-Address:
+IP-Address: 10.11.12.15:8788
+IP-Address-Enc64: MTAuMTEuMTIuMTU6ODc4OA==
+
+
+[16:21:02] <-sb_8 MSG chenhong45220@hotmail.com ChongZi 311\n
+[16:21:02] Message Contents:
+MIME-Version: 1.0
+Content-Type: text/x-msmsgsinvite; charset=UTF-8
+
+Invitation-Command: CANCEL
+Cancel-Code: TIMEOUT
+Invitation-Cookie: 106932
+Session-ID: {75826D13-8798-47F5-B378-B9E3B1FE262D}
+Conn-Type: Symmetric-NAT
+Sip-Capability: 1
+Private-IP: 10.11.12.15
+Public-IP: 24.202.102.17
+UPnP: FALSE
+
+
+THEN ----------
+the other end that received the invite ACCEPT should
+send the invite ACCEPT with session ID and the same cookie

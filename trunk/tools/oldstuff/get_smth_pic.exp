@@ -1,0 +1,82 @@
+#!/usr/bin/expect
+
+source /p/testcode/wget_wrapper.exp
+
+# disable debuging message
+proc D { str } { }
+
+
+#return list of page ids
+proc parse_one_pic_page { html_file } {
+    set a [file2str $html_file]
+
+    # match the <tr>... <td ... > .td</tr>
+    # key1: &nbsp;@
+    # key2: /bbscon.php?board=Picture&id=296656
+    # c.o(182,182,'chumsdock','m@',1054104262,'[Y]Pig Smiley 1 ????? ',38);
+    set r_value {}
+    set pic_mark "\@\',"
+    set end_pos [string first $pic_mark $a]
+    while { $end_pos > 0 } {
+        set start_pos [string last "c.o(" $a $end_pos]
+        set str [string range $a $start_pos $end_pos]
+        regexp {c.o\((\d+),} $str dummy pg
+        set pos [string first $pic_mark $a]
+        set a [string range $a [expr $pos+1] end]
+        set end_pos [string first $pic_mark $a]
+        #send_user "pos $pos $pg \n"
+        lappend r_value $pg
+    }
+    return $r_value
+}
+
+
+#------------------ MAIN --------------------
+set page_id [lindex $argv 0]
+set url_base "http://www.newsmth.net"
+
+# get one page
+for {set pg_idx $page_id} {$pg_idx < [expr $page_id + 100] } {incr pg_idx} {
+    # get list of ids from page
+    #http://www.newsmth.net/bbsdoc.php?board=Picture&page=4
+    set url_page "${url_base}/bbsdoc.php?board=Picture&page=$pg_idx"
+    set pagename "page_$pg_idx.html"
+    if { [file exists $pagename] == 0 } {
+        get_one_file $url_page $pagename
+    }
+
+    set pgid_list [parse_one_pic_page $pagename]
+
+    send_user "$pagename $pgid_list \n"
+
+    foreach pgid $pgid_list {
+
+        # parse page content
+        #http://www.newsmth.net/bbscon.php?bid=382&id=149
+        set url "${url_base}/bbscon.php?bid=382&id=$pgid"
+
+        set pagename "bid382_$pgid.html"
+        if { [file exists $pagename] == 0 } {
+            get_one_file $url $pagename
+        }
+        set a [file2str $pagename]
+
+        #send_user "$a\n"
+        #, 265);o.h(
+        #http://www.newsmth.net/att.php?p.382.141.265.jpg
+	set img ""
+        regexp {, (\d+)\);o.h\(} $a dummy img
+        
+        set img "p.382.$pgid.$img.jpg"
+
+        if { [file exists $img] == 0 } {
+            send_user "img file: $img\n"
+            set url "${url_base}/att.php?$img"
+            get_one_file $url $img
+            # look more like human click
+            sleep [expr 1+10*rand()]
+        }
+
+    }
+
+}

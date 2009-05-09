@@ -1,0 +1,550 @@
+# EXPECT Line Editor (proof of concept) is to simulate tcsh line editor.
+# it has the function of processing normal windows line editor keys
+# and unix line editor keys in a terminal environment. --ysun
+# when used ::LineEditor::Main $wish_list
+# The functionality is similar to dropdown listbox and line input combo.
+# 1. it will take control of key press
+# 2. user input will be translated as working in a line editor
+# 3. when <RETURN> is pressed, calling program returns the user input
+# TODO put them into package LineEditor
+# TODO line input history
+# TODO double tab show available list
+# TODO channelize output as a variable make it easy to port
+
+#log_user 1
+
+# Terminal key maps ---------------------------------------------
+# \x20 SP
+# \x21 ! ... \x30 0 ... \x3a : ... \x41 A ... \x5b [ ... \x61 a \x7b { ... \x7e ~ 
+# \x0 NULL, \x1 - \x1a ^A - ^Z, \x1b ESC \x7f (^ means Ctrl-)
+# \x9 TAB, \x7f BK (Backspace), \xd RETURN
+# \x1c \x1b ^[ or ^3 \x1c \x1d ^] \x1e \x1f ^/
+# ^3 - ^7 \x1c - \x1f \x1f ^9
+# UP ~[A, DOWN ~[B, RIGHT ~[C, LEFT ~[D (~ means Escape or ESC)
+# F1 - F4 ~OP - ~OS, F5 E[15~ F6-F8 E[17~-E[19~ 
+# F9 E[20~, F10 E[21~, F11 E[23~, F12 E[24~
+# INS E[2~ (E means ESC, ~ is the real ~)
+# HOME ~[H
+# PAGEUP E[5~
+# PAGEDOWN E[6~
+# DEL E[3~
+# END ~[F
+# end of Termninal key maps ------------------------------------
+set ascii_map { 
+    \x0 x0 \x1 x1 \x2 x2 \x3 x3 \x4 x4 \x5 x5 \x6 x6 \x7 x7
+    \x8 x8 \x9 x9 \xa xa \xb xb \xc xc \xd xd \xe xe \xf xf
+    \x10 x10 \x11 x11 \x12 x12 \x13 x13 \x14 x14 \x15 x15 \x16 x16 \x17 x17
+    \x18 x18 \x19 x19 \x1a x1a \x1b x1b \x1c x1c \x1d x1d \x1e x1e \x1f x1f
+    \x7f x7f
+}
+
+# pc keyboard map
+set ascii_map { 
+    \x0 x0 \x1 ^a \x2 ^b \x3 ^c \x4 ^d \x5 ^e \x6 ^f \x7 ^g
+    \x8 ^h \x9 TAB \xa ^j \xb ^k \xc xc \xd RT \xe xe \xf xf
+    \x10 x10 \x11 x11 \x12 x12 \x13 x13 \x14 x14 \x15 x15 \x16 x16 \x17 x17
+    \x18 x18 \x19 x19 \x1a x1a \x1b ESC \x1c x1c \x1d x1d \x1e x1e \x1f x1f
+    \x7f BK
+}
+
+# pc keyboard map
+proc map_one_key {  key } {
+    switch $key {
+        "\x0" { return x0 }
+        "\x1" { return ^a }
+        "\x2" { return ^b }
+        "\x3" { return ^c }
+        "\x4" { return ^d }
+        "\x5" { return ^e }
+        "\x6" { return ^f }  
+        "\x7" { return ^g }
+        "\x8" { return ^h } ;#unix Backspace
+        "\x9" { return TAB }
+        "\xa" { return ^j }
+        "\xb" { return ^k }
+        "\xc" { return xc }
+        "\xd" { return RT }
+        "\xe" { return xe }
+        "\xf" { return xf }
+        "\x10" { return x10 }
+        "\x11" { return x11 }
+        "\x12" { return x12 }
+        "\x13" { return x13 }
+        "\x14" { return x14 }
+        "\x15" { return x15 }
+        "\x16" { return x16 }
+        "\x17" { return x17 }
+        "\x18" { return x18 }
+        "\x19" { return x19 }
+        "\x1a" { return x1a }
+        "\x1b" { return ESC }
+        "\x1c" { return x1c }
+        "\x1d" { return x1d }
+        "\x1e" { return x1e }
+        "\x1f" { return x1f }
+        "\x7f" { return BK }
+        default { return $key }
+    }
+}
+
+# unix keymap
+proc map_one_key {  key } {
+    switch $key {
+        "\x0" { return x0 }
+        "\x1" { return ^a }
+        "\x2" { return ^b }
+        "\x3" { return ^c }
+        "\x4" { return ^d }
+        "\x5" { return ^e }
+        "\x6" { return ^f }  
+        "\x7" { return ^g }
+        "\x8" { return BK } ;#unix Backspace
+        "\x9" { return TAB }
+        "\xa" { return ^j }
+        "\xb" { return ^k }
+        "\xc" { return xc }
+        "\xd" { return RT }
+        "\xe" { return xe }
+        "\xf" { return xf }
+        "\x10" { return x10 }
+        "\x11" { return x11 }
+        "\x12" { return x12 }
+        "\x13" { return x13 }
+        "\x14" { return x14 }
+        "\x15" { return x15 }
+        "\x16" { return x16 }
+        "\x17" { return x17 }
+        "\x18" { return x18 }
+        "\x19" { return x19 }
+        "\x1a" { return x1a }
+        "\x1b" { return ESC }
+        "\x1c" { return x1c }
+        "\x1d" { return x1d }
+        "\x1e" { return x1e }
+        "\x1f" { return x1f }
+        "\x7f" { return BK }
+        default { return $key }
+    }
+}
+
+proc string_map { map key } {
+    set str ""
+    for { set i 0 } { $i < [string length $key] } {incr i} {
+        append str [map_one_key [string index $key $i]]
+    }
+    return $str
+}
+
+set multi_key_timeout 0.01
+array set Line {}
+#TODO remember to clean up 
+set line_history {}
+
+proc line_clear { } {
+    global Line
+    array set Line {
+        buffer {}
+        focus 0
+        end -1
+        favors {}
+    }
+}
+
+# return key value, timeout is keyword
+proc read_one_key { } {
+    expect_user {
+        -re "(.)" {
+            return $expect_out(1,string)
+        }
+        timeout {
+            #send_user "ESC+3"
+        }
+    }
+    return ""
+}
+proc map_to_vkey { key } {
+    # if is normal key 0x1c - 0x7e (i.e A-Za-z 0-9, signs)
+    # put it in line/edit buffer, move cursor
+    # else do special process
+
+    # print out key value for debugging.
+    set vkey [string_map $::ascii_map $key]
+    # out put key for debugging 
+    #send_user "<map:$vkey>"
+
+    # save ESC sequence here
+    set esc ""
+    if { $vkey != "ESC" } {
+        return $vkey
+    }
+
+    #capture ESC and special key sequences like ~[A
+    #send_user "ESC"
+    # TODO: may need to change the timeout
+    set k1 [read_one_key]
+    switch $k1 {
+        "\[" {
+            set k2 [read_one_key]
+            switch $k2 {
+                "F" { return END }
+                "H" { return HOME }
+                "A" { return UP }
+                "B" { return DOWN }
+                "C" { return RIGHT }
+                "D" { return LEFT }
+                2 { 
+                    set k3 [read_one_key]; 
+                    switch $k3 {
+                        ~ { return INS }
+                        0 { read_one_key; return F9 }
+                        1 { read_one_key; return F10 }
+                        3 { read_one_key; return F11 }
+                        4 { read_one_key; return F12 }
+                    }
+                }
+                5 { read_one_key; return PUP }
+                3 { read_one_key; return PDOWN }
+                6 { read_one_key; return DEL }
+                1 {
+                    set k3 [read_one_key]; 
+                    switch $k3 {                  
+                        5 {  read_one_key; return F5 }
+                        7 {  read_one_key; return F6 }
+                        8 {  read_one_key; return F7 }
+                        9 {  read_one_key; return F8 }
+                        
+                    }
+                }
+            }
+        }
+        "O" {
+            set k2 [read_one_key]
+            switch $k2 {
+                "P" { return F1 }
+                "Q" { return F2 }
+                "R" { return F3 }
+                "S" { return F4 }               
+            }
+        }
+    }
+        # should be 2 , 3 or 4 keys after ESC
+    
+    return "<$vkey NotMapped>"
+}
+
+# return a string with a range of chars deleted
+proc string_del { str start {end ""} } {
+    if { $end == "" } { set end [expr $start + 1 ]}
+    else { incr end 1]
+    set len [string length $str]    
+    if ( $start < 0 } { 
+        return [string range $str $end end]
+    }
+    incr start -1
+    set newStr [string range 0 $start]
+    return $newStr[string range $str $end end]
+    
+}
+proc line_del { } {
+    global Line
+    if {$Line(focus) > $Line(end)} { return }
+
+    set start [expr $Line(focus) + 1]
+    set len [string length $Line(buffer)]
+
+    incr len -1
+    set movable [string range $Line(buffer) $start end]
+    send_user $movable 
+    send_user " \b"
+    for { set i $start} { $i <= $len } { incr i} {
+        send_user "\b"
+    } 
+    incr start -2
+    
+    if { $start >= 0} {
+        set Line(buffer) [string range $Line(buffer) 0 $start]
+        set Line(buffer) $Line(buffer)$movable
+    } else {
+        set Line(buffer) $movable 
+    }
+    
+    incr Line(end) -1
+}
+
+proc line_bk { } {
+    global Line
+    incr Line(focus) -1                 
+    send_user "\b"
+    line_del 
+}
+proc line_focus_left { } {
+    global Line
+
+    if { $Line(focus) <= 0 } { return }
+    send_user "\b"
+    incr Line(focus) -1
+}
+proc line_focus_right { } {
+    global Line
+
+    if { $Line(focus) >  $Line(end) } { return }
+    send_user [string index $Line(buffer) $Line(focus)]
+    incr Line(focus) 1
+}
+
+proc line_focus_begin { } {
+    global Line
+    set Line(focus) 0
+    send_user "\r"
+}
+
+proc line_focus_end { } {
+    global Line
+    set len [string length $Line(buffer)]
+    send_user  [string range $Line(buffer) $Line(focus) end] 
+
+    set Line(focus) [incr len 1]
+}
+
+proc line_move_focus {  pos } {
+    global Line
+    if { $pos < 0 || $pos > [expr $Line(end) + 1]} { return }
+    if { $pos < $Line(focus) } { 
+        for { set i $Line(focus) } { $i > $pos } { incr i -1} {
+            send_user "\b"
+        }
+        set Line(focus) $pos
+    } elseif { $pos > $Line(focus) } { 
+        set prePos [expr pos -1]
+        send_user [string range $Line(buffer) $Line(focus) $prePos]
+        set Line(focus) $pos
+    }
+}
+
+# input one char
+proc line_input { ch} {
+    global Line
+    set focus $Line(focus)
+    incr focus -1
+    set movable [string range $Line(buffer) $Line(focus) end]
+    set Line(buffer) [string range $Line(buffer) 0 $focus]$ch$movable
+
+    send_user $ch$movable
+
+    set moveto [expr $Line(focus) + 1]
+    incr Line(end) 1
+    set Line(focus) [expr $Line(end) +1]
+    line_move_focus $moveto
+}
+
+proc line_input_str { str } {
+    set len [string length $str]
+    for { set i 0 } { $i < $len } {incr i} {
+        line_input [string index $str $i]
+    }
+}
+
+proc line_del_rest { } {
+    global Line
+    
+    while { $Line(focus) != [expr $Line(end) + 1] } {
+        line_del
+    }
+}
+
+## ::tkcon::ExpandBestMatch - finds the best unique match in a list of names
+## The extra $e in this argument allows us to limit the innermost loop a
+## little further.  This improves speed as $l becomes large or $e becomes long.
+# ARGS:	l	- list to find best unique match in
+# 	e	- currently best known unique match
+# Returns:	longest unique match in the list
+# ex: l = {{abcd} {abdf} {abdd} }
+# return ab
+#     l =  {{abcd} {abdf} {abdd} {sss} }
+# return ""
+## 
+proc ExpandBestMatch {l {e {}}} {
+    set ec [lindex $l 0]
+    if {[llength $l]>1} {
+	set e  [string length $e]; incr e -1
+	set ei [string length $ec]; incr ei -1
+	foreach l $l {
+	    while {$ei>=$e && [string first $ec $l]} {
+		set ec [string range $ec 0 [incr ei -1]]
+	    }
+	}
+    }
+    return $ec
+}
+
+# find all strings start as $start from $candidates list
+# ex {abc abcd acc} start = abc
+#    return abc
+#    {abc abcd acc oper} start = o
+#    return oper
+# test code ----------------------
+# set a [list abcd abcf abccd abcefg defgh]
+# set b [FindMatch $a a]
+# send_user [ExpandBestMatch $b d]
+# return ; #------------------
+proc FindMatch {candidates start} {
+    set r {}
+    foreach one $candidates {
+        if { [string first $start $one] == 0} {
+            #send_user "$r\n"
+            lappend r $one
+        }
+    }
+    return $r
+}
+
+proc auto_complete {  } {
+    global Line
+    
+    #get chars from beginning to just before cursor
+    set word [string rang $Line(buffer) 0 [expr $Line(focus) -1]]
+    set b [FindMatch $Line(favors) $word]
+    set b [ExpandBestMatch $b $word]
+    # debug
+    #send_user "\nai: $b\n"
+
+    # only output extra part, ex b="abcde" word="ab"
+    # output cde
+    # 
+    if {[string length $b] > [string length $word] } {
+        set rest [string rang $b [string length $word] end]
+        for { set i [string length $word] } {$i < [string length $b]} {incr i} {
+            line_input [string index $b $i]
+        }
+    }
+    # if multipule matches print them all, but limit line numbers
+}
+
+proc process_vkey { key } {
+    global Line
+
+    # if is normal key 0x1c - 0x7e (i.e A-Za-z 0-9, signs)
+    # put it in line/edit buffer, move cursor
+    # else do special process
+
+    # print out key value for debugging.
+    #send_user "<map:$key>"
+
+    switch $key {
+        "INS" {
+            #send_user "\x1b\[5;4;"
+        }
+        "DEL" {
+            line_del 
+        }
+        "^d" { line_del }
+        "LEFT" {
+            line_focus_left 
+        }
+        "RIGHT" {
+            line_focus_right 
+        }
+        "^c" {
+        } 
+        "BK" {  ; # end of if ESC
+            #DEL E[3~
+            set TER_ESC "\x1b"
+            set TER_DEL "${TER_ESC}\[3~"
+            line_bk 
+        } 
+        "RT" {  
+            send_user "\r\n"
+            # Add current line to bottom of  history list 
+            # if different from previous cmd:
+#            line_add_history 
+            set ::line_history $Line(buffer)
+        } 
+        UP {
+            # current history line update
+            #history list point moves up
+            #clear display line buffer
+            line_focus_begin; line_del_rest;
+            # output history list point line
+            line_input_str $::line_history
+            
+        }
+        "TAB" { auto_complete }
+        "HOME" { line_focus_begin }
+        "^a" {  
+            line_focus_begin 
+            # ESC\[2A" cursor up 2 rows
+        } 
+        "END" {line_focus_end }
+        "^e" {  
+            line_focus_end 
+        } 
+        "^k" { line_del_rest }
+        default {
+            if { $key >= "\x20" && $key <= "\x7e" && [string length $key] == 1} { 
+                # put normal key in the end, otherwise such as
+                # "BK" also falls into this category
+                
+                # put into user input buffer
+                line_input  $key
+            }  
+        }
+    };# end of switch
+}
+
+
+
+
+
+# ---------------------- start of testing -------------------
+# retun input line
+proc read_line { favors } {
+    global Line
+    # intercept key press
+    # TODO save stty settings
+    set old_stty_settings [stty -a]
+    line_clear
+    set Line(favors) $favors
+
+    stty raw
+    stty -echo
+    
+    set vkey "not quit"
+    # waiting for user key press then process it.
+    while { $vkey != "^c" && $vkey != "RT"} {
+        #   send_user "?"
+        expect_user {
+            -re "(.)" {
+                # read one key
+                #send_user $expect_out(0,string)
+                set char_input $expect_out(1,string)
+                set vkey [map_to_vkey $char_input]
+                process_vkey $vkey
+                #            append line_input $char_input
+                #            send_user "\ngot on press\n"
+                #            send_user "$line_input"
+                #    send_user "$input"            
+            }
+            timeout {
+                # here we can put some AI code to process
+                # in user idle time
+                #send_user "Do_AI"
+                continue;
+            }
+        }
+    } ;# end of while is user quit
+    
+    # TODO restore stty settings
+    stty $old_stty_settings
+    # clear line buffer
+    set r $Line(buffer)
+    line_clear
+    return $r
+}
+
+#send_user "> done...\n"
+#set favors {a b ccd}
+#set line [read_line $favors]
+#send_user $line\n
+#interact
+
+                   
