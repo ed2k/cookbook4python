@@ -1,5 +1,5 @@
 import urllib
-import os
+import os,time,random
 url_base = "4u.straightline.jp"
 start_id = 3000
 
@@ -13,12 +13,17 @@ def wget(url, opts=None):
     #fname = urllib.url2pathname(url)
     fname = os.path.join(*f)
     fname = os.path.abspath(fname.replace('?','_q_'))
-    print fname
+    #print fname
     if os.path.exists(fname):
-        return
+        return 'exist'
     file(fname,'w').write(urllib.urlopen('http://'+url).read())
+    return 'saved'
 
-url = url_base+'/?page='+str(start_id)
-print 'open',url
-
-wget(url)
+def get_all_pages():
+  for id in xrange(3000):
+    url = url_base+'/?page='+str(id)
+    if wget(url) == 'saved':
+       print 'saved',url
+       time.sleep(random.random()*10)
+    
+get_all_pages()
