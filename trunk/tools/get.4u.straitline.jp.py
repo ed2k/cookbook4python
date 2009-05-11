@@ -16,6 +16,9 @@ def wget(url, opts=None):
     #print fname
     if os.path.exists(fname):
         return 'exist'
+    if opts == 'dryrun': 
+	print url,'->',fname
+	return
     file(fname,'w').write(urllib.urlopen('http://'+url).read())
     return 'saved'
 
@@ -25,5 +28,14 @@ def get_all_pages():
     if wget(url) == 'saved':
        print 'saved',url
        time.sleep(random.random()*10)
-    
-get_all_pages()
+def get_jpgs():
+  fname = os.path.join(url_base,'jpglist.txt')
+  for line in open(fname):
+    idx = line.find('http://')
+    idxend = line.find('"',idx)
+    url = line[idx+7:idxend]
+    if wget(url) == 'saved':
+       print 'saved',url
+       time.sleep(random.random()*10)
+#get_all_pages()
+get_jpgs()
