@@ -2,7 +2,7 @@ application: webminibridge
 version: 1
 runtime: python
 api_version: 1
-
+# local server test "C:\Program Files\Google\google_appengine\dev_appserver.py" <app_dir>
 # to upload, cd to dir above guestbook
 # python appcfg.py update guestbook
 handlers:
