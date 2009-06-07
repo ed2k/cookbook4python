@@ -336,12 +336,36 @@ class CleanupHandler(webapp.RequestHandler):
     }
     self.response.out.write(template.render('cleanup.html', context))
 
+class DBHandler(webapp.RequestHandler):
+  """Class."""
+  def get(self):
+    offset = int(self.request.get('offset'))
+    d = DB1.gql('').fetch(1,offset)[0]     
+
+    # how get all entity attributes?
+    a = getattr(d, 'content-type', None)
+    if a is not None:
+        a = str(a)        
+        logging.info(a+'>'+d.translated_address)
+        self.response.headers['content-type'] = a
+        if a.find('text') > -1:
+           self.response.headers['content-type'] = 'text/html'
+           logging.info('create text')
+           return self.response.out.write('<textarea rows=20 cols=80> %s </textarea>' % d.bin)
+    a = getattr(d, 'content-length', None)
+    if a is not None:
+        self.response.headers['content-length'] = str(a)
+    
+    self.response.out.write(d.bin)
+
+    
 ################################################################################
 
 app = webapp.WSGIApplication([
   (r"/", HomeHandler),
   (r"/main", HomeHandler),
   (r"/kaboom", KaboomHandler),
+  (r"/db", DBHandler),
   (r"/admin", AdminHandler),
   (r"/cleanup", CleanupHandler),
   (r"/([^/]+).*", MirrorHandler)
