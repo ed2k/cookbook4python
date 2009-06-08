@@ -238,6 +238,9 @@ def ad_filter(address):
    if address[:len(s)] == s: return True
   if address.find('.swf') > 0: return True
   return False 
+def no_cache_url(address):
+    if address.find('flickr.com/photos') >= 0: return True
+    return False
 
 class MirrorHandler(BaseHandler):
   def get(self, base_url):
@@ -261,8 +264,8 @@ class MirrorHandler(BaseHandler):
 
     content = MirroredContent.get_by_key_name(key_name)
     cache_miss = False
-    if content is None:
-      logging.debug("Cache miss")
+    if content is None or no_cache_url(translated_address):
+      logging.debug("Cache miss" + translated_address)
       cache_miss = True
       content = MirroredContent.fetch_and_store(key_name, base_url,
                                                 translated_address,
@@ -340,7 +343,7 @@ class DBHandler(webapp.RequestHandler):
   """Class."""
   def get(self):
     offset = int(self.request.get('offset'))
-    d = DB1.gql('').fetch(1,offset)[0]     
+    d = DB1.gql('order by last_updated DESC').fetch(1,offset)[0]     
 
     # how get all entity attributes?
     a = getattr(d, 'content-type', None)
@@ -357,6 +360,7 @@ class DBHandler(webapp.RequestHandler):
         self.response.headers['content-length'] = str(a)
     
     self.response.out.write(d.bin)
+
 
     
 ################################################################################
