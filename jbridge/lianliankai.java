@@ -57,6 +57,8 @@ public class lianliankai {
 		} catch (Exception e) { e.printStackTrace(); }
     
 		panel = new JPanel() {
+			private static final long serialVersionUID = 1L;
+
 			public void paintComponent(Graphics g) {
 				g.fillRect(0, 0, 600, 500);
 				for (int i=0;i<logicBoard.length;i++)for (int j=0;j<logicBoard[i].length;j++){
