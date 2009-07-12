@@ -55,7 +55,31 @@ def fix_header(mailstr):
 
     mm = email.message_from_string(header+'\n\n'+body);
     return mm
-
+def fix_email(line):
+    ''' fix '[' to '<' so that both gmail and thunderbird can read'''
+    from string import maketrans
+    return line.translate(maketrans('[]','<>'))
+def fix_header2(msg):
+    headers = msg.splitlines()
+    # first line is from
+    mfirst = 'From - '
+    mfrom = 'From: '+ fix_email(headers[0].lstrip())
+    mto = ''
+    mdate = ''
+    msubject = ''
+    r = []
+    for i,line in enumerate(headers[1:]):
+        f = line.split()
+        if len(f) > 0 :
+          if f[0] in ['To:']: mto = fix_email(' '.join(f))
+          elif f[0] in ['Subject:']: msubject = ' '.join(f)
+          elif f[0] in ['From:']: mfrom = fix_email(' '.join(f))
+          elif f[0] in ['Sent:','Date:']:
+            mdate = 'Date: '+line[5:].lstrip()
+            mfirst += line[5:].lstrip()
+          else: r.append(line)
+        else: r.append(line)
+    return '\n'.join([mfirst,mdate,mfrom,mto,msubject]+r)
 def main ():
     mailboxname_in = sys.argv[1]
 
@@ -63,22 +87,23 @@ def main ():
     # Open the mailbox.
     mbstr = file(mailboxname_in,'r').read();
  #   mbstr = mbstr.replace('\r\n','\n');
-    mails = mbstr.split("\nFrom: ");
+    # can not use "^From: " as it might be "^From:\t"
+    mails = mbstr.split("\nFrom:");
     print 'read in', len(mails)
 
     # take out From: to be consistent
     if len(mails) > 0 : mails[0] = mails[0][6:]
 # assume no multipart, otherwise run split_attachements first
-    for idx, mail in enumerate(mails):
-        mails[idx] =email.message_from_string( 'From: '+mail);
+    # try to utilize email library to extract header
+    #for idx, mail in enumerate(mails):
+    #    mails[idx] =email.message_from_string( 'From: '+mail);
 ##        if mails[idx].is_multipart():
 
 
     # write to new mbox file
     fout = file('test', 'w')
     for idx, msg in enumerate(mails):
-        fout.write ('From -\n')
-        str = msg.as_string()
+        str = fix_header2(msg)
         fout.write(str)
         if str[len(str)-1] != '\n':
             fout.write('\n')
