@@ -342,6 +342,7 @@ class CleanupHandler(webapp.RequestHandler):
 class DBHandler(webapp.RequestHandler):
   """Class."""
   def get(self):
+    # default is 0
     offset = int(self.request.get('offset'))
     d = DB1.gql('order by last_updated DESC').fetch(1,offset)[0]     
 
