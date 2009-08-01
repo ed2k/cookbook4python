@@ -5,6 +5,13 @@ api_version: 1
 
 handlers:
 
+- url: /console/static
+  static_dir: console/app/view/static
+
+- url: /console.*
+  script: console/app/console.py
+
+# ------------ mirrorr part
 - url: /robots\.txt
   static_files: static/robots.txt
   upload: static/robots\.txt
