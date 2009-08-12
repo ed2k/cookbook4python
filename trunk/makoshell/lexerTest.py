@@ -54,6 +54,16 @@ start(Host,Port)->
     def styleneeded(self, win, pos):
         print pos
         super(YawsLexer2,self).styleneeded(win,pos)
+        #for i in xrange(pos):
+        #    win.SetFoldLevel(i,0xf000+i)
+        win.SetFoldLevel(1,0xf001 )
+        win.SetFoldLevel(3,0xf002 )
+        win.SetFoldLevel(7,0x002 )
+        win.SetFoldLevel(10,0x001 )
+            
+        
+            
+        
         
 
         

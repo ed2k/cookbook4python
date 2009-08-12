@@ -234,7 +234,7 @@ def testNewShellWindow():
 
 #testFolding()
 #run(win)
-testNewShellWindow()
+#testNewShellWindow()
 import lexerTest
 reload(lexerTest)
-#lexerTest.run(win)
+lexerTest.run(win)
