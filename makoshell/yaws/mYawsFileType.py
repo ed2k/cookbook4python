@@ -92,11 +92,11 @@ def OnAddCurrentPath(self, event):
         if self.pref.open_project_setting_dlg:
             wx.CallAfter(self.OnSetProject)
 
-def addmenu(popmenulist):
-    popmenulist.extend([('IDPM_ADD', [
-      (100, 'IDPM_ADD_CURDIR', tr('Add Current Directory'), wx.ITEM_NORMAL, 
+def addmenu(app, name, othermenu):
+    app.popmenulist.extend([('IDPM_ADD', [
+      (99, 'IDPM_ADD_CURDIR', tr('Add Current Directory'), wx.ITEM_NORMAL, 
          'OnAddCurrentPath', ''),   
     ]), ])
     
 
-Mixin.setPlugin('dirbrowser', 'add_menu', addmenu)
+Mixin.setPlugin('dirbrowser', 'other_popup_menu', addmenu)
