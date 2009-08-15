@@ -8,7 +8,11 @@ sys.path.append(os.path.dirname(filename))
 #personalizd settings in config.py
 import config
 reload(config)
-from config import Remote
+#from config import Remote
+class Remote():
+    def cmd(self, cmd):
+        return  ''
+
 
 
 import traceback
@@ -132,6 +136,7 @@ class MyFrame(wx.Frame):
         while idx > -1:
             cmd = text[:idx+1]
             # need to take out unicode?
+            self.result.AddText(str(cmd))
             r = self.remote.cmd(str(cmd))
             self.context._data.update({'_rlines':r})
             self.result.AddText(r)

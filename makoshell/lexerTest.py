@@ -63,49 +63,7 @@ start(Host,Port)->
             
         
             
-# test scintilla supported lexer capability
-class TclLexer(LexerBase):
-    metaname = 'tcl'
-
-    keywords = ("__FILE__ and def end in or self unless proc begin defined "
-                "ensure module redo super until BEGIN break do false next rescue "
-                "then when END case else for nil retry true while alias class "
-                "elsif if not return undef yield",)
-
-    preview_code = """# Hello World in tcl
-puts "Hello World!"
-proc a {b} {
- puts [aaa b c]
- set a { bb
- }
-}
-"""
-
-    def pre_colourize(self, win):
-        #FOLDING
-        win.enablefolder = True
-        win.SetProperty("fold", "1")
-        win.SetProperty("tab.timmy.whinge.level", "1")
-
-    def initSyntaxItems(self):
-        self.addSyntaxItem('p_default',         'Default',              wx.stc.STC_TCL_DEFAULT,           self.STC_STYLE_TEXT)
-        self.addSyntaxItem('commentline',       'Comment line',         wx.stc.STC_TCL_COMMENTLINE,       self.STC_STYLE_COMMENT)
-        self.addSyntaxItem('number',            'Number',               wx.stc.STC_TCL_NUMBER,            self.STC_STYLE_NUMBER)
-        self.addSyntaxItem('string',            'String',               wx.stc.STC_TCL_WORD2,            self.STC_STYLE_CHARACTER)
-        self.addSyntaxItem('character',         'Character',            wx.stc.STC_TCL_WORD3,         self.STC_STYLE_CHARACTER)
-        self.addSyntaxItem('keyword',           'Keyword',              wx.stc.STC_TCL_WORD,              self.STC_STYLE_KEYWORD1)
-        self.addSyntaxItem('triple',            'Triple quotes',        wx.stc.STC_TCL_WORD4,            self.STC_STYLE_CHARACTER)
-        self.addSyntaxItem('tripledouble',      'Triple double quotes', wx.stc.STC_TCL_WORD5,      self.STC_STYLE_CHARACTER)
-        self.addSyntaxItem('classname',         'Class definition',     wx.stc.STC_TCL_WORD6,         self.STC_STYLE_CLASSNAME)
-        self.addSyntaxItem('defname',           'Function or method',   wx.stc.STC_TCL_WORD7,           self.STC_STYLE_DEFNAME)
-        self.addSyntaxItem('operator',          'Operators',            wx.stc.STC_TCL_OPERATOR,          self.STC_STYLE_OPERATOR)
-        self.addSyntaxItem('identifier',        'Identifiers',          wx.stc.STC_TCL_IDENTIFIER,        self.STC_STYLE_IDENTIFIER)
-        self.addSyntaxItem('commentblock',      'Comment blocks',       wx.stc.STC_TCL_COMMENT,      self.STC_STYLE_COMMENT)
-        self.addSyntaxItem('stringeol',         'EOL unclosed string',  wx.stc.STC_TCL_WORD8,         self.STC_STYLE_STRINGEOL)
-
-
-
-        
+       
                                                                                                    
 def run(win):
     
@@ -113,8 +71,7 @@ def run(win):
     f.SetSize((600,500))
     ed = TextEditor(f,None, 'ouput test', 'titor', True)
     
-    #lex = YawsLexer2('erlang','PPP|*.pay;*.pya',wx.stc.STC_LEX_CONTAINER,'a.stx')#
-    lex = TclLexer('erlang','PPP|*.tcl;*.pya',wx.stc.STC_LEX_TCL,'a.stx')
+    lex = YawsLexer2('erlang','PPP|*.pay;*.pya',wx.stc.STC_LEX_CONTAINER,'a.stx')#
     lex.colourize(ed)
     ed.AddText('\n'+lex.preview_code)
 
