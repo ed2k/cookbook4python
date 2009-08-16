@@ -240,6 +240,22 @@ def testNewShellWindow():
 #testFolding()
 #run(win)
 #testNewShellWindow()
-import lexerTest
-reload(lexerTest)
-lexerTest.run(win)
+#import lexerTest
+#reload(lexerTest)
+#lexerTest.run(win)
+
+# test middle moulse click to close the tab
+from modules.wxctrl import FlatNotebook as FNB
+w = wx.Frame(win)
+
+stil = FNB.FNB_SMART_TABS|FNB.FNB_VC8|FNB.FNB_X_ON_TAB| \
+    FNB.FNB_NO_X_BUTTON|FNB.FNB_DROPDOWN_TABS_LIST|FNB.FNB_MOUSE_MIDDLE_CLOSES_TABS
+
+book = FNB.FlatNotebook(w, wx.ID_ANY,  style=stil)
+p=wx.Panel (w, -1)
+book.AddPage(wx.Panel (w, -1), 'aaa',True, -1)
+book.AddPage(wx.Panel (w, -1), 'bbb', True, -1)
+book.AddPage(p, 'ccc', True, -1)
+
+w.SetSize((700,600))
+w.Show()
