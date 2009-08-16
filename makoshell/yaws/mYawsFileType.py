@@ -79,9 +79,12 @@ def OnTclTest(win, event):
     print 'tcl menu test'
 Mixin.setMixin('mainframe', 'OnTclTest', OnTclTest)
 
-def OnAddCurrentPath(self, event):
+import functools
+def OnAddCurrentPath(self,event):
     item = self.tree.GetSelection()
-    if not self.is_ok(item): return
+    if not self.is_ok(item): 
+        print item , 'is not ok'
+        return
     filename = self.get_node_filename(item)
     if self.isFile(item):
         item = self.tree.GetItemParent(item)
@@ -92,11 +95,13 @@ def OnAddCurrentPath(self, event):
         if self.pref.open_project_setting_dlg:
             wx.CallAfter(self.OnSetProject)
 
-def addmenu(app, name, othermenu):
-    app.popmenulist.extend([('IDPM_ADD', [
+# use static popup menu
+def addmenu(app):
+    app.OnAddCurrentPath = functools.partial(OnAddCurrentPath,app)
+    app.popmenulist.extend( [('IDPM_ADD', [
       (99, 'IDPM_ADD_CURDIR', tr('Add Current Directory'), wx.ITEM_NORMAL, 
          'OnAddCurrentPath', ''),   
     ]), ])
     
 
-Mixin.setPlugin('dirbrowser', 'other_popup_menu', addmenu)
+Mixin.setPlugin('dirbrowser', 'init', addmenu)
