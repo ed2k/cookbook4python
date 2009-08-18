@@ -1,4 +1,5 @@
-# winfiol clone
+# win is instance of MainFrame
+# for example    you can refer others as win.documentarea.notebook 
 # test under ulipad scripts
 import sys,os
 # assume at least one script exists, 2nd field is filename
@@ -153,6 +154,8 @@ class MyFrame(wx.Frame):
         f.write(self.chat.GetText())
         f.close()
     def OpenCmdLog(self):
+        if not os.path.exists('cmdlogs.txt'):
+            return ''
         fn = os.path.join(os.path.dirname(filename),'cmdlogs.txt')        
         return file(fn).read()
         
@@ -233,29 +236,26 @@ def testNewShellWindow():
     #p.SetReadOnly(False)
     #p.SetText('')
 
-   
-   
-
-
 #testFolding()
-#run(win)
-#testNewShellWindow()
+
+testNewShellWindow()
 #import lexerTest
 #reload(lexerTest)
 #lexerTest.run(win)
 
-# test middle moulse click to close the tab
-from modules.wxctrl import FlatNotebook as FNB
-w = wx.Frame(win)
+# assume h < w
+def squarelify(h,w,n,m):
+    if n == 0:
+        return 0
+    if (w*h - n) < (h*h):
+        if (w*h-n) > (m+n):
+            return 1
+        else: return 2
+    else:
+        if (h*h) > (m+n):
+            return 1
+        else:
+            return 3
 
-stil = FNB.FNB_SMART_TABS|FNB.FNB_VC8|FNB.FNB_X_ON_TAB| \
-    FNB.FNB_NO_X_BUTTON|FNB.FNB_DROPDOWN_TABS_LIST|FNB.FNB_MOUSE_MIDDLE_CLOSES_TABS
+print squarelify(5,10,6,6)
 
-book = FNB.FlatNotebook(w, wx.ID_ANY,  style=stil)
-p=wx.Panel (w, -1)
-book.AddPage(wx.Panel (w, -1), 'aaa',True, -1)
-book.AddPage(wx.Panel (w, -1), 'bbb', True, -1)
-book.AddPage(p, 'ccc', True, -1)
-
-w.SetSize((700,600))
-w.Show()
