@@ -80,16 +80,16 @@ class MyCode(wx.Panel):
         sizer.add(self.chat, proportion=1, flag=wx.EXPAND|wx.ALL, border=3)
         self.SetAutoLayout(True)
 
-        if wx.Platform == '__WXMSW__':
-            face1 = 'Arial'
-            face2 = 'Times New Roman'
-            face3 = 'Courier New'
-            pb = 10
-        else:
-            face1 = 'Helvetica'
-            face2 = 'Times'
-            face3 = 'Courier'
-            pb = 12
+#        if wx.Platform == '__WXMSW__':
+#            face1 = 'Arial'
+#            face2 = 'Times New Roman'
+#            face3 = 'Courier New'
+#            pb = 10
+#        else:
+#            face1 = 'Helvetica'
+#            face2 = 'Times'
+#            face3 = 'Courier'
+#            pb = 12
 
        
 class MyFrame(wx.Frame):
@@ -242,20 +242,3 @@ testNewShellWindow()
 #import lexerTest
 #reload(lexerTest)
 #lexerTest.run(win)
-
-# assume h < w
-def squarelify(h,w,n,m):
-    if n == 0:
-        return 0
-    if (w*h - n) < (h*h):
-        if (w*h-n) > (m+n):
-            return 1
-        else: return 2
-    else:
-        if (h*h) > (m+n):
-            return 1
-        else:
-            return 3
-
-print squarelify(5,10,6,6)
-
