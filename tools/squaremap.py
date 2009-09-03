@@ -301,6 +301,8 @@ class SquareMap( wx.Panel ):
         log.debug( 'Draw: %s to (%s,%s,%s,%s) depth %s',
             node.path, x,y,w,h, depth,
         )
+        if depth > 4: return
+        
         if self.max_depth and depth > self.max_depth:
             return
         self.max_depth_seen = max( (self.max_depth_seen,depth))
@@ -369,9 +371,10 @@ class SquareMap( wx.Panel ):
        if (w*h < 10):         return
        if len(childs) > w*h:  return
        self.calc0(parent.children, x,y,w,h)
-    def calc0(self, childs, x,y,w,h):
+    def calc0(self, childs, x,y,w,h,depth=0):
        log.debug('calc %d %s %d,%d %dx%d' ,len(childs),x,y,w,h)      
-
+       if depth > 4:
+        return
        nodes = [ (self.adapter.value(n),n) for n in childs ]
        nodes.sort()
        total = self.adapter.children_sum( childs )
@@ -384,7 +387,7 @@ class SquareMap( wx.Panel ):
                new_w = (w*fraction)
                if new_w:
                    firstNode.rect = ( (x),(y),(new_w),(h))
-                   self.calc0(firstNode.children, x,y, new_w, h )
+                   self.calc0(firstNode.children, x,y, new_w, h, depth+1 )
                else:
                    return # no other node will show up as non-0 either
                w = w-new_w
@@ -393,7 +396,7 @@ class SquareMap( wx.Panel ):
                new_h = (h*fraction)
                if new_h:
                    firstNode.rect = ( (x),(y),(w),(new_h))            
-                   self.calc0( firstNode.children, x,y, w, new_h )
+                   self.calc0( firstNode.children, x,y, w, new_h , depth+1)
                else:
                    return # no other node will show up as non-0 either
                h = h-new_h
@@ -401,33 +404,7 @@ class SquareMap( wx.Panel ):
            if rest and (h > self.padding*2) and (w > self.padding*2):
                self.calc0( rest, x,y,w,h )
        
-    def LayoutChildren( self, dc, children, parent, x,y,w,h, hot_map, depth=0 ):
-        """Layout the set of children in the given rectangle"""
-        nodes = [ (self.adapter.value(node,parent),node) for node in children ]
-        nodes.sort()
-        total = self.adapter.children_sum( children,parent )
-        if total:
-            (firstSize,firstNode) = nodes[-1]
-            rest = [node for (size,node) in nodes[:-1]]
-            fraction = firstSize/float(total)
-            if w >= h:
-                new_w = int(w*fraction)
-                if new_w:
-                    self.DrawBox( dc, firstNode, x,y, new_w, h, hot_map, depth+1 )
-                else:
-                    return # no other node will show up as non-0 either
-                w = w-new_w
-                x += new_w 
-            else:
-                new_h = int(h*fraction)
-                if new_h:
-                    self.DrawBox( dc, firstNode, x,y, w, new_h, hot_map, depth + 1 )
-                else:
-                    return # no other node will show up as non-0 either
-                h = h-new_h
-                y += new_h 
-            if rest and (h > self.padding*2) and (w > self.padding*2):
-                self.LayoutChildren( dc, rest, parent, x,y,w,h, hot_map, depth )
+
     def drawChild(self, dc, node,depth):
         log.debug( 'dchilds %s %d %d',node.path,len(node.children),depth)
         for child in node.children:
@@ -480,8 +457,8 @@ class TestApp(wx.App):
         )
         frame.CreateStatusBar()
         
-        model = self.get_model( sys.argv[1]) 
-        #model = self.get_model2( '\\\\earth\\mmmmm\\tmp\\tmp2') 
+        model = self.get_model2( sys.argv[1]) 
+        #model = self.get_model2( '') 
         self.sq = SquareMap( frame, model=model)
         EVT_SQUARE_HIGHLIGHTED( self.sq, self.OnSquareSelected )
         EVT_SQUARE_SELECTED( self.sq, self.OnSquareSelected )
@@ -501,7 +478,7 @@ class TestApp(wx.App):
             prev[depth-1].children.append(n)
             if prev[depth]!=n:
                 prev[depth] = n  
-        return prev[1]
+        return prev[0]
     def get_model( self, path ):
         nodes = []
         for f in os.listdir( path ):
