@@ -64,7 +64,7 @@
       
     }
     function log(s){
-      document.getElementById('log').firstChild.nodeValue += s;
+      document.getElementById('log').firstChild.nodeValue = "--"+ s +"<br>" ;
     }
     function init() {
       if (wave && wave.isInWaveContainer()) {
@@ -79,7 +79,7 @@
   Highest bid: <span id="highestBid">0</span><br/>
   Your bid: <input id="yourBid" size="5" value="0"><button id="butCount" onclick="buttonClicked()">Bid</button><br/>
   Number of wave participants: <span id="participants">1</span></br>
-  <span id="log"></span></br>
+  <span id="log">aaa</span></br>
 
   ]]> 
   </Content>
