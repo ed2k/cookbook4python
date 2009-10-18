@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Module>
- <ModulePrefs title="Wave Bidding" height="250">
+ <ModulePrefs title="test wave internal" height="250">
   <Require feature="wave" /> 
  </ModulePrefs>
  <Content type="html">
@@ -65,7 +65,7 @@
       
     }
     function log(s){
-      document.getElementById('log').firstChild.nodeValue = "--"+ s +"<br>" ;
+      document.getElementById('log').firstChild.nodeValue += "> "+ s +"<br>" ;
     }
     function init() {
       // run once
@@ -82,8 +82,8 @@
   <span id="bidderName">Nobody</span><br/>
   Highest bid: <span id="highestBid">0</span><br/>
   Your bid: <input id="yourBid" size="5" value="1"><button id="butCount" onclick="buttonClicked()">Bid</button><br/>
-  Number of wave participants: <span id="participants">1</span></br>
-  <span id="log">aaa</span></br>
+  Number of wave participants: <span id="participants">1</span><br/>
+  <div id="log">logs displayed here</div><br/>
 
   ]]></Content>
 </Module>
