@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Module>
-<ModulePrefs title="Wave Bidding" height="250">
+ <ModulePrefs title="Wave Bidding" height="250">
   <Require feature="wave" /> 
-  </ModulePrefs>
-  <Content type="html">
+ </ModulePrefs>
+ <Content type="html">
  <![CDATA[ 
   
   <script type="text/javascript">
+    var gadgetLoaded = false;
     function buttonClicked() {
       var viewerId = wave.getViewer().getId();
       var state = wave.getState();
@@ -24,7 +25,7 @@
       if (!wave.getState()) {
         return;
       }
-      var log = '';
+
       var highestBid = 0;
       var highestBidderId = null;
       var state = wave.getState();
@@ -67,20 +68,22 @@
       document.getElementById('log').firstChild.nodeValue = "--"+ s +"<br>" ;
     }
     function init() {
+      // run once
+      if (gadgetLoaded) return;
       if (wave && wave.isInWaveContainer()) {
         wave.setStateCallback(renderInfo);
         wave.setParticipantCallback(renderInfo);
       }
+      gadgetLoaded = true;
     }
     gadgets.util.registerOnLoadHandler(init);
   </script>
   <img id="bidderThumbnail" src="http://gadget-doc-examples.googlecode.com/svn/trunk/images/unknown.gif" width="50" height="50"/><br/>
   <span id="bidderName">Nobody</span><br/>
   Highest bid: <span id="highestBid">0</span><br/>
-  Your bid: <input id="yourBid" size="5" value="0"><button id="butCount" onclick="buttonClicked()">Bid</button><br/>
+  Your bid: <input id="yourBid" size="5" value="1"><button id="butCount" onclick="buttonClicked()">Bid</button><br/>
   Number of wave participants: <span id="participants">1</span></br>
   <span id="log">aaa</span></br>
 
-  ]]> 
-  </Content>
-  </Module>
+  ]]></Content>
+</Module>
