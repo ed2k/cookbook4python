@@ -29,8 +29,38 @@ from mako.template import Template
 from mako.runtime import Context
 
 import wx.py.interpreter as Interpreter
+import pyaudio
+
+
+def audio():
+    chunk = 1024
+    FORMAT = pyaudio.paInt16
+    CHANNELS = 1
+    RATE = 44100
+    RECORD_SECONDS = 1
+
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format = FORMAT,
+                    channels = CHANNELS,
+                    rate = RATE,
+                    input = True,
+                    frames_per_buffer = chunk)
+
+    #print "* recording"
+    all = []
+    for i in xrange(0, RATE / chunk * RECORD_SECONDS):
+        data = stream.read(chunk)
+        all.append(data)
+        #dsp(data)
+    #print "* done recording"
+
+    stream.close()
+    p.terminate()
+    return ''.join(all)
         
 class MyCanvas(wx.Window):
+
     def __init__(self, parent, codes):
         wx.Window.__init__(self, parent, -1, style=wx.SUNKEN_BORDER )
         self.parent = parent
@@ -40,15 +70,23 @@ class MyCanvas(wx.Window):
         
         self.Bind(wx.EVT_PAINT, self.OnPaint)
         self.error = False
-        
+        self.data='\xff'*500
+        self.t = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER,self.handler,self.t)
+        self.t.Start(2000)
+    def handler(self,event):
+        print 'time'
+        self.data = audio()
+        print [self.data[:5]],[self.data[-5:]]
+        sef.refresh()
     def OnPaint(self, event):
-        if not self.error and self.codes.get('OnPaint', None):
-            dc = wx.PaintDC(self)
-            dc.DrawText(self.codes['OnPaint'],7,7)
-        else:
-            dc = wx.PaintDC(self)
-            dc.Clear()
-            event.Skip
+        dc = wx.PaintDC(self)
+        dc.SetPen(wx.Pen(wx.BLACK))
+        
+        for x in xrange(len(self.data)):
+            y = ord(self.data[x])
+            dc.DrawPoint(x,y)
+
         
     def refresh(self):
         self.error = False
