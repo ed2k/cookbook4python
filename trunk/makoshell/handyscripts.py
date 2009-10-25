@@ -1,12 +1,3 @@
-#---------------------------------------------------
-#                   UliPad script
-# Author  :limodou
-# Date    :2004/07/11
-# Version :1.0
-# Description:
-#     Add linenum to each line of selected text
-#
-#---------------------------------------------------
 
 def run(win):
     linenums = win.document.getSelectionLines()
@@ -22,25 +13,20 @@ import sys
 import re
 
 # xml simple beautifier
-def cccc():
-
+def xmlBeautifier(data):
     #data = open(sys.argv[1],'r').read()
-    data = win.document.GetSelectedText()
-    #linenums = win.document.getSelectionLines()
-    #data = ''
-    #for i, linenum in enumerate(linenums):
-    #     data +=  win.document.getLineText(linenum)
 
     fields = re.split('(<.*?>)',data)
     level = 0
-    space = 4
+    space = 1
     rText = []
     for f in fields:
-       if f.strip() == '': continue
-       if f[0:2]=='<?': 
+       if f.strip() == '': pass
+       elif f[:4] == '<!--' and f[-3:] == '-->':
            rText.append( ' '*(level*space) + f) 
-           continue
-       if f[0]=='<' and f[1] != '/':
+       elif f[:2]=='<?': 
+           rText.append( ' '*(level*space) + f) 
+       elif f[0]=='<' and f[1] != '/':
            rText.append( ' '*(level*space) + f)
            level = level + 1
            if f[-2:] == '/>':
@@ -49,12 +35,43 @@ def cccc():
            level = level - 1
            rText.append( ' '*(level*space) + f)
        else:
+           f = f.lstrip()
+           f = f.rstrip()
            rText.append( ' '*(level*space) + f)
 
-    win.document.BeginUndoAction()
-    win.document.ReplaceSelection('\n'.join(rText))
-    win.document.EndUndoAction()
-    
+    return '\n'.join(rText)
+
+
+    # xml simple beautifier
+def htmlBeautifier(data):
+    #data = open(sys.argv[1],'r').read()
+    fields = re.split('(<.*?>)',data)
+    level = 0
+    space = 1
+    rText = []
+    for f in fields:
+       if f.strip() == '': pass
+       elif f[:5] == '<link' or f[:4] == '<img' :
+           rText.append( ' '*(level*space) + f) 
+       elif f[:4] == '<!--' and f[-3:] == '-->':
+           rText.append( ' '*(level*space) + f) 
+       elif f[:2]=='<?' or f[:6] == '<input': 
+           rText.append( ' '*(level*space) + f) 
+       elif f[0]=='<' and f[1] != '/':
+           rText.append( ' '*(level*space) + f)
+           level = level + 1
+           if f[-2:] == '/>':
+               level = level - 1
+       elif f[:2]=='</':
+           level = level - 1
+           rText.append( ' '*(level*space) + f)
+       else:
+           f = f.lstrip()
+           f = f.rstrip()
+           rText.append( ' '*(level*space) + f)
+
+    return '\n'.join(rText)
+
 
 # trekbuddy waypoint converter
 def dddd():
@@ -100,12 +117,28 @@ def bytes16To8hex(data):
     for b in r:
         if i > 8: 
             i = 1
-            lines.append(', '.join(line))
+            lines.append(' '*5+', '.join(line)+',')
             line = []
         line.append('0x'+b)
         i += 1
     if i > 1:
-        lines.append(', '.join(line))
+        lines.append(' '*5+', '.join(line))
     return '\n'.join(lines)
 
-selectAndReplace(win,bytes16To8hex)
+def parseOWAPage(data):
+    #owa8.1.375.2 fold link := class="fld["| bld"| sl"]
+    #href="?ae=Folder&t=IPF.Note&id=[^"]+"                  
+    #message link := name="chkmsg" value="[^"]+"  
+    r = []
+    h = 'class="fld'
+    fields = re.findall(h+'.+?id=[^"]+"',data,re.DOTALL)
+    for f in fields:
+        m = re.match('(.*?)".+?href="\?ae=Folder&t=IPF.Note&id=(.+)',f[len(h):-1],re.DOTALL)
+        #if m.group(1) == ' sl':
+        r.append(m.group(1)+' '+m.group(2))    
+    h = 'name="chkmsg" value="'
+    fields = re.findall(h+'[^"]+"',data)
+    for f in fields:
+        r.append(f[len(h):-1])
+    return '\n'.join(r)
+selectAndReplace(win,parseOWAPage)
