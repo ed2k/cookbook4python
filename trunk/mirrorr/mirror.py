@@ -231,11 +231,11 @@ class HomeHandler(BaseHandler):
     }
     self.response.out.write(template.render("main.html", context))
 
-ad_strings = ['content.yieldmanager.edgesuite.net',
+ad_strings = ['content.yieldmanager.edgesuite.net','ad.doubleclick.net', 
   'adserver.wenxuecity.com']
 def ad_filter(address):
   for s in ad_strings:
-   if address[:len(s)] == s: return True
+    if address[:len(s)] == s: return True
   if address.find('.swf') > 0: return True
   return False 
 def no_cache_url(address):

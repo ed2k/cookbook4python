@@ -1,34 +1,20 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Module>
-	<ModulePrefs
-		title="Cards"
-		height="480"
-		description="Play card games in Google Wave."
-		author="Charles Lehner"
-		author_email="celehner1@gmail.com">
-	 <Require feature="wave"/>
-	</ModulePrefs>
 
-	<Content type="html">
-	<![CDATA[
-	
 	<script type="text/javascript"
-		src="http://wave-api.appspot.com/public/wave.js"></script>
+		src="wave.js"></script>
 	<script type="text/javascript"
-		src="http://wave-cards.googlecode.com/svn/trunk/classy.js"></script>
+		src="classy.js"></script>
 	<script type="text/javascript"
-		src="http://wave-cards.googlecode.com/svn/trunk/transitions.js?1"></script>
+		src="transitions.js?1"></script>
 	<script type="text/javascript"
-		src="http://wave-cards.googlecode.com/svn/trunk/cards.js?5"></script>
+		src="cards.js?5"></script>
 	<link rel="stylesheet" type="text/css"
-		href="http://wave-cards.googlecode.com/svn/trunk/cards.css?2"/>
+		href="cards.css?2"/>
 	
 	<div id="cardsWindow">
 		<div id="buttons">
 			<button id="helpBtn" title="Help">?</button>
 			<button id="rotateBtn" title="Turn the table">&crarr;</button>
 			<button id="decksBtn" title="Add or remove decks">Decks</button>
-			<button id="test" title="Add or remove decks">test</button>
 		</div>
 		
 		<div id="cards"></div>
@@ -91,6 +77,3 @@
 			</div>
 		</div>
 	</div>
-
-	]]></Content>
-</Module>
