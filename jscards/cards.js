@@ -6,27 +6,11 @@ v1.0
 
 Copyright (c) 2009 Charles Lehner
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+TODO, move into card library, seperate wave code.
 
 */
 
-(function () {
+//(function () {
 
 var
 	cardsContainer,          // #cards
@@ -63,6 +47,7 @@ var
   #cards
 */
 
+
 /* ---------------------------- Gadget State ---------------------------- */
 
 function gadgetLoad() {
@@ -98,16 +83,23 @@ function gadgetLoad() {
 		"click", dialogBox.openDecks, false);
 	
 	// Set up wave callbacks
-	if (wave && wave.isInWaveContainer()) {
+	if (typeof(wave) != "undefined" && wave.isInWaveContainer()) {
 		wave.setStateCallback(stateUpdated);
 		wave.setParticipantCallback(participantsUpdated);
-	}
+	} else { alert("wave not defined"); }
 	gadgetLoaded = true;
+}
+
+if (typeof(gadgets) == "undefined") {
+  
+  alert("not in google wave gadgets");
+
 }
 gadgets.util.registerOnLoadHandler(gadgetLoad);
 
 // called when the wave state is updated
 function stateUpdated() {
+	alert("stateUpdated");
 	var keys, i, key, value, thing;
 	
 	// we must wait for the players list before loading the cards
@@ -153,6 +145,7 @@ function stateUpdated() {
 	}
 }
 
+
 // called by Wave
 function participantsUpdated() {
 	players = wave.getParticipants();
@@ -172,7 +165,7 @@ function participantsUpdated() {
 function onEverythingLoad() {
 	// If this is the viewer's first visit, show them the help screen.
 	meState = getThing("player_" + me.getId());
-	if (meState.firstVisit) {
+	if (typeof(meState) != "undefined" && meState.firstVisit) {
 		dialogBox.openHelp();
 		
 		// If the gadget state is empty (there are no cards), create a deck.
@@ -1924,4 +1917,4 @@ var DialogBox = Classy({constructor: function () {
 	
 }});
 
-})();
+//})();
