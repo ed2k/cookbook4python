@@ -1,0 +1,10 @@
+<extension 
+    name="Cards"
+    description="Play card games in Wave!"
+    thumbnailUrl="http://wave-cards.googlecode.com/svn/trunk/images/thumbnail-120x120.png">
+  <author name="Charles Lehner"/>
+  <menuHook location="toolbar" text="Insert a cards gadget." 
+      iconUrl="http://wave-cards.googlecode.com/svn/trunk/images/smallbluedeck.png">
+    <insertGadget url="http://wave-cards.googlecode.com/svn/trunk/cards.xml"/>
+  </menuHook>
+</extension>
