@@ -83,23 +83,20 @@ function gadgetLoad() {
 		"click", dialogBox.openDecks, false);
 	
 	// Set up wave callbacks
-	if (typeof(wave) != "undefined" && wave.isInWaveContainer()) {
-		wave.setStateCallback(stateUpdated);
+	if ( wave.isInWaveContainer()) { 
 		wave.setParticipantCallback(participantsUpdated);
+		wave.setStateCallback(stateUpdated);
 	} else { alert("wave not defined"); }
 	gadgetLoaded = true;
 }
 
 if (typeof(gadgets) == "undefined") {
-  
   alert("not in google wave gadgets");
-
 }
 gadgets.util.registerOnLoadHandler(gadgetLoad);
 
 // called when the wave state is updated
 function stateUpdated() {
-	alert("stateUpdated");
 	var keys, i, key, value, thing;
 	
 	// we must wait for the players list before loading the cards
@@ -138,6 +135,7 @@ function stateUpdated() {
 	waveStateKeys = keys;
 	
 	if (!stateLoaded) {
+		alert("stateUpdated");
 		stateLoaded = true;
 		if (participantsLoaded) {
 			onEverythingLoad();
@@ -152,6 +150,7 @@ function participantsUpdated() {
 	me = wave.getViewer();
 	
 	if (!participantsLoaded && me) {
+	    alert("participants");
 		participantsLoaded = true;
 		if (stateLoaded) {
 			onEverythingLoad();
@@ -165,8 +164,8 @@ function participantsUpdated() {
 function onEverythingLoad() {
 	// If this is the viewer's first visit, show them the help screen.
 	meState = getThing("player_" + me.getId());
-	if (typeof(meState) != "undefined" && meState.firstVisit) {
-		dialogBox.openHelp();
+	if ( meState.firstVisit) {
+		//dialogBox.openHelp();
 		
 		// If the gadget state is empty (there are no cards), create a deck.
 		if (waveStateKeys.length == 0) {
@@ -179,6 +178,7 @@ function onEverythingLoad() {
 // get a stateful object (card or deck) by its key in the wave state
 function getThing(key) {
 	if (!things[key]) {
+	    //alert('create '+key);
 		var key2 = key.split("_");
 		var type = key2[0];
 		var id = ~~key2[1];

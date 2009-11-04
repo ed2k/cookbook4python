@@ -1,15 +1,18 @@
 // dummy gadgets and wave
-var a, wave = wave || {};
+var a;
+var wave = {};
 
 var gadgets = {};
 gadgets.util = {};
 gadgets.util.registerOnLoadHandler = function (func) {
-	alert(func);
+	//alert(func);
 	func();
 };
 gadgets.rpc = {};
 gadgets.rpc.register = function (str, state) {};
-gadgets.rpc.call = function (a,b ,str, state) {};
+gadgets.rpc.call = function (a,b ,str, state) {
+  //alert(state);
+};
 
 wave.Callback = function(b, c) {
   this.callback_ = b;
@@ -32,7 +35,8 @@ wave.state_ = null;
 wave.stateCallback_ = new wave.Callback(null);
 wave.mode_ = null;
 wave.modeCallback_ = new wave.Callback(null);
-wave.inWaveContainer_ = false;wave.util = wave.util || {};
+wave.inWaveContainer_ = true;
+wave.util = wave.util || {};
 wave.util.SPACES = "                                                 ";
 wave.util.toSpaces_ = function(b) {
   return wave.util.SPACES.substring(0, b * 2)
@@ -90,8 +94,9 @@ wave.Participant.fromJson_ = function(b) {
   c.displayName_ = b.displayName;
   c.thumbnailUrl_ = b.thumbnailUrl;
   return c
-};wave.State = function() {
-  this.setState_(null)
+};
+wave.State = function() {
+  this.state_ = null;
 };
 a = wave.State.prototype;
 a.get = function(b, c) {
@@ -103,7 +108,10 @@ a.getKeys = function() {
   return b
 };
 a.submitDelta = function(b) {
+  alert(typeof b);
   gadgets.rpc.call(null, "wave_gadget_state", null, b)
+  wave.receiveState_(b);
+
 };
 a.submitValue = function(b, c) {
   var e = {};
@@ -186,11 +194,13 @@ wave.isPlayback = function() {
 };
 wave.setStateCallback = function(b, c) {
   wave.stateCallback_ = new wave.Callback(b, c);
-  wave.state_ && wave.stateCallback_.invoke(wave.state_)
+  wave.state_ && wave.stateCallback_.invoke(wave.state_);
+  //b();
 };
 wave.setParticipantCallback = function(b, c) {
   wave.participantCallback_ = new wave.Callback(b, c);
-  wave.participants_ && wave.participantCallback_.invoke(wave.participants_)
+  wave.participants_ && wave.participantCallback_.invoke(wave.participants_);
+  b();
 };
 wave.setModeCallback = function(b, c) {
   wave.modeCallback_ = new wave.Callback(b, c);
@@ -216,3 +226,17 @@ wave.internalInit_ = function() {
     wave.internalInit_()
   })
 })();
+
+//------- give default value for testing
+// so far able to update to initial state, with a deck of cards.
+wave.viewer_ = new wave.Participant('id','dname','url');
+wave.participants_.push(wave.viewer_);
+wave.state_ = new wave.State();
+
+
+function fillup() {
+  //alert("");
+  wave.stateCallback_(); // to do, the delta???, 2. not updating already updated
+  window.setTimeout("fillup()",5000);
+}
+window.setTimeout("fillup()",5000);
