@@ -1,0 +1,4 @@
+cron:
+- description: test cron
+  url: /flickr.com/photos
+  schedule: every 1 hours
