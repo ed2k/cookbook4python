@@ -72,6 +72,34 @@ def htmlBeautifier(data):
 
     return '\n'.join(rText)
 
+def curlyBeautifier(data):
+    #data = open(sys.argv[1],'r').read()
+    fields = re.split('({.*?})',data)
+    level = 0
+    space = 1
+    rText = []
+    for f in fields:
+       if f.strip() == '': pass
+       elif f[:5] == '<link' or f[:4] == '<img' :
+           rText.append( ' '*(level*space) + f) 
+       elif f[:4] == '<!--' and f[-3:] == '-->':
+           rText.append( ' '*(level*space) + f) 
+       elif f[:2]=='<?' or f[:6] == '<input': 
+           rText.append( ' '*(level*space) + f) 
+       elif f[0]=='{' and f[1] != '/':
+           rText.append( ' '*(level*space) + f)
+           level = level + 1
+           if f[-2:] == '}':
+               level = level - 1
+       elif f[:2]=='}':
+           level = level - 1
+           rText.append( ' '*(level*space) + f)
+       else:
+           f = f.lstrip()
+           f = f.rstrip()
+           rText.append( ' '*(level*space) + f)
+
+    return '\n'.join(rText)
 
 # trekbuddy waypoint converter
 def dddd():
@@ -141,4 +169,4 @@ def parseOWAPage(data):
     for f in fields:
         r.append(f[len(h):-1])
     return '\n'.join(r)
-selectAndReplace(win,parseOWAPage)
+selectAndReplace(win,curlyBeautifier)
