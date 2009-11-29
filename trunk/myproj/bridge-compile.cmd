@@ -1,1 +1,0 @@
-@java -cp "%~dp0\src;%~dp0\bin;C:/Documents and Settings/lmcyisu/Desktop/gwt-windows-1.4.61/gwt-user.jar;C:/Documents and Settings/lmcyisu/Desktop/gwt-windows-1.4.61/gwt-dev-windows.jar" com.google.gwt.dev.GWTCompiler -out "%~dp0\www" %* cn.bridge
