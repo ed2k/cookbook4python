@@ -1,11 +1,9 @@
 #!/usr/bin/env python
-"""This is an mbox filter. It scans through an entire mbox style mailbox
+"""
+This is an mbox filter. It scans through an entire mbox style mailbox
 and writes the messages to a new file. Each message is passed
-through a filter function which may modify the document or ignore it.
+through a filter function that convert From to >From 
 
-The passthrough_filter() example below simply prints the 'from' email
-address and returns the document unchanged. After running this script
-the input mailbox and output mailbox should be identical.
 """
 
 import email
@@ -13,16 +11,17 @@ from email.MIMEText import MIMEText
 import sys, os, string, re
 
 LF = '\x0a'
+DL = '\r\n'
 
 def emails2mbox_file(mails, filename):
     # write to new mbox file
     fout = file(filename, 'w')
     for msg in mails:
-        fout.write ('From -\n')
-        str = msg.as_string()
+        fout.write ('From - \n')
+        str = msg
         fout.write(str)
         if str[len(str)-1] != '\n':
-                fout.write('\n')
+            fout.write('\n')
     fout.close()
 
 def fix_header(mailstr):
@@ -55,46 +54,33 @@ def fix_header(mailstr):
     mm = email.message_from_string(header+'\n\n'+body);
     return mm
 
+def process_one_mail(mail):
+    r = mail.replace(DL+'\xa0'+DL+DL, DL*2)
+    r = r.replace(DL*3, DL*2)
+    idx = r.find(DL*2)
+    headers = r[:idx]
+    body = r[idx:]
+    body = body.replace(DL+'From', DL+'>From')
+    return headers+body 
+
 def main ():
     mailboxname_in = sys.argv[1]
 
-
     # Open the mailbox.
     mbstr = file(mailboxname_in,'r').read();
- #   mbstr = mbstr.replace('\r\n','\n');
-    mails = mbstr.split("\nFrom -");
+    mbstr = mbstr.replace(DL*3, DL*2);
+    mbstr = mbstr[len('From - '+DL):]
+    mails = mbstr.split(DL+"From - "+DL);
 
 # assume no multipart, otherwise run split_attachements first
     for idx, mail in enumerate(mails):
-        #take out the first line
-        i = mail.find("\n");
-        mails[idx] =email.message_from_string( mail[i+1:]);
-        if mails[idx].is_multipart():
-            print  "ERROR, run mail split first"
-            break
+        #i = mail.find("\n");
+        #mails[idx] =email.message_from_string( mail[i+1:]);
+        mails[idx] = process_one_mail(mail) 
+
     print 'read in', len(mails)
 
-    # common headers, From, To, Sent, Date, Cc, Subject
-    # X-Mozilla-Status, X-Mozilla-Status2, Importance, Received
-    # X-Mailer
-    m1 = []
-    m2 = []
-    for idx, msg in enumerate(mails):
-        if len(msg.keys()) >= 3 :
-            m1.append(msg)
-            continue 
-
-        m = fix_header(msg.get_payload())
-
-        if len(m.keys()) < 3:
-            #print m.keys() , msg.keys()
-            #filter out not-fixed
-            m2.append(m);
-        else: m1.append(m)    
-        
-
-    emails2mbox_file(m1,'t1')
-    emails2mbox_file(m2,'t2')
+    emails2mbox_file(mails,'t1')
 #   print len(mails) 
 
 # compare date for list of emails
