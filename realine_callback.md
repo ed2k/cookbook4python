@@ -1,0 +1,62 @@
+
+```
+
+import readline
+import ctypes
+
+rl_lib = ctypes.cdll.LoadLibrary("libreadline.so.5")
+
+readline.callback_handler_remove = rl_lib.rl_callback_handler_remove
+readline.callback_read_char = rl_lib.rl_callback_read_char
+
+# the callback needs special treatment:
+rlcallbackfunctype = ctypes.CFUNCTYPE(ctypes.c_void_p, ctypes.c_char_p)
+
+def setcallbackfunc(prompt, thefunc):
+    rl_lib.rl_callback_handler_install(prompt, rlcallbackfunctype(thefunc))
+
+readline.callback_handler_install = setcallbackfunc
+
+line_buffer = ''
+
+def getline(line):
+    #catch ctrl-d
+    if line is None:
+        #raise EOFError doesn't work
+        print 'please type exit or quit, instead of CTRL_D'
+        return
+    
+    global line_buffer
+    line_buffer = line
+
+import IPython
+import termios
+import fcntl, os
+import sys,select
+
+def waitb4read(prompt):
+    global line_buffer
+    line_buffer = ''
+    readline.callback_handler_install(prompt, getline)   
+    
+    fcntl.fcntl(stdinfd, fcntl.F_SETFL, os.O_NONBLOCK)
+    while True:
+        fds = select.select([sys.stdin],[],[],1)
+        #KeyboardInterrupt will be caught at outer loop iplib.raw_input
+        if len(fds[0]+fds[1]) == 0:
+            if line_buffer == '':
+                pass;  
+            else:
+                return line_buffer
+        else:
+            #print fds
+            for i in fds[0]+fds[1]:
+                if i == sys.stdin:
+                    readline.callback_read_char()
+
+stdinfd = sys.stdin.fileno()
+
+IPython.iplib.raw_input_original = waitb4read
+
+
+```

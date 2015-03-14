@@ -1,0 +1,37 @@
+
+```
+# This code framework gives an easy way to make ipython multi-task before readline.
+# When there is no keyboard press, ipython can handle other i/o event or call functions during timeout. 
+# As soon as readline takes control (raw_input), multitask stops. 
+# So if there is readline.rl_callback_read_char(), we can achieve multi-task before char read
+
+import IPython
+import termios
+import fcntl, os
+import sys,select
+
+
+def test(prompt):
+    print '<',prompt,'>'
+    termios.tcsetattr(stdinfd, termios.TCSANOW, newtermattr)
+    fcntl.fcntl(stdinfd, fcntl.F_SETFL, os.O_NONBLOCK)
+    while True:
+        fds = select.select([sys.stdin],[],[],10)
+        #raise KeyboardInterrupt()
+        if len(fds[0]+fds[1]) == 0:
+            print 'timeout do sth smart'
+        else:
+            #print fds
+            for i in fds[0]+fds[1]:
+                if i == sys.stdin:
+                    termios.tcsetattr(stdinfd, termios.TCSANOW, oldtermattr)
+                    line = raw_input(prompt)
+                    return line
+
+stdinfd = sys.stdin.fileno()
+oldtermattr = termios.tcgetattr(stdinfd)
+newtermattr = termios.tcgetattr(stdinfd)
+newtermattr[3] = newtermattr[3] & ~termios.ICANON & ~termios.ECHO
+
+IPython.iplib.raw_input_original = test
+```
